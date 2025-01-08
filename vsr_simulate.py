@@ -2,23 +2,26 @@ import mujoco
 import mujoco.viewer
 import time
 from vsr import VoxelRobot
+
 # import numpy as np
 import math
 import xml.etree.ElementTree as ET
 import re
 
-# Create a 10*10*10 numpy grid, populate it with 0's
+MODEL = "quadruped_v3"
+FILEPATH = f"vsr_models/{MODEL}/{MODEL}"
+ORIGINAL_XML_PATH = FILEPATH + ".xml"
+MODIFIED_XML_PATH = FILEPATH + "_modded.xml"
+TIMESTEP = "0.001"
+DURATION = 300  # seconds
+
+# Create a 10*10*10 empty vsr
 vsr = VoxelRobot(10, 10, 10)
 
-filepath = "vsr_models/quadruped"
-
-vsr.load_model(filepath+".parquet")
+# load, visualise, and then generate model
+vsr.load_model(FILEPATH + ".csv")
 vsr.visualise_model()
 point, element = vsr.generate_model()
-
-TIMESTEP = "0.001"
-duration = 300  # seconds
-framerate = 60  # Hz
 
 xml_string = f"""
 <mujoco>
@@ -45,17 +48,10 @@ model = mujoco.MjModel.from_xml_string(xml_string)
 data = mujoco.MjData(model)
 
 # Save model as XML for reference
-mujoco.mj_saveLastXML(filename=filepath+".xml", m=model)
-
-
-
-
-
-original_xml_path = filepath + ".xml"
-modified_xml_path = filepath + "_modded.xml"
+mujoco.mj_saveLastXML(filename=FILEPATH + ".xml", m=model)
 
 # Parse original XML
-tree = ET.parse(original_xml_path)
+tree = ET.parse(ORIGINAL_XML_PATH)
 root = tree.getroot()
 
 # Regex for vsr_n
@@ -97,37 +93,44 @@ for joint_name, n in all_joints:
     motor.set("joint", joint_name)
     motor.set("gear", "1")
 
-tree.write(modified_xml_path, encoding="utf-8", xml_declaration=True)
+tree.write(MODIFIED_XML_PATH, encoding="utf-8", xml_declaration=True)
 
-print(f"Modified XML saved to {modified_xml_path}")
+print(f"Modified XML saved to {MODIFIED_XML_PATH}")
 
-model = mujoco.MjModel.from_xml_path(modified_xml_path)
+model = mujoco.MjModel.from_xml_path(MODIFIED_XML_PATH)
 data = mujoco.MjData(model)
-
 
 
 scene_option = mujoco.MjvOption()
 
 viewer = mujoco.viewer.launch_passive(model, data)
 
-amplitude = 3      # desired amplitude of oscillation
-frequency = 1.0      # frequency in Hz
-phase = 1.0          # phase offset
+amplitude = 3  # desired amplitude of oscillation
+frequency = 1.0  # frequency in Hz
+phase = 1.0  # phase offset
 
 start_time = time.time()
-while data.time < duration:
+while data.time < DURATION:
     # For each vsr_n body, apply a sinusoidal command to its x, y, and z actuators.
     for n in range(vsr.num_vertex()):
         # Get the actuator IDs. You can get them by name:
-        x_motor_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{n}_x_motor")
-        y_motor_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{n}_y_motor")
-        z_motor_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{n}_z_motor")
-        
+        x_motor_id = mujoco.mj_name2id(
+            model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{n}_x_motor"
+        )
+        y_motor_id = mujoco.mj_name2id(
+            model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{n}_y_motor"
+        )
+        z_motor_id = mujoco.mj_name2id(
+            model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{n}_z_motor"
+        )
+
         # Compute a sinusoidal control signal. For example, let’s oscillate along the z-axis:
-        control_signal_x = amplitude * math.sin(2*math.pi*frequency*data.time + phase)
+        control_signal_x = amplitude * math.sin(
+            2 * math.pi * frequency * data.time + phase
+        )
         # control_signal_y = amplitude * math.sin(2*math.pi*frequency*data.time + phase + math.pi/2)
         # control_signal_z = amplitude * math.sin(2*math.pi*frequency*data.time + phase + math.pi)
-        
+
         data.ctrl[x_motor_id] = control_signal_x
         # data.ctrl[y_motor_id] = control_signal_y
         # data.ctrl[z_motor_id] = control_signal_z

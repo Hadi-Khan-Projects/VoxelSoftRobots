@@ -24,337 +24,337 @@
     <light pos="30 30 20" dir="0 0 -1" diffuse="0.4 0.4 0.4" specular="0.1 0.1 0.1" />
     <light pos="-20 -20 40" dir="0.0990148 0.0990148 -0.990148" directional="true" diffuse="0.8 0.8 0.8" specular="0.2 0.2 0.2" />
     <body name="vsr_0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_0_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_0_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_0_z" />
     </body>
     <body name="vsr_1" pos="0 0 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_1_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_1_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_1_z" />
     </body>
     <body name="vsr_2" pos="0 0 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_2_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_2_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_2_z" />
     </body>
     <body name="vsr_3" pos="0 1 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_3_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_3_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_3_z" />
     </body>
     <body name="vsr_4" pos="0 1 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_4_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_4_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_4_z" />
     </body>
     <body name="vsr_5" pos="0 1 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_5_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_5_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_5_z" />
     </body>
     <body name="vsr_6" pos="0 2 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_6_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_6_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_6_z" />
     </body>
     <body name="vsr_7" pos="0 2 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_7_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_7_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_7_z" />
     </body>
     <body name="vsr_8" pos="0 2 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_8_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_8_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_8_z" />
     </body>
     <body name="vsr_9" pos="0 3 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_9_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_9_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_9_z" />
     </body>
     <body name="vsr_10" pos="0 3 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_10_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_10_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_10_z" />
     </body>
     <body name="vsr_11" pos="0 3 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_11_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_11_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_11_z" />
     </body>
     <body name="vsr_12" pos="1 0 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_12_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_12_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_12_z" />
     </body>
     <body name="vsr_13" pos="1 0 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_13_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_13_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_13_z" />
     </body>
     <body name="vsr_14" pos="1 0 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_14_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_14_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_14_z" />
     </body>
     <body name="vsr_15" pos="1 1 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_15_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_15_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_15_z" />
     </body>
     <body name="vsr_16" pos="1 1 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_16_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_16_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_16_z" />
     </body>
     <body name="vsr_17" pos="1 1 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_17_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_17_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_17_z" />
     </body>
     <body name="vsr_18" pos="1 2 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_18_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_18_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_18_z" />
     </body>
     <body name="vsr_19" pos="1 2 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_19_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_19_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_19_z" />
     </body>
     <body name="vsr_20" pos="1 2 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_20_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_20_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_20_z" />
     </body>
     <body name="vsr_21" pos="1 3 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_21_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_21_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_21_z" />
     </body>
     <body name="vsr_22" pos="1 3 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_22_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_22_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_22_z" />
     </body>
     <body name="vsr_23" pos="1 3 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_23_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_23_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_23_z" />
     </body>
     <body name="vsr_24" pos="2 0 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_24_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_24_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_24_z" />
     </body>
     <body name="vsr_25" pos="2 0 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_25_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_25_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_25_z" />
     </body>
     <body name="vsr_26" pos="2 1 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_26_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_26_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_26_z" />
     </body>
     <body name="vsr_27" pos="2 1 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_27_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_27_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_27_z" />
     </body>
     <body name="vsr_28" pos="2 2 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_28_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_28_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_28_z" />
     </body>
     <body name="vsr_29" pos="2 2 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_29_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_29_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_29_z" />
     </body>
     <body name="vsr_30" pos="2 3 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_30_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_30_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_30_z" />
     </body>
     <body name="vsr_31" pos="2 3 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_31_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_31_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_31_z" />
     </body>
     <body name="vsr_32" pos="3 0 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_32_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_32_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_32_z" />
     </body>
     <body name="vsr_33" pos="3 0 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_33_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_33_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_33_z" />
     </body>
     <body name="vsr_34" pos="3 0 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_34_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_34_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_34_z" />
     </body>
     <body name="vsr_35" pos="3 1 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_35_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_35_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_35_z" />
     </body>
     <body name="vsr_36" pos="3 1 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_36_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_36_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_36_z" />
     </body>
     <body name="vsr_37" pos="3 1 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_37_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_37_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_37_z" />
     </body>
     <body name="vsr_38" pos="3 2 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_38_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_38_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_38_z" />
     </body>
     <body name="vsr_39" pos="3 2 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_39_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_39_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_39_z" />
     </body>
     <body name="vsr_40" pos="3 2 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_40_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_40_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_40_z" />
     </body>
     <body name="vsr_41" pos="3 3 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_41_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_41_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_41_z" />
     </body>
     <body name="vsr_42" pos="3 3 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_42_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_42_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_42_z" />
     </body>
     <body name="vsr_43" pos="3 3 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_43_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_43_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_43_z" />
     </body>
     <body name="vsr_44" pos="4 0 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_44_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_44_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_44_z" />
     </body>
     <body name="vsr_45" pos="4 0 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_45_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_45_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_45_z" />
     </body>
     <body name="vsr_46" pos="4 0 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_46_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_46_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_46_z" />
     </body>
     <body name="vsr_47" pos="4 1 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_47_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_47_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_47_z" />
     </body>
     <body name="vsr_48" pos="4 1 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_48_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_48_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_48_z" />
     </body>
     <body name="vsr_49" pos="4 1 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_49_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_49_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_49_z" />
     </body>
     <body name="vsr_50" pos="4 2 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_50_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_50_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_50_z" />
     </body>
     <body name="vsr_51" pos="4 2 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_51_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_51_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_51_z" />
     </body>
     <body name="vsr_52" pos="4 2 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_52_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_52_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_52_z" />
     </body>
     <body name="vsr_53" pos="4 3 0">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_53_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_53_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_53_z" />
     </body>
     <body name="vsr_54" pos="4 3 1">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_54_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_54_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_54_z" />
     </body>
     <body name="vsr_55" pos="4 3 2">
-      <inertial pos="0 0 0" mass="0.357143" diaginertia="5.95238e-06 5.95238e-06 5.95238e-06" />
+      <inertial pos="0 0 0" mass="0.535714" diaginertia="8.92857e-06 8.92857e-06 8.92857e-06" />
       <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_55_x" />
       <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_55_y" />
       <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_55_z" />
