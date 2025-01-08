@@ -1,0 +1,83 @@
+<mujoco model="MuJoCo Model">
+  <compiler angle="radian" meshdir="asset/" texturedir="asset/"/>
+
+  <option timestep="0.001" tolerance="1e-06" integrator="implicitfast"/>
+
+  <size memory="2000M"/>
+
+  <visual>
+    <map stiffness="700" fogstart="1" fogend="15" zfar="40" haze="1" shadowscale="0.5"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+  </visual>
+
+  <statistic meansize="0.05"/>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="texplane" builtin="checker" mark="cross" rgb1="0.2 0.3 0.4" rgb2="0.1 0.15 0.2" markrgb="0.8 0.8 0.8" width="512" height="512"/>
+    <material name="matplane" texture="texplane" texuniform="true" texrepeat="10 10" reflectance="0.3"/>
+  </asset>
+
+  <worldbody>
+    <geom name="ground" size="0 0 1" type="plane" condim="1" material="matplane"/>
+    <light pos="30 30 20" dir="0 0 -1" diffuse="0.4 0.4 0.4" specular="0.1 0.1 0.1"/>
+    <light pos="-20 -20 40" dir="0.0990148 0.0990148 -0.990148" directional="true" diffuse="0.8 0.8 0.8" specular="0.2 0.2 0.2"/>
+    <body name="vsr_0">
+      <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+    </body>
+    <body name="vsr_1" pos="0 0 1">
+      <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+    </body>
+    <body name="vsr_2" pos="0 1 0">
+      <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+    </body>
+    <body name="vsr_3" pos="0 1 1">
+      <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+    </body>
+    <body name="vsr_4" pos="1 0 0">
+      <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+    </body>
+    <body name="vsr_5" pos="1 0 1">
+      <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+    </body>
+    <body name="vsr_6" pos="1 1 0">
+      <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+    </body>
+    <body name="vsr_7" pos="1 1 1">
+      <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+    </body>
+  </worldbody>
+
+  <deformable>
+    <flex name="vsr" rgba="0.1 0.9 0.1 1" dim="3" body="vsr_0 vsr_1 vsr_2 vsr_3 vsr_4 vsr_5 vsr_6 vsr_7" element="0 3 2 7 0 1 3 7 0 5 1 7 0 4 5 7 0 6 4 7 0 2 6 7">
+
+      <contact solref="0.01 1" solimp="0.95 0.99 0.0001 0.5 2" selfcollide="none"/>
+      <elasticity young="500" poisson="0.3"/>
+      <edge damping="1"/>
+    </flex>
+  </deformable>
+</mujoco>
