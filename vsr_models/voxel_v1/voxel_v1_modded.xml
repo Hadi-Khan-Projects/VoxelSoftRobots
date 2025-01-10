@@ -25,75 +25,75 @@
     <light pos="-20 -20 40" dir="0.0990148 0.0990148 -0.990148" directional="true" diffuse="0.8 0.8 0.8" specular="0.2 0.2 0.2" />
     <body name="vsr_0">
       <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_0_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_0_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_0_z" />
+      <joint pos="0 0 0" axis="1 0 0" type="slide" />
+      <joint pos="0 0 0" axis="0 1 0" type="slide" />
+      <joint pos="0 0 0" axis="0 0 1" type="slide" />
     </body>
     <body name="vsr_1" pos="0 0 1">
       <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_1_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_1_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_1_z" />
+      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_0_0_1_x" />
+      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_0_0_1_y" />
+      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_0_0_1_z" />
     </body>
     <body name="vsr_2" pos="0 1 0">
       <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_2_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_2_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_2_z" />
+      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_0_1_0_x" />
+      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_0_1_0_y" />
+      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_0_1_0_z" />
     </body>
     <body name="vsr_3" pos="0 1 1">
       <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_3_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_3_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_3_z" />
+      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_0_1_1_x" />
+      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_0_1_1_y" />
+      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_0_1_1_z" />
     </body>
     <body name="vsr_4" pos="1 0 0">
       <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_4_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_4_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_4_z" />
+      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_1_0_0_x" />
+      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_1_0_0_y" />
+      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_1_0_0_z" />
     </body>
     <body name="vsr_5" pos="1 0 1">
       <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_5_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_5_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_5_z" />
+      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_1_0_1_x" />
+      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_1_0_1_y" />
+      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_1_0_1_z" />
     </body>
     <body name="vsr_6" pos="1 1 0">
       <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_6_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_6_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_6_z" />
+      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_1_1_0_x" />
+      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_1_1_0_y" />
+      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_1_1_0_z" />
     </body>
     <body name="vsr_7" pos="1 1 1">
       <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_7_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_7_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_7_z" />
+      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_1_1_1_x" />
+      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_1_1_1_y" />
+      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_1_1_1_z" />
     </body>
     <body name="vsr_8" pos="2 0 0">
       <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_8_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_8_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_8_z" />
+      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_2_0_0_x" />
+      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_2_0_0_y" />
+      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_2_0_0_z" />
     </body>
     <body name="vsr_9" pos="2 0 1">
       <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_9_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_9_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_9_z" />
+      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_2_0_1_x" />
+      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_2_0_1_y" />
+      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_2_0_1_z" />
     </body>
     <body name="vsr_10" pos="2 1 0">
       <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_10_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_10_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_10_z" />
+      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_2_1_0_x" />
+      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_2_1_0_y" />
+      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_2_1_0_z" />
     </body>
     <body name="vsr_11" pos="2 1 1">
       <inertial pos="0 0 0" mass="2.5" diaginertia="4.16667e-05 4.16667e-05 4.16667e-05" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_11_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_11_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_11_z" />
+      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_2_1_1_x" />
+      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_2_1_1_y" />
+      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_2_1_1_z" />
     </body>
   </worldbody>
 
@@ -105,4 +105,4 @@
       <edge damping="1" />
     </flex>
   </deformable>
-<actuator><motor name="vsr_0_x_motor" joint="vsr_0_x" gear="1" /><motor name="vsr_0_y_motor" joint="vsr_0_y" gear="1" /><motor name="vsr_0_z_motor" joint="vsr_0_z" gear="1" /><motor name="vsr_1_x_motor" joint="vsr_1_x" gear="1" /><motor name="vsr_1_y_motor" joint="vsr_1_y" gear="1" /><motor name="vsr_1_z_motor" joint="vsr_1_z" gear="1" /><motor name="vsr_2_x_motor" joint="vsr_2_x" gear="1" /><motor name="vsr_2_y_motor" joint="vsr_2_y" gear="1" /><motor name="vsr_2_z_motor" joint="vsr_2_z" gear="1" /><motor name="vsr_3_x_motor" joint="vsr_3_x" gear="1" /><motor name="vsr_3_y_motor" joint="vsr_3_y" gear="1" /><motor name="vsr_3_z_motor" joint="vsr_3_z" gear="1" /><motor name="vsr_4_x_motor" joint="vsr_4_x" gear="1" /><motor name="vsr_4_y_motor" joint="vsr_4_y" gear="1" /><motor name="vsr_4_z_motor" joint="vsr_4_z" gear="1" /><motor name="vsr_5_x_motor" joint="vsr_5_x" gear="1" /><motor name="vsr_5_y_motor" joint="vsr_5_y" gear="1" /><motor name="vsr_5_z_motor" joint="vsr_5_z" gear="1" /><motor name="vsr_6_x_motor" joint="vsr_6_x" gear="1" /><motor name="vsr_6_y_motor" joint="vsr_6_y" gear="1" /><motor name="vsr_6_z_motor" joint="vsr_6_z" gear="1" /><motor name="vsr_7_x_motor" joint="vsr_7_x" gear="1" /><motor name="vsr_7_y_motor" joint="vsr_7_y" gear="1" /><motor name="vsr_7_z_motor" joint="vsr_7_z" gear="1" /><motor name="vsr_8_x_motor" joint="vsr_8_x" gear="1" /><motor name="vsr_8_y_motor" joint="vsr_8_y" gear="1" /><motor name="vsr_8_z_motor" joint="vsr_8_z" gear="1" /><motor name="vsr_9_x_motor" joint="vsr_9_x" gear="1" /><motor name="vsr_9_y_motor" joint="vsr_9_y" gear="1" /><motor name="vsr_9_z_motor" joint="vsr_9_z" gear="1" /><motor name="vsr_10_x_motor" joint="vsr_10_x" gear="1" /><motor name="vsr_10_y_motor" joint="vsr_10_y" gear="1" /><motor name="vsr_10_z_motor" joint="vsr_10_z" gear="1" /><motor name="vsr_11_x_motor" joint="vsr_11_x" gear="1" /><motor name="vsr_11_y_motor" joint="vsr_11_y" gear="1" /><motor name="vsr_11_z_motor" joint="vsr_11_z" gear="1" /></actuator></mujoco>
+<actuator><motor name="vsr_0_0_1_x_motor" joint="vsr_0_0_1_x" gear="1" /><motor name="vsr_0_0_1_y_motor" joint="vsr_0_0_1_y" gear="1" /><motor name="vsr_0_0_1_z_motor" joint="vsr_0_0_1_z" gear="1" /><motor name="vsr_0_1_0_x_motor" joint="vsr_0_1_0_x" gear="1" /><motor name="vsr_0_1_0_y_motor" joint="vsr_0_1_0_y" gear="1" /><motor name="vsr_0_1_0_z_motor" joint="vsr_0_1_0_z" gear="1" /><motor name="vsr_0_1_1_x_motor" joint="vsr_0_1_1_x" gear="1" /><motor name="vsr_0_1_1_y_motor" joint="vsr_0_1_1_y" gear="1" /><motor name="vsr_0_1_1_z_motor" joint="vsr_0_1_1_z" gear="1" /><motor name="vsr_1_0_0_x_motor" joint="vsr_1_0_0_x" gear="1" /><motor name="vsr_1_0_0_y_motor" joint="vsr_1_0_0_y" gear="1" /><motor name="vsr_1_0_0_z_motor" joint="vsr_1_0_0_z" gear="1" /><motor name="vsr_1_0_1_x_motor" joint="vsr_1_0_1_x" gear="1" /><motor name="vsr_1_0_1_y_motor" joint="vsr_1_0_1_y" gear="1" /><motor name="vsr_1_0_1_z_motor" joint="vsr_1_0_1_z" gear="1" /><motor name="vsr_1_1_0_x_motor" joint="vsr_1_1_0_x" gear="1" /><motor name="vsr_1_1_0_y_motor" joint="vsr_1_1_0_y" gear="1" /><motor name="vsr_1_1_0_z_motor" joint="vsr_1_1_0_z" gear="1" /><motor name="vsr_1_1_1_x_motor" joint="vsr_1_1_1_x" gear="1" /><motor name="vsr_1_1_1_y_motor" joint="vsr_1_1_1_y" gear="1" /><motor name="vsr_1_1_1_z_motor" joint="vsr_1_1_1_z" gear="1" /><motor name="vsr_2_0_0_x_motor" joint="vsr_2_0_0_x" gear="1" /><motor name="vsr_2_0_0_y_motor" joint="vsr_2_0_0_y" gear="1" /><motor name="vsr_2_0_0_z_motor" joint="vsr_2_0_0_z" gear="1" /><motor name="vsr_2_0_1_x_motor" joint="vsr_2_0_1_x" gear="1" /><motor name="vsr_2_0_1_y_motor" joint="vsr_2_0_1_y" gear="1" /><motor name="vsr_2_0_1_z_motor" joint="vsr_2_0_1_z" gear="1" /><motor name="vsr_2_1_0_x_motor" joint="vsr_2_1_0_x" gear="1" /><motor name="vsr_2_1_0_y_motor" joint="vsr_2_1_0_y" gear="1" /><motor name="vsr_2_1_0_z_motor" joint="vsr_2_1_0_z" gear="1" /><motor name="vsr_2_1_1_x_motor" joint="vsr_2_1_1_x" gear="1" /><motor name="vsr_2_1_1_y_motor" joint="vsr_2_1_1_y" gear="1" /><motor name="vsr_2_1_1_z_motor" joint="vsr_2_1_1_z" gear="1" /></actuator></mujoco>

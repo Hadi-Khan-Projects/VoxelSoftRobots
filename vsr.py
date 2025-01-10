@@ -17,13 +17,14 @@ class VoxelRobot:
         self.max_x = x
         self.max_y = y
         self.max_z = z
-        self.grid = np.zeros((x, y, z), dtype=np.uint8)
+        self.voxel_grid = np.zeros((x, y, z), dtype=np.uint8)
+        self.point_grid = np.zeros((x + 1, y + 1, z + 1), dtype=np.uint8)
 
     def set_val(self, x: int, y: int, z: int, value) -> None:
         """Set the value at position (x, y, z) to 0 or 1."""
         if value not in [0, 1]:
             raise ValueError("VSR's voxel grid value not set as 0 or 1.")
-        self.grid[x, y, z] = value
+        self.voxel_grid[x, y, z] = value
 
     def visualise_model(self) -> None:
         """Visualise the VSR's structure using matplotlib."""
@@ -31,7 +32,7 @@ class VoxelRobot:
         ax = fig.add_subplot(111, projection="3d")
 
         # Coordinates of all 1's in the grid
-        x, y, z = np.where(self.grid == 1)
+        x, y, z = np.where(self.voxel_grid == 1)
         voxel_plot_size = 0.9  # slightly smaller than 1 to avoid overlap
 
         # Plot each voxel as small cube
@@ -61,13 +62,13 @@ class VoxelRobot:
 
     def check_contiguous(self) -> bool:
         """Check if the VSR's structure is contiguous."""
-        visited = np.zeros_like(self.grid, dtype=bool)
-        start_voxel = np.argwhere(self.grid == 1)
+        visited = np.zeros_like(self.voxel_grid, dtype=bool)
+        start_voxel = np.argwhere(self.voxel_grid == 1)
         if start_voxel.size == 0:
             return False
         start_voxel = tuple(start_voxel[0])
         self._dfs(start_voxel, visited)
-        if not np.array_equal(self.grid == 1, visited):
+        if not np.array_equal(self.voxel_grid == 1, visited):
             raise ValueError("VSR's structure is not contiguous.")
 
     def _dfs(self, voxel, visited) -> None:
@@ -90,7 +91,7 @@ class VoxelRobot:
             for dx, dy, dz in directions:
                 nx, ny, nz = x + dx, y + dy, z + dz
                 if 0 <= nx < 10 and 0 <= ny < 10 and 0 <= nz < 10:
-                    if self.grid[nx, ny, nz] == 1 and not visited[nx, ny, nz]:
+                    if self.voxel_grid[nx, ny, nz] == 1 and not visited[nx, ny, nz]:
                         stack.append((nx, ny, nz))
 
     def save_model(self, filename) -> None:
@@ -99,7 +100,7 @@ class VoxelRobot:
         for x in range(self.max_x):
             for y in range(self.max_y):
                 for z in range(self.max_z):
-                    if self.grid[x, y, z] == 1:
+                    if self.voxel_grid[x, y, z] == 1:
                         data.append((x, y, z))
 
         df = pd.DataFrame(data, columns=["x", "y", "z"], dtype=np.uint8)
@@ -108,16 +109,16 @@ class VoxelRobot:
     def load_model(self, filename) -> None:
         """Reset the current voxel grid to all zeroes and replace with a .csv file"""
         df = pd.read_csv(filename)
-        self.grid = np.zeros((self.max_x, self.max_y, self.max_z), dtype=np.uint8)
+        self.voxel_grid = np.zeros((self.max_x, self.max_y, self.max_z), dtype=np.uint8)
         for _, row in df.iterrows():
-            self.grid[row["x"], row["y"], row["z"]] = 1
+            self.voxel_grid[row["x"], row["y"], row["z"]] = 1
 
     def generate_model(self) -> tuple:
         """Generate the points and elements for the voxel model."""
 
         self.check_contiguous()
 
-        points_grid = np.zeros(
+        self.point_grid = np.zeros(
             (self.max_x + 1, self.max_y + 1, self.max_z + 1), dtype=np.int8
         )
         points_count = 0
@@ -130,7 +131,7 @@ class VoxelRobot:
             for y in range(self.max_y + 1):
                 for z in range(self.max_z + 1):
                     if self._is_point_vertex(x, y, z):
-                        points_grid[x, y, z] = 1
+                        self.point_grid[x, y, z] = 1
                         points_map[(x, y, z)] = points_count
                         points_string += " ".join(map(str, (x, y, z))) + "   "
                         points_count += 1
@@ -140,7 +141,7 @@ class VoxelRobot:
         for x in range(self.max_x):
             for y in range(self.max_y):
                 for z in range(self.max_z):
-                    if self.grid[x, y, z] == 1:
+                    if self.voxel_grid[x, y, z] == 1:
                         points = [
                             points_map[(x, y, z)],  # 0
                             points_map[(x + 1, y, z)],  # 1
@@ -178,25 +179,25 @@ class VoxelRobot:
         all 8 adjacent possible voxels."""
 
         return (
-            (self._is_point_possible(x, y, z) and self.grid[x, y, z] == 1)
-            or (self._is_point_possible(x - 1, y, z) and self.grid[x - 1, y, z] == 1)
+            (self._is_point_possible(x, y, z) and self.voxel_grid[x, y, z] == 1)
+            or (self._is_point_possible(x - 1, y, z) and self.voxel_grid[x - 1, y, z] == 1)
             or (
                 self._is_point_possible(x - 1, y - 1, z)
-                and self.grid[x - 1, y - 1, z] == 1
+                and self.voxel_grid[x - 1, y - 1, z] == 1
             )
-            or (self._is_point_possible(x, y - 1, z) and self.grid[x, y - 1, z] == 1)
-            or (self._is_point_possible(x, y, z - 1) and self.grid[x, y, z - 1] == 1)
+            or (self._is_point_possible(x, y - 1, z) and self.voxel_grid[x, y - 1, z] == 1)
+            or (self._is_point_possible(x, y, z - 1) and self.voxel_grid[x, y, z - 1] == 1)
             or (
                 self._is_point_possible(x - 1, y, z - 1)
-                and self.grid[x - 1, y, z - 1] == 1
+                and self.voxel_grid[x - 1, y, z - 1] == 1
             )
             or (
                 self._is_point_possible(x - 1, y - 1, z - 1)
-                and self.grid[x - 1, y - 1, z - 1] == 1
+                and self.voxel_grid[x - 1, y - 1, z - 1] == 1
             )
             or (
                 self._is_point_possible(x, y - 1, z - 1)
-                and self.grid[x, y - 1, z - 1] == 1
+                and self.voxel_grid[x, y - 1, z - 1] == 1
             )
         )
 
