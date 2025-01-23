@@ -19,6 +19,7 @@ class VoxelRobot:
         self.max_z = z
         self.voxel_grid = np.zeros((x, y, z), dtype=np.uint8)
         self.point_grid = np.zeros((x + 1, y + 1, z + 1), dtype=np.uint8)
+        self.point_dict = {}
 
     def set_val(self, x: int, y: int, z: int, value) -> None:
         """Set the value at position (x, y, z) to 0 or 1."""
@@ -132,6 +133,7 @@ class VoxelRobot:
                 for z in range(self.max_z + 1):
                     if self._is_point_vertex(x, y, z):
                         self.point_grid[x, y, z] = 1
+                        self.point_dict[(x, y, z)] = (0.0, 0.0, 0.0 )
                         points_map[(x, y, z)] = points_count
                         points_string += " ".join(map(str, (x, y, z))) + "   "
                         points_count += 1

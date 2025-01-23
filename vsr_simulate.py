@@ -21,6 +21,8 @@ vsr.load_model(FILEPATH + ".csv")
 # vsr.visualise_model()
 point, element = vsr.generate_model()
 
+print(vsr.num_vertex())
+
 xml_string = f"""
 <mujoco>
     <compiler autolimits="true"/>
@@ -33,7 +35,7 @@ xml_string = f"""
         <flexcomp name="vsr" type="direct" dim="3"
             point="{point}"
             element="{element}"
-            radius="0.005" rgba="0.1 0.9 0.1 1" mass="30">
+            radius="0.005" rgba="0.1 0.9 0.1 1" mass="{vsr.num_vertex()/10}">
             <contact condim="3" solref="0.01 1" solimp="0.95 0.99 0.0001" selfcollide="none"/>
             <edge damping="1"/>
             <elasticity young="5e2" poisson="0.3"/>
@@ -99,12 +101,11 @@ print(f"Modified XML saved to {MODIFIED_XML_PATH}")
 model = mujoco.MjModel.from_xml_path(MODIFIED_XML_PATH)
 data = mujoco.MjData(model)
 
-
 scene_option = mujoco.MjvOption()
 
 viewer = mujoco.viewer.launch_passive(model, data)
 
-amplitude = 3  # desired amplitude of oscillation
+amplitude = 3.0  # desired amplitude of oscillation
 frequency = 1.0  # frequency in Hz
 phase = 1.0  # phase offset
 
@@ -112,28 +113,34 @@ start_time = time.time()
 while data.time < DURATION:
     # For each vsr_n body, apply a sinusoidal command to its x, y, and z actuators.
     vsr.point_grid
-    for x in range(vsr.point_grid.shape[0]):
-        for y in range(vsr.point_grid.shape[1]):
-            for z in range(vsr.point_grid.shape[2]):
-                if vsr.point_grid[x, y, z] == 1:
-                    # Get the actuator IDs. You can get them by name:
-                    x_motor_id = mujoco.mj_name2id(
-                        model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{x}_{y}_{z}_x_motor"
-                    )
-                    y_motor_id = mujoco.mj_name2id(
-                        model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{x}_{y}_{z}_y_motor"
-                    )
-                    z_motor_id = mujoco.mj_name2id(
-                        model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{x}_{y}_{z}_z_motor"
-                    )
 
-                    control_signal_x = amplitude * math.sin(
-                        2 * math.pi * frequency * data.time + phase
-                    )
+    # for x, y, z in vsr.point_dict.keys():
+    for key, phase in vsr.point_dict.items():
+        x, y, z = key
+        phase_x, phase_y, phase_z = phase
+        x_motor_id = mujoco.mj_name2id(
+            model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{x}_{y}_{z}_x_motor"
+        )
+        y_motor_id = mujoco.mj_name2id(
+            model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{x}_{y}_{z}_y_motor"
+        )
+        z_motor_id = mujoco.mj_name2id(
+            model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{x}_{y}_{z}_z_motor"
+        )
 
-                    data.ctrl[x_motor_id] = control_signal_x
-                    # data.ctrl[y_motor_id] = control_signal_y
-                    # data.ctrl[z_motor_id] = control_signal_z
+        control_signal_x = amplitude * math.sin(
+            2 * math.pi * frequency * data.time + phase_x
+        )
+        control_signal_y = amplitude * math.sin(
+            2 * math.pi * frequency * data.time + phase_y
+        )
+        control_signal_z = amplitude * math.sin(
+            2 * math.pi * frequency * data.time + phase_z
+        )
+
+        data.ctrl[x_motor_id] = control_signal_x
+        # data.ctrl[y_motor_id] = control_signal_y
+        # data.ctrl[z_motor_id] = control_signal_z
 
     # Step the simulation
     mujoco.mj_step(model, data)
