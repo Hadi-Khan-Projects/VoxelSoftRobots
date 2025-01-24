@@ -4,6 +4,7 @@ import time
 from vsr import VoxelRobot
 import math
 import xml.etree.ElementTree as ET
+from xml.dom import minidom
 import re
 
 MODEL = "quadruped_v3"
@@ -42,7 +43,7 @@ xml_string = f"""
             radius="0.005" rgba="0.1 0.9 0.1 1" mass="{vsr.num_vertex()/10}">
             <contact condim="3" solref="0.01 1" solimp="0.95 0.99 0.0001" selfcollide="none"/>
             <edge damping="1"/>
-            <elasticity young="5e2" poisson="0.3"/>
+            <elasticity young="250" poisson="0.3"/>
         </flexcomp>
     </worldbody>
 </mujoco>
@@ -61,31 +62,105 @@ mujoco.mj_saveLastXML(filename=FILEPATH + ".xml", m=model)
 tree = ET.parse(ORIGINAL_XML_PATH)
 root = tree.getroot()
 
-# Regex for vsr_n
-vsr_body_pattern = re.compile(r"^vsr_(\d+)$")
+# Find or create the <tendon> block just once
+tendon_elem = root.find("tendon")
+if tendon_elem is None:
+    tendon_elem = ET.SubElement(root, "tendon")
 
-# Store newly named joints for actuator creation
-all_joints = []  # Store tuples like (joint_name, body_pos)
+# We also want to add muscle actuators for each edge:
+actuator_elem = root.find("actuator")
+if actuator_elem is None:
+    actuator_elem = ET.SubElement(root, "actuator")
+
+# ----------------------------------------------------------------------
+# 2A) Collect all bodies in a dictionary keyed by their (x,y,z) position
+# ----------------------------------------------------------------------
+all_bodies = {}  # maps (x, y, z) -> body_name
 
 for body in root.findall("./worldbody/body"):
-    body_pos = body.get("pos", "")
-    if body_pos:
-        pos_str = body_pos.replace(" ", "_")
-        # Find all joint elements in this body
-        joints = body.findall("joint")
-        if len(joints) == 3:
-            # vsr_pos_x
-            joints[0].set("name", f"vsr_{pos_str}_x")
-            # vsr_pos_y
-            joints[1].set("name", f"vsr_{pos_str}_y")
-            # vsr_pos_z
-            joints[2].set("name", f"vsr_{pos_str}_z")
+    body_name = body.get("name")
+    body_pos_str = body.get("pos", "")
+    
+    if not body_pos_str:
+        continue
 
-            all_joints.append((f"vsr_{pos_str}_x", pos_str))
-            all_joints.append((f"vsr_{pos_str}_y", pos_str))
-            all_joints.append((f"vsr_{pos_str}_z", pos_str))
-        else:
-            print(f"Warning: body at position {body_pos} does not have exactly 3 joints.")
+    # Parse "pos" attribute e.g. "3 4 2" -> (3, 4, 2)
+    # Make sure these are integer or float if your body positions are not guaranteed integer
+    try:
+        x_str, y_str, z_str = body_pos_str.split()
+        x_int = int(float(x_str))
+        y_int = int(float(y_str))
+        z_int = int(float(z_str))
+        all_bodies[(x_int, y_int, z_int)] = body_name
+    except ValueError:
+        # If pos is not strictly an integer triple, skip or handle differently
+        pass
+
+# ----------------------------------------------------------------------
+# 2B) For each body, look for neighbors in +x, +y, and +z
+# ----------------------------------------------------------------------
+tendon_names = []  # will store tendon names so we can reference them later
+
+# Adjust these to match the maximum grid range for your model
+max_x, max_y, max_z = 10, 10, 10
+
+for (x, y, z), bodyA_name in all_bodies.items():
+    # Check neighbor in +x
+    if (x+1, y, z) in all_bodies:
+        bodyB_name = all_bodies[(x+1, y, z)]
+        t_name = f"edge_x_{x}_{y}_{z}"
+        # Create the tendon
+        spatial = ET.SubElement(tendon_elem, "spatial",
+                                name=t_name,
+                                width="0.003",
+                                rgba="1 0 0 1",
+                                stiffness="1",
+                                damping="0")
+        # Sites that define the tendon path
+        s1 = ET.SubElement(spatial, "site", site=f"corner_{bodyA_name}")
+        s2 = ET.SubElement(spatial, "site", site=f"corner_{bodyB_name}")
+        tendon_names.append(t_name)
+
+    # Check neighbor in +y
+    if (x, y+1, z) in all_bodies:
+        bodyB_name = all_bodies[(x, y+1, z)]
+        t_name = f"edge_y_{x}_{y}_{z}"
+        spatial = ET.SubElement(tendon_elem, "spatial",
+                                name=t_name,
+                                width="0.003",
+                                rgba="1 0 0 1",
+                                stiffness="1",
+                                damping="0")
+        s1 = ET.SubElement(spatial, "site", site=f"corner_{bodyA_name}")
+        s2 = ET.SubElement(spatial, "site", site=f"corner_{bodyB_name}")
+        tendon_names.append(t_name)
+
+    # Check neighbor in +z
+    if (x, y, z+1) in all_bodies:
+        bodyB_name = all_bodies[(x, y, z+1)]
+        t_name = f"edge_z_{x}_{y}_{z}"
+        spatial = ET.SubElement(tendon_elem, "spatial",
+                                name=t_name,
+                                width="0.003",
+                                rgba="1 0 0 1",
+                                stiffness="1",
+                                damping="0")
+        s1 = ET.SubElement(spatial, "site", site=f"corner_{bodyA_name}")
+        s2 = ET.SubElement(spatial, "site", site=f"corner_{bodyB_name}")
+        tendon_names.append(t_name)
+
+# ----------------------------------------------------------------------
+# 2C) Add a <motor> for each new tendon (a "muscle" or "cable" style actuator)
+# ----------------------------------------------------------------------
+for t_name in tendon_names:
+    motor = ET.SubElement(actuator_elem, "motor",
+                          name=f"{t_name}_motor",
+                          tendon=t_name,
+                          ctrlrange="0 1",
+                          gear="100")
+
+print(f"Created {len(tendon_names)} new tendons with motors (x, y, z edges only).")
+
 
 # ----------------------------------------------------------------------
 # 3) Add a <site> to each body so we can anchor tendons to it.
@@ -131,31 +206,56 @@ if len(all_bodies) >= 2:
 # ----------------------------------------------------------------------
 # 5) Add motor actuators for all the newly named joints (as before).
 # ----------------------------------------------------------------------
-actuator = root.find("actuator")
-if actuator is None:
-    actuator = ET.SubElement(root, "actuator")
+# actuator = root.find("actuator")
+# if actuator is None:
+#     actuator = ET.SubElement(root, "actuator")
 
-# (a) add a motor for each joint found
-for joint_name, pos_str in all_joints:
-    motor = ET.SubElement(actuator, "motor")
-    motor.set("name", f"{joint_name}_motor")
-    motor.set("joint", joint_name)
-    motor.set("gear", "100")
+# # (a) add a motor for each joint found
+# for joint_name, pos_str in all_joints:
+#     motor = ET.SubElement(actuator, "motor")
+#     motor.set("name", f"{joint_name}_motor")
+#     motor.set("joint", joint_name)
+#     motor.set("gear", "100")
 
-# (b) also attach a muscle actuator to the new tendon if it was created
-if len(all_bodies) >= 2:
-    muscle_act = ET.SubElement(actuator, "motor")
-    muscle_act.set("name", "demo_muscle")
-    muscle_act.set("tendon", "demo_tendon")
-    # You can control how tension scales with ctrlrange, gear, etc.
-    muscle_act.set("ctrlrange", "0 1")
-    muscle_act.set("gear", "100")
+# # (b) also attach a muscle actuator to the new tendon if it was created
+# if len(all_bodies) >= 2:
+#     muscle_act = ET.SubElement(actuator, "motor")
+#     muscle_act.set("name", "demo_muscle")
+#     muscle_act.set("tendon", "demo_tendon")
+#     # You can control how tension scales with ctrlrange, gear, etc.
+#     muscle_act.set("ctrlrange", "0 1")
+#     muscle_act.set("gear", "100")
 
 # ----------------------------------------------------------------------
 # 6) Write the modified XML to disk
 # ----------------------------------------------------------------------
-tree.write(MODIFIED_XML_PATH, encoding="utf-8", xml_declaration=True)
-print(f"Modified XML saved to {MODIFIED_XML_PATH}")
+
+# Convert the ElementTree to a string
+rough_string = ET.tostring(root, encoding="utf-8", method="xml")
+
+# Use minidom to pretty-print the XML string
+parsed = minidom.parseString(rough_string)
+pretty_xml = parsed.toprettyxml(indent="  ")  # Adjust indent size as needed
+
+# Write the pretty-printed XML to a file
+with open(MODIFIED_XML_PATH, "w", encoding="utf-8") as f:
+    f.write(pretty_xml)
+
+def clean_extra_newlines(xml_content):
+    # Remove double newlines between tags
+    cleaned = re.sub(r'\n\s*\n', '\n', xml_content)
+    return cleaned
+
+# Example usage
+with open(MODIFIED_XML_PATH, 'r') as file:
+    content = file.read()
+
+cleaned_content = clean_extra_newlines(content)
+
+with open(MODIFIED_XML_PATH, 'w') as file:
+    file.write(cleaned_content)
+
+print(f"Modified XML saved with proper formatting to {MODIFIED_XML_PATH}")
 
 # ----------------------------------------------------------------------
 # 7) Load and run the simulation
@@ -170,14 +270,10 @@ amplitude = 3.0  # desired amplitude of oscillation
 frequency = 0.01  # frequency in Hz
 phase = 1.0      # phase offset
 
-start_time = time.time()
 while data.time < DURATION:
-    # --- Example: If you want to drive the new muscle with some signal:
-    muscle_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_ACTUATOR, "demo_muscle")
-    if muscle_id >= 0:
-        data.ctrl[muscle_id] = 5 * math.sin(20.0*math.pi*frequency*data.time)
-    #
-    # or do nothing, let it stay at ctrl=0
-
+    # Example: drive all motors with some pattern
+    for i in range(model.nu):
+        data.ctrl[i] = 5 * math.sin(20.0*math.pi*frequency*data.time)
+    
     mujoco.mj_step(model, data)
     viewer.sync()
