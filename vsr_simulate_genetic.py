@@ -1,7 +1,6 @@
 import math
 import time
 import xml.etree.ElementTree as ET
-import re
 import random
 from concurrent.futures import ProcessPoolExecutor
 
