@@ -1,84 +1,197 @@
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" ?>
 <mujoco model="MuJoCo Model">
-  <compiler angle="radian" meshdir="asset/" texturedir="asset/" />
-
-  <option timestep="0.001" tolerance="1e-06" integrator="implicitfast" />
-
-  <size memory="2000M" />
-
+  <compiler angle="radian" meshdir="asset/" texturedir="asset/"/>
+  <option timestep="0.001" tolerance="1e-06" integrator="implicitfast"/>
+  <size memory="2000M"/>
   <visual>
-    <map stiffness="700" fogstart="1" fogend="15" zfar="40" haze="1" shadowscale="0.5" />
-    <rgba haze="0.15 0.25 0.35 1" />
+    <map stiffness="700" fogstart="1" fogend="15" zfar="40" haze="1" shadowscale="0.5"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
   </visual>
-
-  <statistic meansize="0.05" />
-
+  <statistic meansize="0.05"/>
   <asset>
-    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072" />
-    <texture type="2d" name="texplane" builtin="checker" mark="cross" rgb1="0.2 0.3 0.4" rgb2="0.1 0.15 0.2" markrgb="0.8 0.8 0.8" width="512" height="512" />
-    <material name="matplane" texture="texplane" texuniform="true" texrepeat="10 10" reflectance="0.3" />
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="texplane" builtin="checker" mark="cross" rgb1="0.2 0.3 0.4" rgb2="0.1 0.15 0.2" markrgb="0.8 0.8 0.8" width="512" height="512"/>
+    <material name="matplane" texture="texplane" texuniform="true" texrepeat="10 10" reflectance="0.3"/>
   </asset>
-
   <worldbody>
-    <geom name="ground" size="0 0 1" type="plane" condim="1" material="matplane" />
-    <light pos="30 30 20" dir="0 0 -1" diffuse="0.4 0.4 0.4" specular="0.1 0.1 0.1" />
-    <light pos="-20 -20 40" dir="0.0990148 0.0990148 -0.990148" directional="true" diffuse="0.8 0.8 0.8" specular="0.2 0.2 0.2" />
+    <geom name="ground" size="0 0 1" type="plane" condim="1" material="matplane"/>
+    <light pos="30 30 20" dir="0 0 -1" diffuse="0.4 0.4 0.4" specular="0.1 0.1 0.1"/>
+    <light pos="-20 -20 40" dir="0.0990148 0.0990148 -0.990148" directional="true" diffuse="0.8 0.8 0.8" specular="0.2 0.2 0.2"/>
     <body name="vsr_0">
-      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" />
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="corner_vsr_0" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_1" pos="0 0 1">
-      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_0_0_1_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_0_0_1_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_0_0_1_z" />
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="corner_vsr_1" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_2" pos="0 1 0">
-      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_0_1_0_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_0_1_0_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_0_1_0_z" />
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="corner_vsr_2" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_3" pos="0 1 1">
-      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_0_1_1_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_0_1_1_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_0_1_1_z" />
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="corner_vsr_3" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_4" pos="1 0 0">
-      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_1_0_0_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_1_0_0_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_1_0_0_z" />
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="corner_vsr_4" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_5" pos="1 0 1">
-      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_1_0_1_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_1_0_1_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_1_0_1_z" />
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="corner_vsr_5" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_6" pos="1 1 0">
-      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_1_1_0_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_1_1_0_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_1_1_0_z" />
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="corner_vsr_6" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_7" pos="1 1 1">
-      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06" />
-      <joint pos="0 0 0" axis="1 0 0" type="slide" name="vsr_1_1_1_x" />
-      <joint pos="0 0 0" axis="0 1 0" type="slide" name="vsr_1_1_1_y" />
-      <joint pos="0 0 0" axis="0 0 1" type="slide" name="vsr_1_1_1_z" />
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="corner_vsr_7" pos="0 0 0" size="0.005"/>
     </body>
   </worldbody>
-
   <deformable>
     <flex name="vsr" rgba="0.1 0.9 0.1 1" dim="3" body="vsr_0 vsr_1 vsr_2 vsr_3 vsr_4 vsr_5 vsr_6 vsr_7" element="0 3 2 7 0 1 3 7 0 5 1 7 0 4 5 7 0 6 4 7 0 2 6 7">
-
-      <contact solref="0.01 1" solimp="0.95 0.99 0.0001 0.5 2" selfcollide="none" />
-      <elasticity young="500" poisson="0.3" />
-      <edge damping="1" />
+      <contact solref="0.01 1" solimp="0.95 0.99 0.0001 0.5 2" selfcollide="none"/>
+      <elasticity young="250" poisson="0.3"/>
+      <edge damping="1"/>
     </flex>
   </deformable>
-<actuator><motor name="vsr_0_0_1_x_motor" joint="vsr_0_0_1_x" gear="1" /><motor name="vsr_0_0_1_y_motor" joint="vsr_0_0_1_y" gear="1" /><motor name="vsr_0_0_1_z_motor" joint="vsr_0_0_1_z" gear="1" /><motor name="vsr_0_1_0_x_motor" joint="vsr_0_1_0_x" gear="1" /><motor name="vsr_0_1_0_y_motor" joint="vsr_0_1_0_y" gear="1" /><motor name="vsr_0_1_0_z_motor" joint="vsr_0_1_0_z" gear="1" /><motor name="vsr_0_1_1_x_motor" joint="vsr_0_1_1_x" gear="1" /><motor name="vsr_0_1_1_y_motor" joint="vsr_0_1_1_y" gear="1" /><motor name="vsr_0_1_1_z_motor" joint="vsr_0_1_1_z" gear="1" /><motor name="vsr_1_0_0_x_motor" joint="vsr_1_0_0_x" gear="1" /><motor name="vsr_1_0_0_y_motor" joint="vsr_1_0_0_y" gear="1" /><motor name="vsr_1_0_0_z_motor" joint="vsr_1_0_0_z" gear="1" /><motor name="vsr_1_0_1_x_motor" joint="vsr_1_0_1_x" gear="1" /><motor name="vsr_1_0_1_y_motor" joint="vsr_1_0_1_y" gear="1" /><motor name="vsr_1_0_1_z_motor" joint="vsr_1_0_1_z" gear="1" /><motor name="vsr_1_1_0_x_motor" joint="vsr_1_1_0_x" gear="1" /><motor name="vsr_1_1_0_y_motor" joint="vsr_1_1_0_y" gear="1" /><motor name="vsr_1_1_0_z_motor" joint="vsr_1_1_0_z" gear="1" /><motor name="vsr_1_1_1_x_motor" joint="vsr_1_1_1_x" gear="1" /><motor name="vsr_1_1_1_y_motor" joint="vsr_1_1_1_y" gear="1" /><motor name="vsr_1_1_1_z_motor" joint="vsr_1_1_1_z" gear="1" /></actuator></mujoco>
+  <tendon>
+    <spatial name="edge_0_0_1_to_1_0_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_1"/>
+      <site site="corner_vsr_4"/>
+    </spatial>
+    <spatial name="edge_1_1_0_to_1_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_6"/>
+      <site site="corner_vsr_7"/>
+    </spatial>
+    <spatial name="edge_0_0_1_to_1_0_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_1"/>
+      <site site="corner_vsr_5"/>
+    </spatial>
+    <spatial name="edge_0_1_0_to_0_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_2"/>
+      <site site="corner_vsr_3"/>
+    </spatial>
+    <spatial name="edge_0_1_0_to_1_1_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_2"/>
+      <site site="corner_vsr_6"/>
+    </spatial>
+    <spatial name="edge_1_0_0_to_1_1_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_4"/>
+      <site site="corner_vsr_6"/>
+    </spatial>
+    <spatial name="edge_0_1_0_to_1_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_2"/>
+      <site site="corner_vsr_7"/>
+    </spatial>
+    <spatial name="edge_0_1_1_to_1_1_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_3"/>
+      <site site="corner_vsr_6"/>
+    </spatial>
+    <spatial name="edge_1_0_0_to_1_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_4"/>
+      <site site="corner_vsr_7"/>
+    </spatial>
+    <spatial name="edge_0_1_1_to_1_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_3"/>
+      <site site="corner_vsr_7"/>
+    </spatial>
+    <spatial name="edge_0_1_0_to_1_0_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_2"/>
+      <site site="corner_vsr_4"/>
+    </spatial>
+    <spatial name="edge_0_0_1_to_0_1_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_1"/>
+      <site site="corner_vsr_2"/>
+    </spatial>
+    <spatial name="edge_1_0_1_to_1_1_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_5"/>
+      <site site="corner_vsr_6"/>
+    </spatial>
+    <spatial name="edge_0_0_1_to_1_1_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_1"/>
+      <site site="corner_vsr_6"/>
+    </spatial>
+    <spatial name="edge_0_1_0_to_1_0_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_2"/>
+      <site site="corner_vsr_5"/>
+    </spatial>
+    <spatial name="edge_0_1_1_to_1_0_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_3"/>
+      <site site="corner_vsr_4"/>
+    </spatial>
+    <spatial name="edge_0_0_1_to_0_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_1"/>
+      <site site="corner_vsr_3"/>
+    </spatial>
+    <spatial name="edge_1_0_1_to_1_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_5"/>
+      <site site="corner_vsr_7"/>
+    </spatial>
+    <spatial name="edge_1_0_0_to_1_0_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_4"/>
+      <site site="corner_vsr_5"/>
+    </spatial>
+    <spatial name="edge_0_1_1_to_1_0_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_3"/>
+      <site site="corner_vsr_5"/>
+    </spatial>
+    <spatial name="edge_0_0_1_to_1_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_1"/>
+      <site site="corner_vsr_7"/>
+    </spatial>
+    <spatial name="demo_tendon" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="corner_vsr_0"/>
+      <site site="corner_vsr_1"/>
+    </spatial>
+  </tendon>
+  <actuator>
+    <motor name="edge_0_0_1_to_1_0_0_motor" tendon="edge_0_0_1_to_1_0_0" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_1_1_0_to_1_1_1_motor" tendon="edge_1_1_0_to_1_1_1" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_0_0_1_to_1_0_1_motor" tendon="edge_0_0_1_to_1_0_1" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_0_1_0_to_0_1_1_motor" tendon="edge_0_1_0_to_0_1_1" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_0_1_0_to_1_1_0_motor" tendon="edge_0_1_0_to_1_1_0" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_1_0_0_to_1_1_0_motor" tendon="edge_1_0_0_to_1_1_0" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_0_1_0_to_1_1_1_motor" tendon="edge_0_1_0_to_1_1_1" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_0_1_1_to_1_1_0_motor" tendon="edge_0_1_1_to_1_1_0" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_1_0_0_to_1_1_1_motor" tendon="edge_1_0_0_to_1_1_1" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_0_1_1_to_1_1_1_motor" tendon="edge_0_1_1_to_1_1_1" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_0_1_0_to_1_0_0_motor" tendon="edge_0_1_0_to_1_0_0" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_0_0_1_to_0_1_0_motor" tendon="edge_0_0_1_to_0_1_0" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_1_0_1_to_1_1_0_motor" tendon="edge_1_0_1_to_1_1_0" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_0_0_1_to_1_1_0_motor" tendon="edge_0_0_1_to_1_1_0" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_0_1_0_to_1_0_1_motor" tendon="edge_0_1_0_to_1_0_1" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_0_1_1_to_1_0_0_motor" tendon="edge_0_1_1_to_1_0_0" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_0_0_1_to_0_1_1_motor" tendon="edge_0_0_1_to_0_1_1" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_1_0_1_to_1_1_1_motor" tendon="edge_1_0_1_to_1_1_1" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_1_0_0_to_1_0_1_motor" tendon="edge_1_0_0_to_1_0_1" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_0_1_1_to_1_0_1_motor" tendon="edge_0_1_1_to_1_0_1" ctrlrange="0 1" gear="10"/>
+    <motor name="edge_0_0_1_to_1_1_1_motor" tendon="edge_0_0_1_to_1_1_1" ctrlrange="0 1" gear="10"/>
+  </actuator>
+</mujoco>

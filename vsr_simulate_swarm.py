@@ -41,7 +41,7 @@ VEL_MAX = 0.5
 # Build your VoxelRobot + parse CSV, etc.
 # ------------------------------------------------
 vsr = VoxelRobot(10, 10, 10)
-vsr.load_model(FILEPATH + ".csv")
+vsr.load_model_csv(FILEPATH + ".csv")
 
 # Generate the direct flexcomp points/elements
 point, element = vsr.generate_model()

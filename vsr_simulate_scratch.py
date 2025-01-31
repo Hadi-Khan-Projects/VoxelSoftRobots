@@ -7,7 +7,7 @@ import xml.etree.ElementTree as ET
 from xml.dom import minidom
 import re
 
-MODEL = "quadruped_v3"
+MODEL = "voxel_v2"
 FILEPATH = f"vsr_models/{MODEL}/{MODEL}"
 ORIGINAL_XML_PATH = FILEPATH + ".xml"
 MODIFIED_XML_PATH = FILEPATH + "_modded.xml"
@@ -18,7 +18,7 @@ DURATION = 300  # seconds
 vsr = VoxelRobot(10, 10, 10)
 
 # load, visualise, and then generate model
-vsr.load_model(FILEPATH + ".csv")
+vsr.load_model_csv(FILEPATH + ".csv")
 # vsr.visualise_model()
 point, element = vsr.generate_model()
 
@@ -97,70 +97,71 @@ for body in root.findall("./worldbody/body"):
         pass
 
 # ----------------------------------------------------------------------
-# 2B) For each body, look for neighbors in +x, +y, and +z
+# 2B) For each body, look for ALL neighbors in the 26 directions around it,
+#     i.e. dx,dy,dz in {-1, 0, 1} excluding (0,0,0).
+#     We'll store unique body pairs in a set so we don't duplicate tendons.
 # ----------------------------------------------------------------------
-tendon_names = []  # will store tendon names so we can reference them later
 
-# Adjust these to match the maximum grid range for your model
-max_x, max_y, max_z = 10, 10, 10
+tendon_names = []
+adjacent_pairs = set()  # Will hold pairs of ( (x1, y1, z1), (x2, y2, z2) ), sorted
+
+# Precompute all possible neighbor displacements
+neighbor_shifts = [
+    (dx, dy, dz)
+    for dx in [-1, 0, 1]
+    for dy in [-1, 0, 1]
+    for dz in [-1, 0, 1]
+    if not (dx == 0 and dy == 0 and dz == 0)
+]
 
 for (x, y, z), bodyA_name in all_bodies.items():
-    # Check neighbor in +x
-    if (x+1, y, z) in all_bodies:
-        bodyB_name = all_bodies[(x+1, y, z)]
-        t_name = f"edge_x_{x}_{y}_{z}"
-        # Create the tendon
-        spatial = ET.SubElement(tendon_elem, "spatial",
-                                name=t_name,
-                                width="0.003",
-                                rgba="1 0 0 1",
-                                stiffness="1",
-                                damping="0")
-        # Sites that define the tendon path
-        s1 = ET.SubElement(spatial, "site", site=f"corner_{bodyA_name}")
-        s2 = ET.SubElement(spatial, "site", site=f"corner_{bodyB_name}")
-        tendon_names.append(t_name)
+    for dx, dy, dz in neighbor_shifts:
+        nx, ny, nz = x + dx, y + dy, z + dz
+        if (nx, ny, nz) in all_bodies:
+            bodyB_name = all_bodies[(nx, ny, nz)]
+            # Create a sorted pair so we don't duplicate (A->B) and (B->A)
+            if (nx, ny, nz) < (x, y, z):
+                pair = ((nx, ny, nz), (x, y, z))
+            else:
+                pair = ((x, y, z), (nx, ny, nz))
+            adjacent_pairs.add(pair)
 
-    # Check neighbor in +y
-    if (x, y+1, z) in all_bodies:
-        bodyB_name = all_bodies[(x, y+1, z)]
-        t_name = f"edge_y_{x}_{y}_{z}"
-        spatial = ET.SubElement(tendon_elem, "spatial",
-                                name=t_name,
-                                width="0.003",
-                                rgba="1 0 0 1",
-                                stiffness="1",
-                                damping="0")
-        s1 = ET.SubElement(spatial, "site", site=f"corner_{bodyA_name}")
-        s2 = ET.SubElement(spatial, "site", site=f"corner_{bodyB_name}")
-        tendon_names.append(t_name)
+# Now we have a set of unique adjacent body pairs, including diagonals.
+# Create one spatial tendon per unique pair.
+for (x1, y1, z1), (x2, y2, z2) in adjacent_pairs:
+    bodyA_name = all_bodies[(x1, y1, z1)]
+    bodyB_name = all_bodies[(x2, y2, z2)]
+    t_name = f"edge_{x1}_{y1}_{z1}_to_{x2}_{y2}_{z2}"
 
-    # Check neighbor in +z
-    if (x, y, z+1) in all_bodies:
-        bodyB_name = all_bodies[(x, y, z+1)]
-        t_name = f"edge_z_{x}_{y}_{z}"
-        spatial = ET.SubElement(tendon_elem, "spatial",
-                                name=t_name,
-                                width="0.003",
-                                rgba="1 0 0 1",
-                                stiffness="1",
-                                damping="0")
-        s1 = ET.SubElement(spatial, "site", site=f"corner_{bodyA_name}")
-        s2 = ET.SubElement(spatial, "site", site=f"corner_{bodyB_name}")
-        tendon_names.append(t_name)
+    spatial = ET.SubElement(
+        tendon_elem,
+        "spatial",
+        name=t_name,
+        width="0.003",
+        rgba="1 0 0 1",
+        stiffness="1",
+        damping="0"
+    )
+    # The tendon passes through site corner_bodyA -> corner_bodyB
+    ET.SubElement(spatial, "site", site=f"corner_{bodyA_name}")
+    ET.SubElement(spatial, "site", site=f"corner_{bodyB_name}")
+
+    tendon_names.append(t_name)
+
+print(f"Created {len(tendon_names)} new tendons (including diagonals) with motors.")
 
 # ----------------------------------------------------------------------
 # 2C) Add a <motor> for each new tendon (a "muscle" or "cable" style actuator)
 # ----------------------------------------------------------------------
 for t_name in tendon_names:
-    motor = ET.SubElement(actuator_elem, "motor",
-                          name=f"{t_name}_motor",
-                          tendon=t_name,
-                          ctrlrange="0 1",
-                          gear="100")
-
-print(f"Created {len(tendon_names)} new tendons with motors (x, y, z edges only).")
-
+    motor = ET.SubElement(
+        actuator_elem,
+        "motor",
+        name=f"{t_name}_motor",
+        tendon=t_name,
+        ctrlrange="0 1",
+        gear="10"
+    )
 
 # ----------------------------------------------------------------------
 # 3) Add a <site> to each body so we can anchor tendons to it.
@@ -264,16 +265,26 @@ model = mujoco.MjModel.from_xml_path(MODIFIED_XML_PATH)
 data = mujoco.MjData(model)
 
 scene_option = mujoco.MjvOption()
-viewer = mujoco.viewer.launch_passive(model, data)
+# viewer = mujoco.viewer.launch_passive(model, data)
 
 amplitude = 3.0  # desired amplitude of oscillation
 frequency = 0.01  # frequency in Hz
 phase = 1.0      # phase offset
 
-while data.time < DURATION:
-    # Example: drive all motors with some pattern
-    for i in range(model.nu):
-        data.ctrl[i] = 5 * math.sin(20.0*math.pi*frequency*data.time)
-    
-    mujoco.mj_step(model, data)
-    viewer.sync()
+paused = False
+
+def key_callback(keycode):
+  if chr(keycode) == ' ':
+    global paused
+    paused = not paused
+
+with mujoco.viewer.launch_passive(model, data, key_callback=key_callback) as viewer:
+    while data.time < DURATION:
+        # Example: drive all motors with some pattern
+        for i in range(model.nu):
+            data.ctrl[i] = 2 * math.sin(20.0*math.pi*frequency*data.time)
+        
+        if not paused:
+            mujoco.mj_step(model, data)
+            viewer.sync()
+

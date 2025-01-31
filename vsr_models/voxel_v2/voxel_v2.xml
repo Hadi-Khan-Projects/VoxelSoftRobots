@@ -76,7 +76,7 @@
     <flex name="vsr" rgba="0.1 0.9 0.1 1" dim="3" body="vsr_0 vsr_1 vsr_2 vsr_3 vsr_4 vsr_5 vsr_6 vsr_7" element="0 3 2 7 0 1 3 7 0 5 1 7 0 4 5 7 0 6 4 7 0 2 6 7">
 
       <contact solref="0.01 1" solimp="0.95 0.99 0.0001 0.5 2" selfcollide="none"/>
-      <elasticity young="500" poisson="0.3"/>
+      <elasticity young="250" poisson="0.3"/>
       <edge damping="1"/>
     </flex>
   </deformable>

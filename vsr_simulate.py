@@ -17,7 +17,7 @@ DURATION = 300  # seconds
 vsr = VoxelRobot(10, 10, 10)
 
 # load, visualise, and then generate model
-vsr.load_model(FILEPATH + ".csv")
+vsr.load_model_csv(FILEPATH + ".csv")
 # vsr.visualise_model()
 point, element = vsr.generate_model()
 
@@ -111,36 +111,36 @@ phase = 1.0  # phase offset
 
 start_time = time.time()
 while data.time < DURATION:
-    # # For each vsr_n body, apply a sinusoidal command to its x, y, and z actuators.
-    # vsr.point_grid
+    # For each vsr_n body, apply a sinusoidal command to its x, y, and z actuators.
+    vsr.point_grid
 
-    # # for x, y, z in vsr.point_dict.keys():
-    # for key, phase in vsr.point_dict.items():
-    #     x, y, z = key
-    #     phase_x, phase_y, phase_z = phase
-    #     x_motor_id = mujoco.mj_name2id(
-    #         model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{x}_{y}_{z}_x_motor"
-    #     )
-    #     y_motor_id = mujoco.mj_name2id(
-    #         model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{x}_{y}_{z}_y_motor"
-    #     )
-    #     z_motor_id = mujoco.mj_name2id(
-    #         model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{x}_{y}_{z}_z_motor"
-    #     )
+    # for x, y, z in vsr.point_dict.keys():
+    for key, phase in vsr.point_dict.items():
+        x, y, z = key
+        phase_x, phase_y, phase_z = phase
+        x_motor_id = mujoco.mj_name2id(
+            model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{x}_{y}_{z}_x_motor"
+        )
+        y_motor_id = mujoco.mj_name2id(
+            model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{x}_{y}_{z}_y_motor"
+        )
+        z_motor_id = mujoco.mj_name2id(
+            model, mujoco.mjtObj.mjOBJ_ACTUATOR, f"vsr_{x}_{y}_{z}_z_motor"
+        )
 
-    #     control_signal_x = amplitude * math.sin(
-    #         2 * math.pi * frequency * data.time + phase_x
-    #     )
-    #     control_signal_y = amplitude * math.sin(
-    #         2 * math.pi * frequency * data.time + phase_y
-    #     )
-    #     control_signal_z = amplitude * math.sin(
-    #         2 * math.pi * frequency * data.time + phase_z
-    #     )
+        control_signal_x = amplitude * math.sin(
+            2 * math.pi * frequency * data.time + phase_x
+        )
+        control_signal_y = amplitude * math.sin(
+            2 * math.pi * frequency * data.time + phase_y
+        )
+        control_signal_z = amplitude * math.sin(
+            2 * math.pi * frequency * data.time + phase_z
+        )
 
-    #     data.ctrl[x_motor_id] = control_signal_x
-    #     # data.ctrl[y_motor_id] = control_signal_y
-    #     # data.ctrl[z_motor_id] = control_signal_z
+        data.ctrl[x_motor_id] = control_signal_x
+        # data.ctrl[y_motor_id] = control_signal_y
+        # data.ctrl[z_motor_id] = control_signal_z
 
     # Step the simulation
     mujoco.mj_step(model, data)

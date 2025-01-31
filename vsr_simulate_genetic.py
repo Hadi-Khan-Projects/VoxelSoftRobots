@@ -37,11 +37,11 @@ PHASE_MAX = 2 * math.pi
 # Build your VoxelRobot + parse CSV, etc.
 # ------------------------------------------------
 vsr = VoxelRobot(10, 10, 10)
-vsr.load_model(FILEPATH + ".csv")
+vsr.load_model_csv(FILEPATH + ".csv")
 
 # Create a 10*10*10 empty vsr
 vsr = VoxelRobot(10, 10, 10)
-vsr.load_model(FILEPATH + ".csv")
+vsr.load_model_csv(FILEPATH + ".csv")
 
 # Generate the direct flexcomp points/elements
 point, element = vsr.generate_model()
