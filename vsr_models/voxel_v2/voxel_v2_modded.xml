@@ -17,61 +17,61 @@
     <geom name="ground" size="0 0 1" type="plane" condim="1" material="matplane"/>
     <light pos="30 30 20" dir="0 0 -1" diffuse="0.4 0.4 0.4" specular="0.1 0.1 0.1"/>
     <light pos="-20 -20 40" dir="0.0990148 0.0990148 -0.990148" directional="true" diffuse="0.8 0.8 0.8" specular="0.2 0.2 0.2"/>
-    <body name="vsr_0">
+    <body name="vsr_0" pos="0 0 0">
       <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
       <joint pos="0 0 0" axis="1 0 0" type="slide"/>
       <joint pos="0 0 0" axis="0 1 0" type="slide"/>
       <joint pos="0 0 0" axis="0 0 1" type="slide"/>
-      <site name="corner_vsr_0" pos="0 0 0" size="0.005"/>
+      <site name="site_0_0_0" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_1" pos="0 0 1">
       <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
       <joint pos="0 0 0" axis="1 0 0" type="slide"/>
       <joint pos="0 0 0" axis="0 1 0" type="slide"/>
       <joint pos="0 0 0" axis="0 0 1" type="slide"/>
-      <site name="corner_vsr_1" pos="0 0 0" size="0.005"/>
+      <site name="site_0_0_1" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_2" pos="0 1 0">
       <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
       <joint pos="0 0 0" axis="1 0 0" type="slide"/>
       <joint pos="0 0 0" axis="0 1 0" type="slide"/>
       <joint pos="0 0 0" axis="0 0 1" type="slide"/>
-      <site name="corner_vsr_2" pos="0 0 0" size="0.005"/>
+      <site name="site_0_1_0" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_3" pos="0 1 1">
       <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
       <joint pos="0 0 0" axis="1 0 0" type="slide"/>
       <joint pos="0 0 0" axis="0 1 0" type="slide"/>
       <joint pos="0 0 0" axis="0 0 1" type="slide"/>
-      <site name="corner_vsr_3" pos="0 0 0" size="0.005"/>
+      <site name="site_0_1_1" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_4" pos="1 0 0">
       <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
       <joint pos="0 0 0" axis="1 0 0" type="slide"/>
       <joint pos="0 0 0" axis="0 1 0" type="slide"/>
       <joint pos="0 0 0" axis="0 0 1" type="slide"/>
-      <site name="corner_vsr_4" pos="0 0 0" size="0.005"/>
+      <site name="site_1_0_0" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_5" pos="1 0 1">
       <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
       <joint pos="0 0 0" axis="1 0 0" type="slide"/>
       <joint pos="0 0 0" axis="0 1 0" type="slide"/>
       <joint pos="0 0 0" axis="0 0 1" type="slide"/>
-      <site name="corner_vsr_5" pos="0 0 0" size="0.005"/>
+      <site name="site_1_0_1" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_6" pos="1 1 0">
       <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
       <joint pos="0 0 0" axis="1 0 0" type="slide"/>
       <joint pos="0 0 0" axis="0 1 0" type="slide"/>
       <joint pos="0 0 0" axis="0 0 1" type="slide"/>
-      <site name="corner_vsr_6" pos="0 0 0" size="0.005"/>
+      <site name="site_1_1_0" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_7" pos="1 1 1">
       <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
       <joint pos="0 0 0" axis="1 0 0" type="slide"/>
       <joint pos="0 0 0" axis="0 1 0" type="slide"/>
       <joint pos="0 0 0" axis="0 0 1" type="slide"/>
-      <site name="corner_vsr_7" pos="0 0 0" size="0.005"/>
+      <site name="site_1_1_1" pos="0 0 0" size="0.005"/>
     </body>
   </worldbody>
   <deformable>
@@ -82,116 +82,27 @@
     </flex>
   </deformable>
   <tendon>
-    <spatial name="edge_0_0_1_to_1_0_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_1"/>
-      <site site="corner_vsr_4"/>
+    <spatial name="voxel_0_0_0_spatial_0_0_0_to_1_1_1" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_0_0_0"/>
+      <site site="site_1_1_1"/>
     </spatial>
-    <spatial name="edge_1_1_0_to_1_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_6"/>
-      <site site="corner_vsr_7"/>
+    <spatial name="voxel_0_0_0_spatial_1_1_0_to_0_0_1" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_1_1_0"/>
+      <site site="site_0_0_1"/>
     </spatial>
-    <spatial name="edge_0_0_1_to_1_0_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_1"/>
-      <site site="corner_vsr_5"/>
+    <spatial name="voxel_0_0_0_spatial_0_1_0_to_1_0_1" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_0_1_0"/>
+      <site site="site_1_0_1"/>
     </spatial>
-    <spatial name="edge_0_1_0_to_0_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_2"/>
-      <site site="corner_vsr_3"/>
-    </spatial>
-    <spatial name="edge_0_1_0_to_1_1_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_2"/>
-      <site site="corner_vsr_6"/>
-    </spatial>
-    <spatial name="edge_1_0_0_to_1_1_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_4"/>
-      <site site="corner_vsr_6"/>
-    </spatial>
-    <spatial name="edge_0_1_0_to_1_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_2"/>
-      <site site="corner_vsr_7"/>
-    </spatial>
-    <spatial name="edge_0_1_1_to_1_1_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_3"/>
-      <site site="corner_vsr_6"/>
-    </spatial>
-    <spatial name="edge_1_0_0_to_1_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_4"/>
-      <site site="corner_vsr_7"/>
-    </spatial>
-    <spatial name="edge_0_1_1_to_1_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_3"/>
-      <site site="corner_vsr_7"/>
-    </spatial>
-    <spatial name="edge_0_1_0_to_1_0_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_2"/>
-      <site site="corner_vsr_4"/>
-    </spatial>
-    <spatial name="edge_0_0_1_to_0_1_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_1"/>
-      <site site="corner_vsr_2"/>
-    </spatial>
-    <spatial name="edge_1_0_1_to_1_1_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_5"/>
-      <site site="corner_vsr_6"/>
-    </spatial>
-    <spatial name="edge_0_0_1_to_1_1_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_1"/>
-      <site site="corner_vsr_6"/>
-    </spatial>
-    <spatial name="edge_0_1_0_to_1_0_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_2"/>
-      <site site="corner_vsr_5"/>
-    </spatial>
-    <spatial name="edge_0_1_1_to_1_0_0" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_3"/>
-      <site site="corner_vsr_4"/>
-    </spatial>
-    <spatial name="edge_0_0_1_to_0_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_1"/>
-      <site site="corner_vsr_3"/>
-    </spatial>
-    <spatial name="edge_1_0_1_to_1_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_5"/>
-      <site site="corner_vsr_7"/>
-    </spatial>
-    <spatial name="edge_1_0_0_to_1_0_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_4"/>
-      <site site="corner_vsr_5"/>
-    </spatial>
-    <spatial name="edge_0_1_1_to_1_0_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_3"/>
-      <site site="corner_vsr_5"/>
-    </spatial>
-    <spatial name="edge_0_0_1_to_1_1_1" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_1"/>
-      <site site="corner_vsr_7"/>
-    </spatial>
-    <spatial name="demo_tendon" width="0.003" rgba="1 0 0 1" stiffness="1" damping="0">
-      <site site="corner_vsr_0"/>
-      <site site="corner_vsr_1"/>
+    <spatial name="voxel_0_0_0_spatial_1_0_0_to_0_1_1" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_1_0_0"/>
+      <site site="site_0_1_1"/>
     </spatial>
   </tendon>
   <actuator>
-    <motor name="edge_0_0_1_to_1_0_0_motor" tendon="edge_0_0_1_to_1_0_0" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_1_1_0_to_1_1_1_motor" tendon="edge_1_1_0_to_1_1_1" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_0_0_1_to_1_0_1_motor" tendon="edge_0_0_1_to_1_0_1" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_0_1_0_to_0_1_1_motor" tendon="edge_0_1_0_to_0_1_1" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_0_1_0_to_1_1_0_motor" tendon="edge_0_1_0_to_1_1_0" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_1_0_0_to_1_1_0_motor" tendon="edge_1_0_0_to_1_1_0" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_0_1_0_to_1_1_1_motor" tendon="edge_0_1_0_to_1_1_1" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_0_1_1_to_1_1_0_motor" tendon="edge_0_1_1_to_1_1_0" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_1_0_0_to_1_1_1_motor" tendon="edge_1_0_0_to_1_1_1" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_0_1_1_to_1_1_1_motor" tendon="edge_0_1_1_to_1_1_1" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_0_1_0_to_1_0_0_motor" tendon="edge_0_1_0_to_1_0_0" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_0_0_1_to_0_1_0_motor" tendon="edge_0_0_1_to_0_1_0" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_1_0_1_to_1_1_0_motor" tendon="edge_1_0_1_to_1_1_0" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_0_0_1_to_1_1_0_motor" tendon="edge_0_0_1_to_1_1_0" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_0_1_0_to_1_0_1_motor" tendon="edge_0_1_0_to_1_0_1" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_0_1_1_to_1_0_0_motor" tendon="edge_0_1_1_to_1_0_0" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_0_0_1_to_0_1_1_motor" tendon="edge_0_0_1_to_0_1_1" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_1_0_1_to_1_1_1_motor" tendon="edge_1_0_1_to_1_1_1" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_1_0_0_to_1_0_1_motor" tendon="edge_1_0_0_to_1_0_1" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_0_1_1_to_1_0_1_motor" tendon="edge_0_1_1_to_1_0_1" ctrlrange="0 1" gear="10"/>
-    <motor name="edge_0_0_1_to_1_1_1_motor" tendon="edge_0_0_1_to_1_1_1" ctrlrange="0 1" gear="10"/>
+    <motor name="voxel_0_0_0_motor_0_0_0_to_1_1_1" tendon="voxel_0_0_0_spatial_0_0_0_to_1_1_1" ctrlrange="0 1" gear="40"/>
+    <motor name="voxel_0_0_0_motor_1_1_0_to_0_0_1" tendon="voxel_0_0_0_spatial_1_1_0_to_0_0_1" ctrlrange="0 1" gear="40"/>
+    <motor name="voxel_0_0_0_motor_0_1_0_to_1_0_1" tendon="voxel_0_0_0_spatial_0_1_0_to_1_0_1" ctrlrange="0 1" gear="40"/>
+    <motor name="voxel_0_0_0_motor_1_0_0_to_0_1_1" tendon="voxel_0_0_0_spatial_1_0_0_to_0_1_1" ctrlrange="0 1" gear="40"/>
   </actuator>
 </mujoco>

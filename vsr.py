@@ -177,77 +177,102 @@ class VoxelRobot:
         if actuator_elem is None:
             actuator_elem = ET.SubElement(root, "actuator")
 
-        for x in range(self.max_x + 1):
-            for y in range(self.max_y + 1):
-                for z in range(self.max_z + 1):
-                    if self._is_point_vertex(x, y, z):
-                        # +x direction
-                        if self._is_point_possible(x+1, y, z) and self._is_point_vertex(x+1, y, z):
-                            t_name = f"spatial_x_{x}_{y}_{z}_to_{x+1}_{y}_{z}"
-                            spatial = ET.SubElement(
-                                tendon_elem,
-                                "spatial",
-                                name=t_name,
-                                width="0.003",
-                                rgba="1 0 0 1",
-                                stiffness="1",
-                                damping="0"
-                            )
-                            # The tendon passes through two sites (vertexes)
-                            ET.SubElement(spatial, "site", site=f"site_{x}_{y}_{z}")
-                            ET.SubElement(spatial, "site", site=f"site_{x+1}_{y}_{z}")
-                            motor = ET.SubElement(
-                                actuator_elem,
-                                "motor",
-                                name=f"motor_x_{x}_{y}_{z}_to_{x+1}_{y}_{z}",
-                                tendon=t_name,
-                                ctrlrange="0 1",
-                                gear="40"
-                            )
-                        # +y direction
-                        if self._is_point_possible(x, y+1, z) and self._is_point_vertex(x, y+1, z):
-                            t_name = f"spatial_y_{x}_{y}_{z}_to_{x}_{y+1}_{z}"
-                            spatial = ET.SubElement(
-                                tendon_elem,
-                                "spatial",
-                                name=t_name,
-                                width="0.003",
-                                rgba="0 1 0 1",
-                                stiffness="1",
-                                damping="0"
-                            )
-                            ET.SubElement(spatial, "site", site=f"site_{x}_{y}_{z}")
-                            ET.SubElement(spatial, "site", site=f"site_{x}_{y+1}_{z}")
-                            motor = ET.SubElement(
-                                actuator_elem,
-                                "motor",
-                                name=f"motor_y_{x}_{y}_{z}_to_{x}_{y+1}_{z}",
-                                tendon=t_name,
-                                ctrlrange="0 1",
-                                gear="40"
-                            )
-                        # +z direction
-                        if self._is_point_possible(x, y, z+1) and self._is_point_vertex(x, y, z+1):
-                            t_name = f"spatial_z_{x}_{y}_{z}_to_{x}_{y}_{z+1}"
-                            spatial = ET.SubElement(
-                                tendon_elem,
-                                "spatial",
-                                name=t_name,
-                                width="0.003",
-                                rgba="0 0 1 1",
-                                stiffness="1",
-                                damping="0"
-                            )
-                            ET.SubElement(spatial, "site", site=f"site_{x}_{y}_{z}")
-                            ET.SubElement(spatial, "site", site=f"site_{x}_{y}_{z+1}")
-                            motor = ET.SubElement(
-                                actuator_elem,
-                                "motor",
-                                name=f"motor_z_{x}_{y}_{z}_to_{x}_{y}_{z+1}",
-                                tendon=t_name,
-                                ctrlrange="0 1",
-                                gear="40"
-                            )
+        for x in range(self.max_x):
+            for y in range(self.max_y):
+                for z in range(self.max_z):
+                    if self.voxel_grid[x, y, z] == 1:
+
+                        # +x +y +z direction
+                        t_name = f"voxel_{x}_{y}_{z}_spatial_{x}_{y}_{z}_to_{x+1}_{y+1}_{z+1}"
+                        spatial = ET.SubElement(
+                            tendon_elem,
+                            "spatial",
+                            name=t_name,
+                            width="0.006",
+                            rgba="1 0 0 1",
+                            stiffness="1",
+                            damping="0"
+                        )
+                        # The tendon passes through two sites (vertexes)
+                        ET.SubElement(spatial, "site", site=f"site_{x}_{y}_{z}")
+                        ET.SubElement(spatial, "site", site=f"site_{x+1}_{y+1}_{z+1}")
+                        motor = ET.SubElement(
+                            actuator_elem,
+                            "motor",
+                            name=f"voxel_{x}_{y}_{z}_motor_{x}_{y}_{z}_to_{x+1}_{y+1}_{z+1}",
+                            tendon=t_name,
+                            ctrlrange="0 1",
+                            gear="40"
+                        )
+
+                        # -x -y +z direction
+                        t_name = f"voxel_{x}_{y}_{z}_spatial_{x+1}_{y+1}_{z}_to_{x}_{y}_{z+1}"
+                        spatial = ET.SubElement(
+                            tendon_elem,
+                            "spatial",
+                            name=t_name,
+                            width="0.006",
+                            rgba="0 1 0 1",
+                            stiffness="1",
+                            damping="0"
+                        )
+                        # The tendon passes through two sites (vertexes)
+                        ET.SubElement(spatial, "site", site=f"site_{x+1}_{y+1}_{z}")
+                        ET.SubElement(spatial, "site", site=f"site_{x}_{y}_{z+1}")
+                        motor = ET.SubElement(
+                            actuator_elem,
+                            "motor",
+                            name=f"voxel_{x}_{y}_{z}_motor_{x+1}_{y+1}_{z}_to_{x}_{y}_{z+1}",
+                            tendon=t_name,
+                            ctrlrange="0 1",
+                            gear="40"
+                        )
+
+                        # +x -y +z direction
+                        t_name = f"voxel_{x}_{y}_{z}_spatial_{x}_{y+1}_{z}_to_{x+1}_{y}_{z+1}"
+                        spatial = ET.SubElement(
+                            tendon_elem,
+                            "spatial",
+                            name=t_name,
+                            width="0.006",
+                            rgba="0 0 1 1",
+                            stiffness="1",
+                            damping="0"
+                        )
+                        # The tendon passes through two sites (vertexes)
+                        ET.SubElement(spatial, "site", site=f"site_{x}_{y+1}_{z}")
+                        ET.SubElement(spatial, "site", site=f"site_{x+1}_{y}_{z+1}")
+                        motor = ET.SubElement(
+                            actuator_elem,
+                            "motor",
+                            name=f"voxel_{x}_{y}_{z}_motor_{x}_{y+1}_{z}_to_{x+1}_{y}_{z+1}",
+                            tendon=t_name,
+                            ctrlrange="0 1",
+                            gear="40"
+                        )
+
+                        # -x +y +z direction
+                        t_name = f"voxel_{x}_{y}_{z}_spatial_{x+1}_{y}_{z}_to_{x}_{y+1}_{z+1}"
+                        spatial = ET.SubElement(
+                            tendon_elem,
+                            "spatial",
+                            name=t_name,
+                            width="0.006",
+                            rgba="1 0 1 1",
+                            stiffness="1",
+                            damping="0"
+                        )
+                        # The tendon passes through two sites (vertexes)
+                        ET.SubElement(spatial, "site", site=f"site_{x+1}_{y}_{z}")
+                        ET.SubElement(spatial, "site", site=f"site_{x}_{y+1}_{z+1}")
+                        motor = ET.SubElement(
+                            actuator_elem,
+                            "motor",
+                            name=f"voxel_{x}_{y}_{z}_motor_{x+1}_{y}_{z}_to_{x}_{y+1}_{z+1}",
+                            tendon=t_name,
+                            ctrlrange="0 1",
+                            gear="40"
+                        )
 
         ## SAVE
 
@@ -365,7 +390,7 @@ class VoxelRobot:
     
     def _save_modded_xml(self, tree, filepath) -> None:
         """
-        Formats an XML tree with proper indentation and saves it as filepath + "_modded2.xml".
+        Formats an XML tree with proper indentation and saves it as filepath + "_modded.xml".
         
         :param tree: ElementTree object of the XML file.
         :param filepath: Base file path (without extension).
@@ -384,7 +409,7 @@ class VoxelRobot:
         cleaned_xml = "\n".join([line for line in pretty_xml.splitlines() if line.strip()])
 
         # Save the formatted XML to a new file
-        new_filepath = filepath + "_modded2.xml"
+        new_filepath = filepath + "_modded.xml"
         with open(new_filepath, "w", encoding="utf-8") as f:
             f.write(cleaned_xml)
 
