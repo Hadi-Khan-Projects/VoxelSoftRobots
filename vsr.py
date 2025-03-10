@@ -8,6 +8,7 @@ from xml.dom import minidom
 MIN_DIM = 1
 MAX_DIM = 20
 TIMESTEP = "0.001"
+GEAR = 60
 
 
 class VoxelRobot:
@@ -134,6 +135,11 @@ class VoxelRobot:
             <size memory="2000M"/>
 
             <worldbody>
+
+                <body name="target" pos="-40 3 3.5">
+                    <geom type="box" size="1 1 3" rgba="1 0 0 0.7"/>
+                </body>
+
                 <flexcomp name="vsr" type="direct" dim="3"
                     point="{points_string}"
                     element="{elements_string}"
@@ -142,6 +148,7 @@ class VoxelRobot:
                     <edge damping="1"/>
                     <elasticity young="250" poisson="0.3"/>
                 </flexcomp>
+
             </worldbody>
 
         </mujoco>
@@ -202,7 +209,7 @@ class VoxelRobot:
                             name=f"voxel_{x}_{y}_{z}_motor_{x}_{y}_{z}_to_{x+1}_{y+1}_{z+1}",
                             tendon=t_name,
                             ctrlrange="0 1",
-                            gear="40"
+                            gear=str(GEAR)
                         )
 
                         # -x -y +z direction
@@ -225,7 +232,7 @@ class VoxelRobot:
                             name=f"voxel_{x}_{y}_{z}_motor_{x+1}_{y+1}_{z}_to_{x}_{y}_{z+1}",
                             tendon=t_name,
                             ctrlrange="0 1",
-                            gear="40"
+                            gear=str(GEAR)
                         )
 
                         # +x -y +z direction
@@ -248,7 +255,7 @@ class VoxelRobot:
                             name=f"voxel_{x}_{y}_{z}_motor_{x}_{y+1}_{z}_to_{x+1}_{y}_{z+1}",
                             tendon=t_name,
                             ctrlrange="0 1",
-                            gear="40"
+                            gear=str(GEAR)
                         )
 
                         # -x +y +z direction
@@ -271,7 +278,7 @@ class VoxelRobot:
                             name=f"voxel_{x}_{y}_{z}_motor_{x+1}_{y}_{z}_to_{x}_{y+1}_{z+1}",
                             tendon=t_name,
                             ctrlrange="0 1",
-                            gear="40"
+                            gear=str(GEAR)
                         )
 
         ## SAVE
