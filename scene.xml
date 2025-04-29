@@ -36,6 +36,6 @@
       <light diffuse=".4 .4 .4" specular="0.1 0.1 0.1" pos="30 30 20" dir="0 0 -1" castshadow="true"/>
       <light directional="true" diffuse=".8 .8 .8" specular="0.2 0.2 0.2" pos="-20 -20 40" dir="0.1 0.1 -1" castshadow="true"/>
   
-      <geom name="ground" type="plane" size="0 0 1" pos="0 0 0" quat="1 0 0 0" material="matplane" condim="1"/>
+      <geom name="ground" type="plane" size="0 0 1" pos="0 0 -2" quat="1 0 0 0" material="matplane" condim="1"/>
     </worldbody>
   </mujoco>
