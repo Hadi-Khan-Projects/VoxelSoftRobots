@@ -7,9 +7,12 @@ from xml.dom import minidom
 
 MIN_DIM = 1
 MAX_DIM = 20
-TIMESTEP = "0.001"
-GEAR = 60
-
+GEAR_RATIO = 16.0
+TIMESTEP = 0.001
+FRICTION_MULT = 1.0
+FRICTION_SLIDING = 1.0 * FRICTION_MULT # def 1
+FRICTION_TORSIONAL = 0.005 * FRICTION_MULT # def 0.005
+ROLLING_FRICTION = 0.0001 * FRICTION_MULT # def 0.0001
 
 class VoxelRobot:
     def __init__(self, x: int, y: int, z: int) -> None:
@@ -25,6 +28,7 @@ class VoxelRobot:
         self.voxel_grid = np.zeros((x, y, z), dtype=np.uint8)
         self.point_grid = np.zeros((x + 1, y + 1, z + 1), dtype=np.uint8)
         self.point_dict = {}
+        self.gear = None
 
     def set_val(self, x: int, y: int, z: int, value) -> None:
         """Set the value at position (x, y, z) to 0 or 1."""
@@ -118,6 +122,8 @@ class VoxelRobot:
         self.voxel_grid = np.zeros((self.max_x, self.max_y, self.max_z), dtype=np.uint8)
         for _, row in df.iterrows():
             self.voxel_grid[row["x"], row["y"], row["z"]] = 1
+        # self.gear = len(df)*GEAR_RATIO
+        self.gear = np.sqrt(self.num_vertex())*GEAR_RATIO
 
     def generate_model(self, filepath) -> str:
         """Generate the MuJoCo model for the VSR."""
@@ -131,12 +137,12 @@ class VoxelRobot:
             <compiler autolimits="true"/>
             <include file="scene.xml"/>
             <compiler autolimits="true"/>
-            <option solver="Newton" tolerance="1e-6" timestep="{TIMESTEP}" integrator="implicitfast"/>
+            <option solver="Newton" tolerance="1e-6" timestep="{str(TIMESTEP)}" integrator="implicitfast"/>
             <size memory="2000M"/>
 
             <worldbody>
 
-                <body name="target" pos="-40 3 3.5">
+                <body name="target" pos="-60 3 3.5">
                     <geom type="box" size="1 1 3" rgba="1 0 0 0.7"/>
                 </body>
 
@@ -144,7 +150,13 @@ class VoxelRobot:
                     point="{points_string}"
                     element="{elements_string}"
                     radius="0.005" rgba="0.1 0.9 0.1 1" mass="{self.num_vertex()/10}">
-                    <contact condim="3" solref="0.01 1" solimp="0.95 0.99 0.0001" selfcollide="none"/>
+                    <contact 
+                        condim="3" 
+                        solref="0.01 1" 
+                        solimp="0.95 0.99 0.0001" 
+                        selfcollide="none" 
+                        friction="{str(FRICTION_SLIDING)} {str(FRICTION_TORSIONAL)} {str(ROLLING_FRICTION)}"
+                    />
                     <edge damping="1"/>
                     <elasticity young="250" poisson="0.3"/>
                 </flexcomp>
@@ -209,7 +221,7 @@ class VoxelRobot:
                             name=f"voxel_{x}_{y}_{z}_motor_{x}_{y}_{z}_to_{x+1}_{y+1}_{z+1}",
                             tendon=t_name,
                             ctrlrange="0 1",
-                            gear=str(GEAR)
+                            gear=str(self.gear)
                         )
 
                         # -x -y +z direction
@@ -232,7 +244,7 @@ class VoxelRobot:
                             name=f"voxel_{x}_{y}_{z}_motor_{x+1}_{y+1}_{z}_to_{x}_{y}_{z+1}",
                             tendon=t_name,
                             ctrlrange="0 1",
-                            gear=str(GEAR)
+                            gear=str(self.gear)
                         )
 
                         # +x -y +z direction
@@ -255,7 +267,7 @@ class VoxelRobot:
                             name=f"voxel_{x}_{y}_{z}_motor_{x}_{y+1}_{z}_to_{x+1}_{y}_{z+1}",
                             tendon=t_name,
                             ctrlrange="0 1",
-                            gear=str(GEAR)
+                            gear=str(self.gear)
                         )
 
                         # -x +y +z direction
@@ -278,7 +290,7 @@ class VoxelRobot:
                             name=f"voxel_{x}_{y}_{z}_motor_{x+1}_{y}_{z}_to_{x}_{y+1}_{z+1}",
                             tendon=t_name,
                             ctrlrange="0 1",
-                            gear=str(GEAR)
+                            gear=str(self.gear)
                         )
 
         ## SAVE

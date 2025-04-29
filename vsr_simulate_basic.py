@@ -60,14 +60,22 @@ last_update_time = time.time()
 
 with mujoco.viewer.launch_passive(model, data, key_callback=key_callback) as viewer:
 
+    # Configure viewer options
     viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_TENDON] = 0
     viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_RANGEFINDER] = 0
     viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_PERTOBJ] = 0
     viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_ISLAND] = 0
     viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_SKIN] = 0
-    viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_FLEXSKIN] = 0
-    viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_FLEXFACE] = 1
-    viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = 1
+    viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_FLEXSKIN] = 1
+    viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_FLEXFACE] = 0
+    viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = 0
+
+    # Disable rendering flags
+    viewer.user_scn.flags[mujoco.mjtRndFlag.mjRND_SHADOW] = 0
+    viewer.user_scn.flags[mujoco.mjtRndFlag.mjRND_REFLECTION] = 0
+    viewer.user_scn.flags[mujoco.mjtRndFlag.mjRND_SKYBOX] = 0
+    viewer.user_scn.flags[mujoco.mjtRndFlag.mjRND_HAZE] = 0
+    viewer.user_scn.flags[mujoco.mjtRndFlag.mjRND_CULL_FACE] = 0
     
     while data.time < DURATION:
         current_time = time.time()
