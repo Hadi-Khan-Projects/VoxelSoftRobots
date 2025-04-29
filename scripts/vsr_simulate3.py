@@ -9,6 +9,8 @@ import torch.nn as nn
 import torch.optim as optim
 from vsr import VoxelRobot
 
+print(mujoco.__version__)
+
 # ---------------------------
 # Simulation and Voxel Setup
 # ---------------------------
@@ -21,7 +23,7 @@ update_interval = 0.2  # seconds
 # Create a 10x10x10 empty vsr
 vsr = VoxelRobot(10, 10, 10)
 vsr.load_model_csv(FILEPATH + ".csv")
-# vsr.visualise_model()
+vsr.visualise_model()
 xml_string = vsr.generate_model(FILEPATH)
 print("No. of vertexes: ", vsr.num_vertex())
 

@@ -6,7 +6,7 @@ import random
 import time
 import os
 
-MODEL = "quadruped_v2"
+MODEL = "quadruped_v3"
 FILEPATH = f"vsr_models/{MODEL}/{MODEL}"
 DURATION = 300  # seconds
 
@@ -70,7 +70,7 @@ with mujoco.viewer.launch_passive(model, data, key_callback=key_callback) as vie
     viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_FLEXSKIN] = 0
     viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_FLEXFACE] = 1
     viewer.opt.flags[mujoco.mjtVisFlag.mjVIS_CONTACTPOINT] = 1
-    viewer.opt.flags[mujoco.mjtRndFlag.mjRND_SHADOW] = 0    
+    # viewer.opt.flags[mujoco.mjtRndFlag.mjRND_SHADOW] = 0    
 
     viewer.cam.lookat[:] = [-10, 0, 2.5]  # Look at the target
     viewer.cam.distance = 40  # move back amount
