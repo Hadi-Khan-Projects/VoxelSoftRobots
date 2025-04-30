@@ -1,21 +1,23 @@
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
-import mujoco
 import xml.etree.ElementTree as ET
 from xml.dom import minidom
 
+import matplotlib.pyplot as plt
+import mujoco
+import numpy as np
+import pandas as pd
+
 MIN_DIM = 1
 MAX_DIM = 20
-GEAR_RATIO = 4.0
+# GEAR_RATIO = 4.0
 TIMESTEP = 0.001
 FRICTION_MULT = 1.0
-FRICTION_SLIDING = 1.0 * FRICTION_MULT # def 1
-FRICTION_TORSIONAL = 0.005 * FRICTION_MULT # def 0.005
-ROLLING_FRICTION = 0.0001 * FRICTION_MULT # def 0.0001
+FRICTION_SLIDING = 1.0 * FRICTION_MULT  # def 1
+FRICTION_TORSIONAL = 0.005 * FRICTION_MULT  # def 0.005
+ROLLING_FRICTION = 0.0001 * FRICTION_MULT  # def 0.0001
+
 
 class VoxelRobot:
-    def __init__(self, x: int, y: int, z: int) -> None:
+    def __init__(self, x: int, y: int, z: int, gear: float) -> None:
         """Initialise an (x, y, z) VSR grid of 0's."""
         if x < MIN_DIM or y < MIN_DIM or z < MIN_DIM:
             raise ValueError("VSR's voxel grid dimensions must be positive integers.")
@@ -28,7 +30,7 @@ class VoxelRobot:
         self.voxel_grid = np.zeros((x, y, z), dtype=np.uint8)
         self.point_grid = np.zeros((x + 1, y + 1, z + 1), dtype=np.uint8)
         self.point_dict = {}
-        self.gear = None
+        self.gear = gear
 
     def set_val(self, x: int, y: int, z: int, value) -> None:
         """Set the value at position (x, y, z) to 0 or 1."""
@@ -124,11 +126,11 @@ class VoxelRobot:
             self.voxel_grid[row["x"], row["y"], row["z"]] = 1
         # self.gear = len(df)*GEAR_RATIO
         # self.gear = np.sqrt(self.num_vertex())*GEAR_RATIO
-        self.gear = 100
+        # self.gear = 100
 
     def generate_model(self, filepath) -> str:
         """Generate the MuJoCo model for the VSR."""
-        
+
         self._check_contiguous()
         points_string, elements_string = self._generate_flexcomp_geometry()
 
@@ -150,7 +152,7 @@ class VoxelRobot:
                 <flexcomp name="vsr" type="direct" dim="3"
                     point="{points_string}"
                     element="{elements_string}"
-                    radius="0.005" rgba="0.1 0.9 0.1 1" mass="{self.num_vertex()/10}">
+                    radius="0.005" rgba="0.1 0.9 0.1 1" mass="{self.num_vertex() / 10}">
                     <contact 
                         condim="3" 
                         solref="0.01 1" 
@@ -168,7 +170,7 @@ class VoxelRobot:
         """
 
         model = mujoco.MjModel.from_xml_string(xml_string)
-        data = mujoco.MjData(model)
+        data = mujoco.MjData(model)  # noqa: F841
         mujoco.mj_saveLastXML(filename=filepath + ".xml", m=model)
 
         ## ADD SITES
@@ -179,7 +181,7 @@ class VoxelRobot:
         # Add site to each body
         for body in root.findall("./worldbody/body"):
             body_name = body.get("name")
-            if not body.get('pos'):
+            if not body.get("pos"):
                 body.set("pos", "0 0 0")
             if body_name:
                 site = ET.SubElement(body, "site")
@@ -201,9 +203,8 @@ class VoxelRobot:
             for y in range(self.max_y):
                 for z in range(self.max_z):
                     if self.voxel_grid[x, y, z] == 1:
-
                         # +x +y +z direction
-                        t_name = f"voxel_{x}_{y}_{z}_spatial_{x}_{y}_{z}_to_{x+1}_{y+1}_{z+1}"
+                        t_name = f"voxel_{x}_{y}_{z}_spatial_{x}_{y}_{z}_to_{x + 1}_{y + 1}_{z + 1}"
                         spatial = ET.SubElement(
                             tendon_elem,
                             "spatial",
@@ -211,22 +212,24 @@ class VoxelRobot:
                             width="0.006",
                             rgba="1 0 0 1",
                             stiffness="1",
-                            damping="0"
+                            damping="0",
                         )
                         # The tendon passes through two sites (vertexes)
                         ET.SubElement(spatial, "site", site=f"site_{x}_{y}_{z}")
-                        ET.SubElement(spatial, "site", site=f"site_{x+1}_{y+1}_{z+1}")
+                        ET.SubElement(
+                            spatial, "site", site=f"site_{x + 1}_{y + 1}_{z + 1}"
+                        )
                         motor = ET.SubElement(
                             actuator_elem,
                             "motor",
-                            name=f"voxel_{x}_{y}_{z}_motor_{x}_{y}_{z}_to_{x+1}_{y+1}_{z+1}",
+                            name=f"voxel_{x}_{y}_{z}_motor_{x}_{y}_{z}_to_{x + 1}_{y + 1}_{z + 1}",
                             tendon=t_name,
                             ctrlrange="0 1",
-                            gear=str(self.gear)
+                            gear=str(self.gear),
                         )
 
                         # -x -y +z direction
-                        t_name = f"voxel_{x}_{y}_{z}_spatial_{x+1}_{y+1}_{z}_to_{x}_{y}_{z+1}"
+                        t_name = f"voxel_{x}_{y}_{z}_spatial_{x + 1}_{y + 1}_{z}_to_{x}_{y}_{z + 1}"
                         spatial = ET.SubElement(
                             tendon_elem,
                             "spatial",
@@ -234,22 +237,22 @@ class VoxelRobot:
                             width="0.006",
                             rgba="0 1 0 1",
                             stiffness="1",
-                            damping="0"
+                            damping="0",
                         )
                         # The tendon passes through two sites (vertexes)
-                        ET.SubElement(spatial, "site", site=f"site_{x+1}_{y+1}_{z}")
-                        ET.SubElement(spatial, "site", site=f"site_{x}_{y}_{z+1}")
+                        ET.SubElement(spatial, "site", site=f"site_{x + 1}_{y + 1}_{z}")
+                        ET.SubElement(spatial, "site", site=f"site_{x}_{y}_{z + 1}")
                         motor = ET.SubElement(
                             actuator_elem,
                             "motor",
-                            name=f"voxel_{x}_{y}_{z}_motor_{x+1}_{y+1}_{z}_to_{x}_{y}_{z+1}",
+                            name=f"voxel_{x}_{y}_{z}_motor_{x + 1}_{y + 1}_{z}_to_{x}_{y}_{z + 1}",
                             tendon=t_name,
                             ctrlrange="0 1",
-                            gear=str(self.gear)
+                            gear=str(self.gear),
                         )
 
                         # +x -y +z direction
-                        t_name = f"voxel_{x}_{y}_{z}_spatial_{x}_{y+1}_{z}_to_{x+1}_{y}_{z+1}"
+                        t_name = f"voxel_{x}_{y}_{z}_spatial_{x}_{y + 1}_{z}_to_{x + 1}_{y}_{z + 1}"
                         spatial = ET.SubElement(
                             tendon_elem,
                             "spatial",
@@ -257,22 +260,22 @@ class VoxelRobot:
                             width="0.006",
                             rgba="0 0 1 1",
                             stiffness="1",
-                            damping="0"
+                            damping="0",
                         )
                         # The tendon passes through two sites (vertexes)
-                        ET.SubElement(spatial, "site", site=f"site_{x}_{y+1}_{z}")
-                        ET.SubElement(spatial, "site", site=f"site_{x+1}_{y}_{z+1}")
+                        ET.SubElement(spatial, "site", site=f"site_{x}_{y + 1}_{z}")
+                        ET.SubElement(spatial, "site", site=f"site_{x + 1}_{y}_{z + 1}")
                         motor = ET.SubElement(
                             actuator_elem,
                             "motor",
-                            name=f"voxel_{x}_{y}_{z}_motor_{x}_{y+1}_{z}_to_{x+1}_{y}_{z+1}",
+                            name=f"voxel_{x}_{y}_{z}_motor_{x}_{y + 1}_{z}_to_{x + 1}_{y}_{z + 1}",
                             tendon=t_name,
                             ctrlrange="0 1",
-                            gear=str(self.gear)
+                            gear=str(self.gear),
                         )
 
                         # -x +y +z direction
-                        t_name = f"voxel_{x}_{y}_{z}_spatial_{x+1}_{y}_{z}_to_{x}_{y+1}_{z+1}"
+                        t_name = f"voxel_{x}_{y}_{z}_spatial_{x + 1}_{y}_{z}_to_{x}_{y + 1}_{z + 1}"
                         spatial = ET.SubElement(
                             tendon_elem,
                             "spatial",
@@ -280,18 +283,18 @@ class VoxelRobot:
                             width="0.006",
                             rgba="1 0 1 1",
                             stiffness="1",
-                            damping="0"
+                            damping="0",
                         )
                         # The tendon passes through two sites (vertexes)
-                        ET.SubElement(spatial, "site", site=f"site_{x+1}_{y}_{z}")
-                        ET.SubElement(spatial, "site", site=f"site_{x}_{y+1}_{z+1}")
-                        motor = ET.SubElement(
+                        ET.SubElement(spatial, "site", site=f"site_{x + 1}_{y}_{z}")
+                        ET.SubElement(spatial, "site", site=f"site_{x}_{y + 1}_{z + 1}")
+                        motor = ET.SubElement(  # noqa: F841
                             actuator_elem,
                             "motor",
-                            name=f"voxel_{x}_{y}_{z}_motor_{x+1}_{y}_{z}_to_{x}_{y+1}_{z+1}",
+                            name=f"voxel_{x}_{y}_{z}_motor_{x + 1}_{y}_{z}_to_{x}_{y + 1}_{z + 1}",
                             tendon=t_name,
                             ctrlrange="0 1",
-                            gear=str(self.gear)
+                            gear=str(self.gear),
                         )
 
         ## SAVE
@@ -301,14 +304,14 @@ class VoxelRobot:
         ## RETURN
 
         return ET.tostring(tree.getroot(), encoding="utf-8").decode("utf-8")
-    
+
     def _generate_flexcomp_geometry(self) -> tuple:
         """Generate the points and elements for the voxel flexcomp model."""
         self.point_grid = np.zeros(
             (self.max_x + 1, self.max_y + 1, self.max_z + 1), dtype=np.int8
         )
         points_count = 0
-        points_map = {} # (0, 1, 5) : 24
+        points_map = {}  # (0, 1, 5) : 24
         points_string = ""
 
         for x in range(self.max_x + 1):
@@ -352,7 +355,7 @@ class VoxelRobot:
                                 elements_string += " "
                                 elements_string += str(points[vertex])
                             elements_string += "    "
-        
+
         return points_string.strip(), elements_string.strip()
 
     def _is_point_possible(self, x, y, z) -> bool:
@@ -407,26 +410,28 @@ class VoxelRobot:
                         points_count += 1
 
         return points_count
-    
+
     def _save_modded_xml(self, tree, filepath) -> None:
         """
         Formats an XML tree with proper indentation and saves it as filepath + "_modded.xml".
-        
+
         :param tree: ElementTree object of the XML file.
         :param filepath: Base file path (without extension).
         """
         # Get the root element
         root = tree.getroot()
-        
+
         # Convert tree to a pretty-printed string
-        xml_str = ET.tostring(root, encoding='utf-8')
-        
+        xml_str = ET.tostring(root, encoding="utf-8")
+
         # Use minidom for formatting
         parsed_xml = minidom.parseString(xml_str)
         pretty_xml = parsed_xml.toprettyxml(indent="  ")
 
         # Remove empty lines
-        cleaned_xml = "\n".join([line for line in pretty_xml.splitlines() if line.strip()])
+        cleaned_xml = "\n".join(
+            [line for line in pretty_xml.splitlines() if line.strip()]
+        )
 
         # Save the formatted XML to a new file
         new_filepath = filepath + "_modded.xml"
