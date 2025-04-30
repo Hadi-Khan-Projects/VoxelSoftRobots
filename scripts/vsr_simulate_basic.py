@@ -6,7 +6,7 @@ import random
 import time
 import os
 
-MODEL = "quadruped_v3"
+MODEL = "quadruped_v1"
 FILEPATH = f"vsr_models/{MODEL}/{MODEL}"
 DURATION = 300  # seconds
 
