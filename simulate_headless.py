@@ -20,24 +20,23 @@ def run_simulation_headless(
     biases: np.ndarray[Any, np.dtype[np.float64]],
 ):
 
-    # --- Simulation Setup ---
     data = mujoco.MjData(model)
 
-    # --- Voxel and Motor Mapping ---
+    # Voxel and motor mapping
     voxel_motor_map = {}
-    voxel_tendon_map = {}  # Also map voxels to their tendon indices
+    voxel_tendon_map = {} # map voxels to their tendon indices
 
-    # Map motors
+    # map motors
     for i in range(model.nu):
         motor_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_ACTUATOR, i)
         if motor_name and motor_name.startswith("voxel_"):
             parts = motor_name.split("_")
-            voxel_coord = tuple(map(int, parts[1:4]))  # Extract voxel (x, y, z)
+            voxel_coord = tuple(map(int, parts[1:4])) # extract voxel (x, y, z)
             if voxel_coord not in voxel_motor_map:
                 voxel_motor_map[voxel_coord] = []
             voxel_motor_map[voxel_coord].append(i)
 
-    # Map tendons (assuming tendon names match motor names structure)
+    # map tendons (assuming tendon names match motor names structure)
     for i in range(model.ntendon):
         tendon_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_TENDON, i)
         if tendon_name and tendon_name.startswith("voxel_"):
@@ -47,11 +46,12 @@ def run_simulation_headless(
                 voxel_tendon_map[voxel_coord] = []
             voxel_tendon_map[voxel_coord].append(i)
 
-    # Ensure mappings are consistent
-    active_voxel_coords = sorted(list(voxel_motor_map.keys()))  # Get all defined voxels
+    # ensure mappings are consistent
+    active_voxel_coords = sorted(list(voxel_motor_map.keys()))  # get all defined voxels
     n_active_voxels = len(active_voxel_coords)
 
-    # Filter active_voxel_coords to include only those with both motors and tendons mapped
+    # filter active_voxel_coords to include only those with both motors and tendons mapped
+    # just to be extra safe
     valid_active_voxel_coords = []
     for voxel in active_voxel_coords:
         has_motors = voxel in voxel_motor_map and len(voxel_motor_map[voxel]) == 4
@@ -66,44 +66,29 @@ def run_simulation_headless(
     active_voxel_coords = valid_active_voxel_coords
     n_active_voxels = len(active_voxel_coords)
 
-    # --- Controller Setup ---
-    N_SENSORS_PER_VOXEL = 8   # 4 tendon lengths + 4 tendon velocities
-    N_COMM_CHANNELS = 2     # As per paper's experiments (nc=2)
-    N_COMM_DIRECTIONS = 6   # <--- Updated: Now using 6 neighbors
-    N_TIME_INPUTS = 2       # Number of sin(t)/cos(t) inputs
+    # Controller Setup
+    N_SENSORS_PER_VOXEL = 8  # 4 tendon lengths + 4 tendon velocities
+    N_COMM_CHANNELS = 2  # as per paper's experiments (nc=2)
+    # N_COMM_DIRECTIONS = 6  # voxels have 6 neighbors
+    # N_TIME_INPUTS = 2  # number of sin(t)/cos(t) inputs
 
-    # Select a driving voxel (e.g., the one with the lowest x, then y, then z among valid ones)
+    # driving voxel (the one with the lowest x, then y, then z among valid ones)
     driving_voxel = active_voxel_coords[0] if active_voxel_coords else None
 
     controller = DistributedNeuralController(
         n_voxels=n_active_voxels,
-        voxel_coords=active_voxel_coords,  # Use the filtered list
+        voxel_coords=active_voxel_coords, # using filtered list
         n_sensors_per_voxel=N_SENSORS_PER_VOXEL,
         n_comm_channels=N_COMM_CHANNELS,
         driving_voxel_coord=driving_voxel,
-        time_signal_frequency=0.5,  # Example frequency for internal time signal
+        time_signal_frequency=0.5, # adjustable
         weights=weights,
         biases=biases
     )
 
-    # --- Simulation Loop ---
-    scene_option = mujoco.MjvOption()
-    paused = False
+    # ACTUAL SIMULATION LOOP
+    # scene_option = mujoco.MjvOption()
     last_control_time = 0.0
-    sim_step = 0
-
-    # Target range for rescaled motor signals
-    TARGET_MIN_CTRL = 0.0
-    TARGET_MAX_CTRL = 1.0
-    TARGET_RANGE = TARGET_MAX_CTRL - TARGET_MIN_CTRL
-
-    # Small value to prevent division by zero
-    EPSILON = 1e-6
-
-    def key_callback(keycode):
-        global paused
-        if chr(keycode) == " ":
-            paused = not paused
 
     # Initial settling phase settings
     SETTLE_DURATION = 3.0  # Seconds to apply max contraction initially
@@ -112,20 +97,19 @@ def run_simulation_headless(
     )
     target_reached = False
 
-    print(f"Running simulation, voxels: {n_active_voxels}")
+    print(f"Running simulation, no. of voxels: {n_active_voxels}")
 
     while data.time < duration:
         sim_time = data.time
-        step_start = time.time()
 
-        # --- Initial Settling Phase ---
+        # Settling phase, no movement until VSR settles
         if sim_time <= SETTLE_DURATION:
-            for voxel_coord in active_voxel_coords:  # Iterate through valid voxels
+            for voxel_coord in active_voxel_coords: # iterate through valid voxels
                 motor_indices = voxel_motor_map[voxel_coord]
                 for motor_id in motor_indices:
                     data.ctrl[motor_id] = INITIAL_CTRL_VALUE
-            last_control_time = sim_time  # Keep updating to prevent immediate controller activation after settling
-        # --- Control Step ---
+            last_control_time = sim_time # keep updating to prevent immediate controller activation after settling
+        # Control step
         elif (
             sim_time > SETTLE_DURATION
             and sim_time >= last_control_time + control_timestep
@@ -137,7 +121,6 @@ def run_simulation_headless(
                 tendon_indices = voxel_tendon_map[voxel_coord]
                 sensor_data_all[i, :4] = data.ten_length[tendon_indices]
                 sensor_data_all[i, 4:] = data.ten_velocity[tendon_indices]
-                # Consider adding sensor normalization/clipping here if needed
 
             # 2. Run Controller Step
             # actuation_outputs are in range [-1, 1]
@@ -147,10 +130,9 @@ def run_simulation_headless(
             # initial_motor_signals shape: (n_voxels, 1)
             initial_motor_signals = (actuation_outputs + 1.0) / 2.0
 
-            # 4. Apply Rescaled Actuation to Motors
+            # 4. Apply Clipped Actuation to Motors
             for i, voxel_coord in enumerate(active_voxel_coords):
-                # Get the rescaled signal for this voxel
-                # Clip ensures safety, though rescaling should keep it within [0,1] if target range is within [0,1]
+                # clip to be extra safe
                 motor_control_signal = np.clip(initial_motor_signals[i, 0], 0.0, 1.0)
 
                 motor_indices = voxel_motor_map[voxel_coord]
@@ -175,42 +157,49 @@ def run_simulation_headless(
 
             if abs(x_dist_target) < 10 and abs(y_dist_target) < 10:
                 target_reached = True
-        # --- End Control Step ---
+        # ENDOF Control Step
 
         try:
             mujoco.mj_step(model, data)
         except mujoco.FatalError as e:
             print(f"MuJoCo Fatal Error: {e}. Time: {data.time}")
-            # Simulation exploded, return worst fitness
+            # Simulation crashed, return worst fitness
             return -1000.0, x_dist_target, y_dist_target, target_reached
-
-        # Optional: Print step time for performance check
-        # time_elapsed = time.time() - step_start
-        # print(f"Step {sim_step} Time: {time_elapsed:.4f}s")
 
     # euclidean final distance
     final_distance = math.sqrt(x_dist_target**2 + y_dist_target**2)
     fitness = -final_distance
-    # if target_reached:
-    #     fitness += 100 
 
     return fitness, x_dist_target, y_dist_target, target_reached
 
 if __name__ == "__main__":
-    MODEL = "quadruped_v3"  # Example model name
+    MODEL = "quadruped_v3"  # test model from vsr_model
     model_path = f"vsr_models/{MODEL}/{MODEL}"
-    duration = 60  # seconds (adjust as needed)
+    duration = 60  # seconds
     control_timestep = 0.05  # Apply control every n seconds
 
-    N_SENSORS_PER_VOXEL = 8   # 4 tendon lengths + 4 tendon velocities
-    N_COMM_CHANNELS = 2     # As per paper's experiments (nc=2)
-    N_COMM_DIRECTIONS = 6   # <--- Updated: Now using 6 neighbors
-    N_TIME_INPUTS = 2       # Number of sin(t)/cos(t) inputs
+    # Simulation setup
+    vsr = VoxelRobot(10, 10, 10) # adjustable
+    vsr.load_model_csv(model_path + ".csv")
+    # vsr.visualise_model()
+    xml_string = vsr.generate_model(model_path)
 
-    input_size = N_SENSORS_PER_VOXEL + N_COMM_DIRECTIONS * N_COMM_CHANNELS + 1 + N_TIME_INPUTS
+    print("VSR Model generated.")
+    print("No. of vertexes: ", vsr.num_vertex())
+
+    model = mujoco.MjModel.from_xml_string(xml_string)
+
+    N_SENSORS_PER_VOXEL = 8  # 4 tendon lengths + 4 tendon velocities
+    N_COMM_CHANNELS = 2  # as per paper's experiments (nc=2)
+    N_COMM_DIRECTIONS = 6  # voxels have 6 neighbors
+    N_TIME_INPUTS = 2  # Number of sin(t)/cos(t) inputs
+
+    input_size = (
+        N_SENSORS_PER_VOXEL + N_COMM_DIRECTIONS * N_COMM_CHANNELS + 1 + N_TIME_INPUTS
+    )
     output_size = 1 + N_COMM_DIRECTIONS * N_COMM_CHANNELS
     weights = np.random.uniform(-0.1, 0.1, (output_size, input_size))
     biases = np.random.uniform(-0.1, 0.1, output_size)
 
-    results = run_simulation_headless(model_path, duration, control_timestep, weights, biases)
+    results = run_simulation_headless(model, duration, control_timestep, weights, biases)
     print(results)  # e.g (-58.846473979239164, 9.528210528960823, False)
