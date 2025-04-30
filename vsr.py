@@ -7,7 +7,7 @@ from xml.dom import minidom
 
 MIN_DIM = 1
 MAX_DIM = 20
-GEAR_RATIO = 16.0
+GEAR_RATIO = 4.0
 TIMESTEP = 0.001
 FRICTION_MULT = 1.0
 FRICTION_SLIDING = 1.0 * FRICTION_MULT # def 1
@@ -123,7 +123,8 @@ class VoxelRobot:
         for _, row in df.iterrows():
             self.voxel_grid[row["x"], row["y"], row["z"]] = 1
         # self.gear = len(df)*GEAR_RATIO
-        self.gear = np.sqrt(self.num_vertex())*GEAR_RATIO
+        # self.gear = np.sqrt(self.num_vertex())*GEAR_RATIO
+        self.gear = 70
 
     def generate_model(self, filepath) -> str:
         """Generate the MuJoCo model for the VSR."""
@@ -142,7 +143,7 @@ class VoxelRobot:
 
             <worldbody>
 
-                <body name="target" pos="-60 3 3.5">
+                <body name="target" pos="-300 3 3.5">
                     <geom type="box" size="1 1 3" rgba="1 0 0 0.7"/>
                 </body>
 
