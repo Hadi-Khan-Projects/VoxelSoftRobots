@@ -6,7 +6,7 @@ import random
 import time
 import os
 
-MODEL = "quadruped_v1"
+MODEL = "voxel_v3"
 FILEPATH = f"vsr_models/{MODEL}/{MODEL}"
 DURATION = 300  # seconds
 
@@ -53,8 +53,8 @@ print(voxel_motor_map)
 print(len(voxel_motor_map))
 
 # Select some random voxels
-NUM_ACTIVE = 80
-active_voxels = list(voxel_motor_map.keys())[:80]
+NUM_ACTIVE = len(voxel_motor_map)//2
+active_voxels = list(voxel_motor_map.keys())[:NUM_ACTIVE]
 
 last_update_time = time.time()
 
@@ -81,10 +81,12 @@ with mujoco.viewer.launch_passive(model, data, key_callback=key_callback) as vie
         current_time = time.time()
         
         # Set motor control for selected voxels
-        for voxel in active_voxels:
-            for motor_id in voxel_motor_map[voxel]:
-                control_signal = 10 * math.sin(20.0 * math.pi * frequency * data.time)
-                data.ctrl[motor_id] = control_signal
+        if current_time - last_update_time >= 0.2:  # Allow signal every 0.2 seconds
+            for voxel in active_voxels:
+                for motor_id in voxel_motor_map[voxel]:
+                    control_signal = 10 * math.sin(20.0 * math.pi * frequency * data.time)
+                    data.ctrl[motor_id] = control_signal
+            last_update_time = current_time
 
         if not paused:
             mujoco.mj_step(model, data)

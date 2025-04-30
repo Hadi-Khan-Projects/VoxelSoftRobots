@@ -13,7 +13,8 @@ import traceback # For better error reporting in parallel processes
 # Import your existing classes and the headless simulation function
 from vsr import VoxelRobot
 from controller import DistributedNeuralController
-from simulate_headless import run_simulation_headless # Assuming this file exists
+# Ensure this matches your headless simulation file name
+from simulate_headless import run_simulation_headless
 from simulate import run_simulation
 
 # --- EA Configuration ---
@@ -25,7 +26,7 @@ DEFAULT_CLIP_RANGE = (-5.0, 5.0) # Clip parameters to this range
 DEFAULT_SIMULATION_DURATION = 60 # seconds
 DEFAULT_CONTROL_TIMESTEP = 0.05 # seconds
 
-# --- Helper Functions ---
+# --- Helper Functions --- (Keep these as they are)
 
 def _get_vsr_details_and_controller_dims(model):
     """
@@ -33,7 +34,7 @@ def _get_vsr_details_and_controller_dims(model):
     controller input/output dimensions.
     """
     try:
-        data = mujoco.MjData(model) # Needed for some MuJoCo functions if used later
+        # data = mujoco.MjData(model) # Not strictly needed here if only analyzing model structure
 
         voxel_motor_map = {}
         voxel_tendon_map = {}
@@ -49,8 +50,8 @@ def _get_vsr_details_and_controller_dims(model):
                         voxel_motor_map[voxel_coord] = []
                     voxel_motor_map[voxel_coord].append(i)
                 except (ValueError, IndexError):
-                    print(f"Warning: Could not parse motor name: {motor_name}")
-                    continue
+                    # print(f"Warning: Could not parse motor name: {motor_name}")
+                    continue # Skip malformed names silently during init
 
         # Map tendons
         for i in range(model.ntendon):
@@ -63,26 +64,30 @@ def _get_vsr_details_and_controller_dims(model):
                         voxel_tendon_map[voxel_coord] = []
                     voxel_tendon_map[voxel_coord].append(i)
                 except (ValueError, IndexError):
-                     print(f"Warning: Could not parse tendon name: {tendon_name}")
-                     continue
+                     # print(f"Warning: Could not parse tendon name: {tendon_name}")
+                     continue # Skip malformed names
 
         # Filter for valid voxels (must have 4 motors and 4 tendons)
         potential_active_coords = sorted(list(set(voxel_motor_map.keys()) | set(voxel_tendon_map.keys())))
         active_voxel_coords = []
         for coord in potential_active_coords:
-             has_motors = coord in voxel_motor_map and len(voxel_motor_map[coord]) == 4
-             has_tendons = coord in voxel_tendon_map and len(voxel_tendon_map[coord]) == 4
+             # Check if coord exists as a key AND has the correct length list
+             has_motors = coord in voxel_motor_map and isinstance(voxel_motor_map[coord], list) and len(voxel_motor_map[coord]) == 4
+             has_tendons = coord in voxel_tendon_map and isinstance(voxel_tendon_map[coord], list) and len(voxel_tendon_map[coord]) == 4
              if has_motors and has_tendons:
                  active_voxel_coords.append(coord)
              # else:
-             #     print(f"Debug: Voxel {coord} skipped (Motors: {len(voxel_motor_map.get(coord,[]))}, Tendons: {len(voxel_tendon_map.get(coord,[]))})")
+             #     # Debugging check (can be verbose)
+             #     motor_len = len(voxel_motor_map.get(coord,[])) if isinstance(voxel_motor_map.get(coord), list) else -1
+             #     tendon_len = len(voxel_tendon_map.get(coord,[])) if isinstance(voxel_tendon_map.get(coord), list) else -1
+             #     print(f"Debug: Voxel {coord} skipped (Motors: {motor_len}, Tendons: {tendon_len})")
 
 
         n_active_voxels = len(active_voxel_coords)
         if n_active_voxels == 0:
-            raise ValueError("No valid active voxels found in the model. Check MJCF generation.")
+            raise ValueError("No valid active voxels found in the model. Check MJCF generation and motor/tendon naming (expecting 'voxel_x_y_z_...')")
 
-        print(f"Found {n_active_voxels} active voxels: {active_voxel_coords}")
+        print(f"Found {n_active_voxels} active voxels.") # Removed coords list for brevity: {active_voxel_coords}")
 
         # Determine Controller Dimensions based on the first active voxel (as they are shared)
         # These constants must match those used in DistributedNeuralController and run_simulation!
@@ -101,6 +106,7 @@ def _get_vsr_details_and_controller_dims(model):
 
     except Exception as e:
         print(f"Error getting VSR details: {e}")
+        print(traceback.format_exc()) # Print full traceback for debugging
         raise
 
 def flatten_params(weights, biases):
@@ -110,13 +116,12 @@ def flatten_params(weights, biases):
 def unflatten_params(param_vector, weight_shape, bias_shape):
     """Unflattens a vector into weights and biases."""
     weights_flat_len = np.prod(weight_shape)
+    # Ensure param_vector is a numpy array for slicing
+    param_vector = np.asarray(param_vector)
     weights = param_vector[:weights_flat_len].reshape(weight_shape)
     biases = param_vector[weights_flat_len:]
     if biases.shape != bias_shape:
-         # This check is important after operations like crossover/mutation
-         # Might need padding or truncation if lengths get messed up,
-         # but ideally operators preserve length.
-         raise ValueError(f"Bias shape mismatch after unflattening. Expected {bias_shape}, got {biases.shape}")
+         raise ValueError(f"Bias shape mismatch after unflattening. Expected {bias_shape}, got {biases.shape}. Vector len: {len(param_vector)}, Weight elements: {weights_flat_len}")
     return weights, biases
 
 def evaluate_individual(param_vector, # The parameter vector for this individual
@@ -134,53 +139,78 @@ def evaluate_individual(param_vector, # The parameter vector for this individual
     try:
         weights, biases = unflatten_params(param_vector, weight_shape, bias_shape)
 
-        # Assuming run_simulation_headless takes weights and biases directly
         fitness, x_dist, y_dist, reached = run_simulation_headless(
             model=model,
             duration=duration,
             control_timestep=control_timestep,
             weights=weights,
             biases=biases
-            # NOTE: run_simulation_headless needs to internally get n_voxels, coords etc.
-            # OR you modify it to accept these + controller dims if that's cleaner
         )
         # Ensure fitness is a float
         if not isinstance(fitness, (float, np.float64)):
              print(f"Warning: Fitness is not float ({type(fitness)}), value: {fitness}. Converting.")
              fitness = float(fitness)
+        # Ensure dists are floats
+        if not isinstance(x_dist, (float, np.float64)): x_dist = float(x_dist)
+        if not isinstance(y_dist, (float, np.float64)): y_dist = float(y_dist)
+        # Ensure reached is bool
+        if not isinstance(reached, bool): reached = bool(reached)
 
-        return fitness, x_dist, y_dist, reached, param_vector # Return params for tracking
 
+        # Return fitness, distances, reached status, AND the input parameters
+        return fitness, x_dist, y_dist, reached, param_vector
+
+    except mujoco.FatalError as e:
+        # Handle MuJoCo crashes specifically if needed (already handled in sim)
+        print(f"!!! MuJoCo Fatal Error evaluating individual: {e} !!!")
+        return -np.inf, np.inf, np.inf, False, param_vector
     except Exception as e:
         print(f"!!! Error evaluating individual: {e} !!!")
         print(f"Traceback: {traceback.format_exc()}")
         # Return a very poor fitness score and default values
-        # Ensure the number of return values matches the expected tuple
         return -np.inf, np.inf, np.inf, False, param_vector
 
 
 def tournament_selection(population, fitnesses, tournament_size):
-    """Performs tournament selection."""
+    """Performs tournament selection. Handles potential empty lists."""
     num_individuals = len(population)
+    if num_individuals == 0:
+        raise ValueError("Cannot perform tournament selection on an empty population.")
+    if num_individuals < tournament_size:
+        # Warning or adjust tournament size? Adjusting is safer.
+        # print(f"Warning: Tournament size ({tournament_size}) > population size ({num_individuals}). Using population size.")
+        tournament_size = num_individuals
+
+    # Ensure fitnesses align with population
+    if len(fitnesses) != num_individuals:
+         raise ValueError("Population and fitnesses list must have the same length.")
+
     selected_indices = np.random.randint(0, num_individuals, size=tournament_size)
+    # Get fitness values corresponding to the selected indices
     tournament_fitnesses = [fitnesses[i] for i in selected_indices]
+
+    # Find the index of the maximum fitness *within the tournament fitnesses list*
     winner_index_in_tournament = np.argmax(tournament_fitnesses)
+    # Map this back to the index in the *original population list*
     winner_index = selected_indices[winner_index_in_tournament]
+
     return population[winner_index]
 
 def geometric_crossover(parent1, parent2):
     """Performs geometric crossover."""
-    if len(parent1) != len(parent2):
-         raise ValueError("Parents must have the same length for crossover.")
-    beta = np.random.uniform(-1.0, 2.0, size=len(parent1))
+    parent1 = np.asarray(parent1)
+    parent2 = np.asarray(parent2)
+    if parent1.shape != parent2.shape:
+         raise ValueError("Parents must have the same shape for crossover.")
+    beta = np.random.uniform(-1.0, 2.0, size=parent1.shape)
     offspring = parent1 + beta * (parent2 - parent1)
     return offspring
 
 def gaussian_mutation(individual, sigma, clip_range):
     """Performs Gaussian mutation and clips the result."""
-    noise = np.random.normal(0, sigma, size=len(individual))
+    individual = np.asarray(individual)
+    noise = np.random.normal(0, sigma, size=individual.shape)
     mutated = individual + noise
-    # Clip the parameters to the defined range
     mutated = np.clip(mutated, clip_range[0], clip_range[1])
     return mutated
 
@@ -202,7 +232,7 @@ def optimize(model,
     Optimizes the VSR controller parameters using a generational EA.
 
     Args:
-        model ():
+        model (mujoco.MjModel): The MuJoCo model object.
         num_generations (int): Number of generations to run the EA.
         initial_weights (np.ndarray, optional): Starting weights for the first individual.
         initial_biases (np.ndarray, optional): Starting biases for the first individual.
@@ -213,15 +243,14 @@ def optimize(model,
         clip_range (tuple): (min, max) values for clipping mutated parameters.
         simulation_duration (int): Duration of each simulation evaluation in seconds.
         control_timestep (float): Timestep for controller updates in seconds.
-        num_workers (int, optional): Number of parallel workers for evaluation.
-                                     Defaults to cpu_count().
+        num_workers (int, optional): Number of parallel workers for evaluation. Defaults to cpu_count().
 
     Returns:
         tuple: (best_weights, best_biases, history_df)
-               - best_weights (np.ndarray): Weights of the best individual found.
-               - best_biases (np.ndarray): Biases of the best individual found.
-               - history_df (pd.DataFrame): DataFrame containing performance metrics
-                                            for the best individual of each generation.
+               - best_weights (np.ndarray): Weights of the best individual found overall.
+               - best_biases (np.ndarray): Biases of the best individual found overall.
+               - history_df (pd.DataFrame): DataFrame containing performance metrics and parameters
+                                            for *every* individual in *each* generation.
     """
 
     print("--- Starting Optimization ---")
@@ -229,17 +258,17 @@ def optimize(model,
         num_workers = cpu_count()
         print(f"Using default number of workers: {num_workers}")
     else:
+        # Ensure not requesting more workers than available
         num_workers = min(num_workers, cpu_count())
         print(f"Using specified number of workers: {num_workers}")
-
 
     # 1. Get VSR details and controller dimensions
     try:
         n_voxels, voxel_coords, input_size, output_size = _get_vsr_details_and_controller_dims(model)
     except Exception as e:
         print(f"Fatal Error: Could not initialize VSR details. Aborting.")
-        print(e)
-        return None, None, None
+        # No point continuing if we don't know the structure
+        return None, None, pd.DataFrame() # Return empty DataFrame
 
     weight_shape = (output_size, input_size)
     bias_shape = (output_size,)
@@ -252,16 +281,23 @@ def optimize(model,
     start_individual = None
     if initial_weights is not None and initial_biases is not None:
         if initial_weights.shape == weight_shape and initial_biases.shape == bias_shape:
-            start_individual = flatten_params(initial_weights, initial_biases)
-            population.append(start_individual)
-            print("Using provided initial weights/biases for the first individual.")
+            try:
+                start_individual = flatten_params(initial_weights, initial_biases)
+                # Check if flattened vector has expected size
+                if len(start_individual) == param_vector_size:
+                    population.append(start_individual)
+                    print("Using provided initial weights/biases for the first individual.")
+                else:
+                    print(f"Warning: Flattened initial params size ({len(start_individual)}) != expected ({param_vector_size}). Ignoring.")
+            except Exception as e:
+                print(f"Warning: Error flattening initial params: {e}. Ignoring.")
         else:
-            print("Warning: Provided initial weights/biases have incorrect shape. Ignoring.")
+            print(f"Warning: Provided initial weights ({initial_weights.shape} vs {weight_shape}) or biases ({initial_biases.shape} vs {bias_shape}) have incorrect shape. Ignoring.")
 
     # Fill the rest of the population randomly
     while len(population) < population_size:
-        # Initialize parameters within a smaller range initially, e.g., U(-1, 1)
-        random_params = np.random.uniform(-1.0, 1.0, size=param_vector_size)
+        # Initialize parameters within a smaller range initially, e.g., U(-1, 1) or clip_range
+        random_params = np.random.uniform(clip_range[0]/2, clip_range[1]/2, size=param_vector_size)
         population.append(random_params)
 
     print("Population initialized.")
@@ -270,7 +306,8 @@ def optimize(model,
     best_fitness_so_far = -np.inf
     best_weights_so_far = None
     best_biases_so_far = None
-    history = []
+    # MODIFICATION: Initialize history as a list to store individual dictionaries
+    all_history_records = []
 
     # Create the partial function for evaluation to fix the constant arguments
     evaluate_partial = partial(evaluate_individual,
@@ -289,12 +326,23 @@ def optimize(model,
         eval_start_time = time.time()
 
         results = []
+        current_population_to_eval = population # Keep track of the population being evaluated
+
         # Use multiprocessing pool for parallel evaluation
         try:
-            with Pool(processes=num_workers) as pool:
+            # Make sure the pool uses the desired number of workers
+            actual_workers = min(num_workers, len(current_population_to_eval)) # Don't need more workers than individuals
+            if actual_workers < num_workers:
+                 # print(f"Note: Using {actual_workers} workers (population size limit).")
+                 pass # Reduce verbosity
+            if actual_workers <= 0:
+                 print("Warning: No individuals to evaluate.")
+                 continue # Skip to next generation or handle error
+
+            with Pool(processes=actual_workers) as pool:
                  # results will be a list of tuples:
                  # [(fitness, x, y, reached, params), (fitness, x, y, reached, params), ...]
-                 results = pool.map(evaluate_partial, population)
+                 results = pool.map(evaluate_partial, current_population_to_eval)
 
         except Exception as e:
              print(f"!!! Fatal Error during parallel evaluation: {e} !!!")
@@ -302,170 +350,236 @@ def optimize(model,
              # Attempt to salvage results if some processes finished
              if not results: # If results is empty, we can't continue
                  print("Aborting optimization due to evaluation error.")
-                 # Return the best found so far, even if it's from a previous gen
-                 history_df = pd.DataFrame(history)
+                 history_df = pd.DataFrame(all_history_records) # Use records collected so far
                  return best_weights_so_far, best_biases_so_far, history_df
 
 
         eval_time = time.time() - eval_start_time
         print(f"Evaluation finished in {eval_time:.2f} seconds.")
 
-        # Process results
-        fitnesses = [r[0] for r in results]
-        x_dists = [r[1] for r in results]
-        y_dists = [r[2] for r in results]
-        reached_flags = [r[3] for r in results]
-        evaluated_population = [r[4] for r in results] # Get params back in case order changed
+        # Process results & *** MODIFIED HISTORY LOGGING ***
+        fitnesses = []
+        evaluated_population_params = [] # Store params corresponding to fitnesses
 
-        # Check for evaluation failures indicated by -inf fitness
-        valid_evals = [f > -np.inf for f in fitnesses]
-        num_failed = population_size - sum(valid_evals)
+        gen_best_fitness = -np.inf
+        gen_best_params = None
+
+        num_failed = 0
+        for i, res in enumerate(results):
+            fitness, x_dist, y_dist, reached, params = res
+
+            # Store results for selection/stats
+            fitnesses.append(fitness)
+            evaluated_population_params.append(params) # Store the params vector evaluated
+
+            # Check for evaluation failure
+            if fitness <= -np.inf:
+                num_failed += 1
+                # Skip logging failed individuals in history or log with bad values?
+                # Let's log them so we know they failed.
+                valid_eval = False
+            else:
+                valid_eval = True
+                # Update generation's best
+                if fitness > gen_best_fitness:
+                    gen_best_fitness = fitness
+                    gen_best_params = params # Store the params of the best in this gen
+
+            # *** ADD RECORD FOR EACH INDIVIDUAL TO HISTORY ***
+            record = {
+                'generation': generation + 1,
+                'individual_index': i, # Index within the generation's population
+                'fitness': fitness,
+                'x_dist': x_dist,
+                'y_dist': y_dist,
+                'reached': reached,
+                # Store params as a list (more compatible with CSV/JSON than ndarray)
+                'params_vector': list(params) if params is not None else None
+            }
+            all_history_records.append(record)
+
         if num_failed > 0:
-            print(f"Warning: {num_failed}/{population_size} evaluations failed in this generation.")
-            # Consider strategies: retry failed, replace with random, or just proceed with valid ones.
-            # For simplicity, we proceed, but this might bias selection.
+            print(f"Warning: {num_failed}/{len(results)} evaluations failed in this generation.")
 
-        # Find best in current generation
-        best_gen_idx = np.argmax(fitnesses)
-        best_gen_fitness = fitnesses[best_gen_idx]
-        best_gen_params = evaluated_population[best_gen_idx]
-        best_gen_x_dist = x_dists[best_gen_idx]
-        best_gen_y_dist = y_dists[best_gen_idx]
-        best_gen_reached = reached_flags[best_gen_idx]
-        avg_gen_fitness = np.mean([f for f, v in zip(fitnesses, valid_evals) if v]) if any(valid_evals) else -np.inf
+        # Calculate stats based on *valid* evaluations
+        valid_fitnesses = [f for f in fitnesses if f > -np.inf]
+        avg_gen_fitness = np.mean(valid_fitnesses) if valid_fitnesses else -np.inf
 
-        print(f"Best fitness in generation: {best_gen_fitness:.4f}")
+        print(f"Best fitness in generation: {gen_best_fitness:.4f}")
         print(f"Average fitness (valid):   {avg_gen_fitness:.4f}")
 
-        # Update overall best
-        if best_gen_fitness > best_fitness_so_far:
-            best_fitness_so_far = best_gen_fitness
-            best_weights_so_far, best_biases_so_far = unflatten_params(best_gen_params, weight_shape, bias_shape)
-            print(f"*** New overall best fitness found: {best_fitness_so_far:.4f} ***")
+        # Update overall best (using the best found in this generation)
+        if gen_best_fitness > best_fitness_so_far:
+            best_fitness_so_far = gen_best_fitness
+            # Unflatten the parameters of the generation's best individual
+            if gen_best_params is not None:
+                try:
+                    best_weights_so_far, best_biases_so_far = unflatten_params(gen_best_params, weight_shape, bias_shape)
+                    print(f"*** New overall best fitness found: {best_fitness_so_far:.4f} ***")
+                except ValueError as e:
+                    print(f"Error unflattening best params for overall best: {e}")
+                    # Keep previous best if unflattening fails
+            else:
+                 print("Warning: Generation best fitness improved, but params were None.")
 
-        # Log history for this generation (using the generation's best)
-        history.append({
-            'generation': generation + 1,
-            'best_fitness': best_gen_fitness,
-            'average_fitness': avg_gen_fitness,
-            'best_x_dist': best_gen_x_dist,
-            'best_y_dist': best_gen_y_dist,
-            'best_reached': best_gen_reached,
-        })
 
         # 5. Selection (Choose parents for the next generation)
         parents = []
-        for _ in range(population_size): # Need enough parents to create population_size offspring
-             # Ensure selection only happens among successfully evaluated individuals
-             valid_population = [p for p, v in zip(evaluated_population, valid_evals) if v]
-             valid_fitnesses = [f for f, v in zip(fitnesses, valid_evals) if v]
-             if not valid_population:
-                  print("Warning: No valid individuals left for selection. Re-initializing random parents.")
-                  # As a fallback, generate random parents, otherwise selection fails
-                  parents = [np.random.uniform(clip_range[0], clip_range[1], size=param_vector_size) for _ in range(population_size)]
-                  break # Exit the parent selection loop
+        # Select from the parameters of the individuals that were *successfully* evaluated
+        valid_population_params = [p for p, f in zip(evaluated_population_params, fitnesses) if f > -np.inf]
+        valid_pop_fitnesses = [f for f in fitnesses if f > -np.inf]
 
-             selected_parent = tournament_selection(valid_population, valid_fitnesses, tournament_size)
+        if not valid_population_params:
+             print("Warning: No valid individuals left for selection! Re-initializing population randomly.")
+             # Fallback: Create a completely new random population
+             population = [np.random.uniform(clip_range[0], clip_range[1], size=param_vector_size) for _ in range(population_size)]
+             continue # Skip variation and proceed to next generation's evaluation
+
+        # Proceed with selection using valid individuals
+        for _ in range(population_size): # Need population_size parents for replacement strategy
+             selected_parent = tournament_selection(valid_population_params, valid_pop_fitnesses, tournament_size)
              parents.append(selected_parent)
 
 
         # 6. Variation (Create offspring using Crossover and Mutation)
         offspring_population = []
-        parent_indices = np.random.permutation(population_size) # Shuffle indices
+        # Shuffle parent indices to mix pairs for crossover
+        parent_indices = np.random.permutation(len(parents))
 
-        for i in range(0, population_size, 2):
-            # Ensure we have pairs of parents
+        for i in range(0, population_size): # Create one offspring per parent slot
+            # Select parent(s) - simple strategy: use parent[i] for mutation basis,
+            # and pair parent[i] with parent[j] for crossover.
             idx1 = parent_indices[i]
-            # Wrap around if odd number of parents needed (or handle explicitly)
-            idx2 = parent_indices[(i + 1) % population_size]
+            # For crossover, pick a second distinct parent randomly or sequentially
+            idx2 = parent_indices[(i + np.random.randint(1, len(parents))) % len(parents)] # Ensure different index
+            if idx1 == idx2 and len(parents) > 1: # Handle edge case if only 1 parent survived
+                 idx2 = parent_indices[(idx1 + 1) % len(parents)]
+
             parent1 = parents[idx1]
             parent2 = parents[idx2]
 
-            # Crossover
-            if np.random.rand() < crossover_probability:
-                offspring1 = geometric_crossover(parent1, parent2)
-                offspring2 = geometric_crossover(parent2, parent1) # Can generate two distinct offspring
+            # Decide Crossover or Mutation (or both?) - Paper implies one OR the other.
+            if np.random.rand() < crossover_probability and len(parents) > 1:
+                 # Crossover
+                 offspring = geometric_crossover(parent1, parent2)
+                 # Optionally add a small mutation after crossover
+                 # if np.random.rand() < 0.1: # Small chance
+                 #    offspring = gaussian_mutation(offspring, mutation_sigma / 5, clip_range) # Smaller mutation
             else:
-                offspring1 = parent1.copy()
-                offspring2 = parent2.copy()
+                 # Mutation - mutate parent1
+                 offspring = gaussian_mutation(parent1, mutation_sigma, clip_range)
 
-            # Mutation
-            offspring1 = gaussian_mutation(offspring1, mutation_sigma, clip_range)
-            offspring2 = gaussian_mutation(offspring2, mutation_sigma, clip_range)
+            offspring_population.append(offspring)
 
-            offspring_population.append(offspring1)
-            if len(offspring_population) < population_size: # Avoid adding extra if pop_size is odd
-                offspring_population.append(offspring2)
-
-        # Ensure the new population has the correct size
+        # Ensure the new population has the correct size (should match population_size)
         population = offspring_population[:population_size]
 
 
         # --- Generation End ---
         gen_time = time.time() - gen_start_time
         print(f"Generation {generation + 1} finished in {gen_time:.2f} seconds.")
+        # Optional: Flush print buffer if running in certain environments
+        # sys.stdout.flush()
 
     # --- End of Optimization ---
     print("\n--- Optimization Finished ---")
+
+    # Create DataFrame from the collected records
+    history_df = pd.DataFrame(all_history_records)
+
     if best_weights_so_far is None:
-        print("Warning: No best individual found (optimization might have failed early).")
-        # Return random params or None? Returning None seems safer.
-        return None, None, pd.DataFrame(history)
+        print("Warning: No best individual found (optimization might have failed early or found no valid solutions).")
+        # Return None and the history collected so far
+        return None, None, history_df
     else:
          print(f"Overall best fitness achieved: {best_fitness_so_far:.4f}")
-         history_df = pd.DataFrame(history)
-         print("History DataFrame created.")
+         print("Detailed history DataFrame created.")
+         # best_weights_so_far and best_biases_so_far hold the parameters
          return best_weights_so_far, best_biases_so_far, history_df
 
-# --- Example Usage ---
+# --- Example Usage --- (Mostly unchanged, but uses the modified optimize)
 if __name__ == "__main__":
     # Ensure the model files exist at this path
-    MODEL_NAME = "quadruped_v2" # Or your specific model name
+    MODEL_NAME = "quadruped_v3" # Or your specific model name
     MODEL_BASE_PATH = f"vsr_models/{MODEL_NAME}/{MODEL_NAME}"
+    MODEL_CSV_PATH = MODEL_BASE_PATH + ".csv"
+    MODEL_XML_PATH = MODEL_BASE_PATH + "_modded.xml" # Assuming vsr.py saves the final XML here
 
-    if not os.path.exists(MODEL_BASE_PATH + ".csv"):
-         print(f"Error: Model CSV file not found at {MODEL_BASE_PATH}.csv")
+
+    if not os.path.exists(MODEL_CSV_PATH):
+         print(f"Error: Model CSV file not found at {MODEL_CSV_PATH}")
+    # elif not os.path.exists(MODEL_XML_PATH):
+    #      print(f"Error: Model XML file not found at {MODEL_XML_PATH}. Generate it first.")
     else:
         print(f"Running optimization for model: {MODEL_NAME}")
 
-        # --- Run Optimization ---
-        num_generations_to_run = 10 # Increase for real runs (e.g., 100, 500)
-        population_s = 12 # Keep low for testing
+        # --- Prepare Model (Run this once before optimize) ---
+        try:
+            print("Generating/Loading MuJoCo model...")
+            vsr = VoxelRobot(10, 10, 10) # Adjust size if needed
+            vsr.load_model_csv(MODEL_CSV_PATH)
+            xml_string = vsr.generate_model(MODEL_BASE_PATH) # Generates _modded.xml
+            model = mujoco.MjModel.from_xml_string(xml_string)
+            print("MuJoCo model loaded successfully.")
+        except Exception as e:
+            print(f"Failed to load or generate MuJoCo model: {e}")
+            print(traceback.format_exc())
+            model = None # Ensure model is None if loading failed
 
-        vsr = VoxelRobot(10, 10, 10)  # Adjust size if needed for your model
-        vsr.load_model_csv(MODEL_BASE_PATH + ".csv")
-        # vsr.visualise_model()
-        xml_string = vsr.generate_model(MODEL_BASE_PATH)
+        if model:
+            # --- Run Optimization ---
+            num_generations_to_run = 10 # Increase for real runs (e.g., 100, 500)
+            population_s = 14 # Keep low for testing
 
-        model = mujoco.MjModel.from_xml_string(xml_string)
+            start_opt_time = time.time()
+            best_w, best_b, history_data = optimize(
+                model=model, # Pass the loaded model object
+                num_generations=num_generations_to_run,
+                population_size=population_s,
+                tournament_size=4, # Keep small for small pop
+                mutation_sigma=0.2, # Adjust if needed
+                control_timestep=0.2, # Match simulation timestep if reasonable
+                num_workers=7
+            )
+            end_opt_time = time.time()
+            print(f"\nTotal optimization time: {end_opt_time - start_opt_time:.2f} seconds")
 
-        best_w, best_b, history_data = optimize(
-            model=model,
-            num_generations=num_generations_to_run,
-            population_size=population_s, # Use smaller pop size for quick test
-            num_workers=12 # Limit workers for testing if needed
-            # Pass initial_weights/biases here if you have them
-        )
+            # --- Results ---
+            if best_w is not None and best_b is not None:
+                print("\n--- Best Found Parameters ---")
+                print("Weights shape:", best_w.shape)
+                print("Biases shape:", best_b.shape)
 
-        # --- Results ---
-        if best_w is not None:
-            print("\n--- Best Found Parameters ---")
-            print("Weights shape:", best_w.shape)
-            print("Biases shape:", best_b.shape)
-            # Optionally save the best parameters
-            # np.savez(f"{MODEL_BASE_PATH}_best_params.npz", weights=best_w, biases=best_b)
-            # print(f"Best parameters saved to {MODEL_BASE_PATH}_best_params.npz")
+                # Save the best parameters
+                save_path_params = f"{MODEL_BASE_PATH}_best_params_gen{num_generations_to_run}_pop{population_s}.npz"
+                np.savez(save_path_params, weights=best_w, biases=best_b)
+                print(f"Best parameters saved to {save_path_params}")
 
-            print("\n--- Optimization History ---")
-            print(history_data.to_string())
-            # Optionally save history
-            # history_data.to_csv(f"{MODEL_BASE_PATH}_optimization_history.csv", index=False)
-            # print(f"Optimization history saved to {MODEL_BASE_PATH}_optimization_history.csv")
+                print("\n--- Optimization History (Last 5 records) ---")
+                print(history_data.tail().to_string()) # Show tail for large history
+                # Save full history
+                save_path_history = f"{MODEL_BASE_PATH}_full_history_gen{num_generations_to_run}_pop{population_s}.csv"
+                try:
+                    history_data.to_csv(save_path_history, index=False)
+                    print(f"Full optimization history saved to {save_path_history}")
+                except Exception as e:
+                    print(f"Error saving history CSV: {e}")
 
-            # You could now run the simulation *with* the viewer using these best params:
-            # from vsr_simulate import run_simulation # Import the viewer version
-            print("\nRunning final simulation with best parameters...")
-            run_simulation(MODEL_BASE_PATH, duration=60, control_timestep=0.05, weights=best_w, biases=best_b)
+                # Optional: Run final simulation with viewer
+                # print("\nRunning final simulation with best parameters (requires vsr_simulate.py)...")
+                try:
+                    # from vsr_simulate import run_simulation # Import the viewer version
+                    # # Need to pass model_path, not model object to run_simulation
+                    run_simulation(model, duration=60, control_timestep=0.2, weights=best_w, biases=best_b)
+                except ImportError:
+                    print("Could not import run_simulation from vsr_simulate.py to show final result.")
+                except Exception as e:
+                     print(f"Error running final visualization: {e}")
 
-        else:
-            print("Optimization did not yield a best result.")
+
+            else:
+                print("\nOptimization did not yield a valid best result.")
+                if not history_data.empty:
+                     save_path_history = f"{MODEL_BASE_PATH}_failed_opt_history_gen{num_generations_to_run}_pop{population_s}.csv"
+                     history_data.to_csv(save_path_history, index=False)
+                     print(f"Saved history from failed optimization run to {save_path_history}")

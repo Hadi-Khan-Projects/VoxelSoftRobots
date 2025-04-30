@@ -124,7 +124,7 @@ class VoxelRobot:
             self.voxel_grid[row["x"], row["y"], row["z"]] = 1
         # self.gear = len(df)*GEAR_RATIO
         # self.gear = np.sqrt(self.num_vertex())*GEAR_RATIO
-        self.gear = 70
+        self.gear = 100
 
     def generate_model(self, filepath) -> str:
         """Generate the MuJoCo model for the VSR."""

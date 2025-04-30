@@ -17,9 +17,9 @@
     <geom name="ground" size="0 0 1" pos="0 0 -2" type="plane" condim="1" material="matplane"/>
     <light pos="30 30 20" dir="0 0 -1" diffuse="0.4 0.4 0.4" specular="0.1 0.1 0.1"/>
     <light pos="-20 -20 40" dir="0.0990148 0.0990148 -0.990148" directional="true" diffuse="0.8 0.8 0.8" specular="0.2 0.2 0.2"/>
-    <body name="target" pos="-60 3 3.5">
+    <body name="target" pos="-300 3 3.5">
       <geom size="1 1 3" type="box" rgba="1 0 0 0.7"/>
-      <site name="site_-60_3_3.5" pos="0 0 0" size="0.005"/>
+      <site name="site_-300_3_3.5" pos="0 0 0" size="0.005"/>
     </body>
     <body name="vsr_0" pos="4 4 4">
       <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
@@ -603,69 +603,69 @@
     </spatial>
   </tendon>
   <actuator>
-    <motor name="voxel_4_4_4_motor_4_4_4_to_5_5_5" tendon="voxel_4_4_4_spatial_4_4_4_to_5_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_4_4_motor_5_5_4_to_4_4_5" tendon="voxel_4_4_4_spatial_5_5_4_to_4_4_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_4_4_motor_4_5_4_to_5_4_5" tendon="voxel_4_4_4_spatial_4_5_4_to_5_4_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_4_4_motor_5_4_4_to_4_5_5" tendon="voxel_4_4_4_spatial_5_4_4_to_4_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_4_5_motor_4_4_5_to_5_5_6" tendon="voxel_4_4_5_spatial_4_4_5_to_5_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_4_5_motor_5_5_5_to_4_4_6" tendon="voxel_4_4_5_spatial_5_5_5_to_4_4_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_4_5_motor_4_5_5_to_5_4_6" tendon="voxel_4_4_5_spatial_4_5_5_to_5_4_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_4_5_motor_5_4_5_to_4_5_6" tendon="voxel_4_4_5_spatial_5_4_5_to_4_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_5_4_motor_4_5_4_to_5_6_5" tendon="voxel_4_5_4_spatial_4_5_4_to_5_6_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_5_4_motor_5_6_4_to_4_5_5" tendon="voxel_4_5_4_spatial_5_6_4_to_4_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_5_4_motor_4_6_4_to_5_5_5" tendon="voxel_4_5_4_spatial_4_6_4_to_5_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_5_4_motor_5_5_4_to_4_6_5" tendon="voxel_4_5_4_spatial_5_5_4_to_4_6_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_5_5_motor_4_5_5_to_5_6_6" tendon="voxel_4_5_5_spatial_4_5_5_to_5_6_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_5_5_motor_5_6_5_to_4_5_6" tendon="voxel_4_5_5_spatial_5_6_5_to_4_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_5_5_motor_4_6_5_to_5_5_6" tendon="voxel_4_5_5_spatial_4_6_5_to_5_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_4_5_5_motor_5_5_5_to_4_6_6" tendon="voxel_4_5_5_spatial_5_5_5_to_4_6_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_4_4_motor_5_4_4_to_6_5_5" tendon="voxel_5_4_4_spatial_5_4_4_to_6_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_4_4_motor_6_5_4_to_5_4_5" tendon="voxel_5_4_4_spatial_6_5_4_to_5_4_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_4_4_motor_5_5_4_to_6_4_5" tendon="voxel_5_4_4_spatial_5_5_4_to_6_4_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_4_4_motor_6_4_4_to_5_5_5" tendon="voxel_5_4_4_spatial_6_4_4_to_5_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_4_5_motor_5_4_5_to_6_5_6" tendon="voxel_5_4_5_spatial_5_4_5_to_6_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_4_5_motor_6_5_5_to_5_4_6" tendon="voxel_5_4_5_spatial_6_5_5_to_5_4_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_4_5_motor_5_5_5_to_6_4_6" tendon="voxel_5_4_5_spatial_5_5_5_to_6_4_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_4_5_motor_6_4_5_to_5_5_6" tendon="voxel_5_4_5_spatial_6_4_5_to_5_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_5_4_motor_5_5_4_to_6_6_5" tendon="voxel_5_5_4_spatial_5_5_4_to_6_6_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_5_4_motor_6_6_4_to_5_5_5" tendon="voxel_5_5_4_spatial_6_6_4_to_5_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_5_4_motor_5_6_4_to_6_5_5" tendon="voxel_5_5_4_spatial_5_6_4_to_6_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_5_4_motor_6_5_4_to_5_6_5" tendon="voxel_5_5_4_spatial_6_5_4_to_5_6_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_5_5_motor_5_5_5_to_6_6_6" tendon="voxel_5_5_5_spatial_5_5_5_to_6_6_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_5_5_motor_6_6_5_to_5_5_6" tendon="voxel_5_5_5_spatial_6_6_5_to_5_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_5_5_motor_5_6_5_to_6_5_6" tendon="voxel_5_5_5_spatial_5_6_5_to_6_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_5_5_5_motor_6_5_5_to_5_6_6" tendon="voxel_5_5_5_spatial_6_5_5_to_5_6_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_4_4_motor_6_4_4_to_7_5_5" tendon="voxel_6_4_4_spatial_6_4_4_to_7_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_4_4_motor_7_5_4_to_6_4_5" tendon="voxel_6_4_4_spatial_7_5_4_to_6_4_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_4_4_motor_6_5_4_to_7_4_5" tendon="voxel_6_4_4_spatial_6_5_4_to_7_4_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_4_4_motor_7_4_4_to_6_5_5" tendon="voxel_6_4_4_spatial_7_4_4_to_6_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_4_5_motor_6_4_5_to_7_5_6" tendon="voxel_6_4_5_spatial_6_4_5_to_7_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_4_5_motor_7_5_5_to_6_4_6" tendon="voxel_6_4_5_spatial_7_5_5_to_6_4_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_4_5_motor_6_5_5_to_7_4_6" tendon="voxel_6_4_5_spatial_6_5_5_to_7_4_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_4_5_motor_7_4_5_to_6_5_6" tendon="voxel_6_4_5_spatial_7_4_5_to_6_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_5_4_motor_6_5_4_to_7_6_5" tendon="voxel_6_5_4_spatial_6_5_4_to_7_6_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_5_4_motor_7_6_4_to_6_5_5" tendon="voxel_6_5_4_spatial_7_6_4_to_6_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_5_4_motor_6_6_4_to_7_5_5" tendon="voxel_6_5_4_spatial_6_6_4_to_7_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_5_4_motor_7_5_4_to_6_6_5" tendon="voxel_6_5_4_spatial_7_5_4_to_6_6_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_5_5_motor_6_5_5_to_7_6_6" tendon="voxel_6_5_5_spatial_6_5_5_to_7_6_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_5_5_motor_7_6_5_to_6_5_6" tendon="voxel_6_5_5_spatial_7_6_5_to_6_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_5_5_motor_6_6_5_to_7_5_6" tendon="voxel_6_5_5_spatial_6_6_5_to_7_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_6_5_5_motor_7_5_5_to_6_6_6" tendon="voxel_6_5_5_spatial_7_5_5_to_6_6_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_4_4_motor_7_4_4_to_8_5_5" tendon="voxel_7_4_4_spatial_7_4_4_to_8_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_4_4_motor_8_5_4_to_7_4_5" tendon="voxel_7_4_4_spatial_8_5_4_to_7_4_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_4_4_motor_7_5_4_to_8_4_5" tendon="voxel_7_4_4_spatial_7_5_4_to_8_4_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_4_4_motor_8_4_4_to_7_5_5" tendon="voxel_7_4_4_spatial_8_4_4_to_7_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_4_5_motor_7_4_5_to_8_5_6" tendon="voxel_7_4_5_spatial_7_4_5_to_8_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_4_5_motor_8_5_5_to_7_4_6" tendon="voxel_7_4_5_spatial_8_5_5_to_7_4_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_4_5_motor_7_5_5_to_8_4_6" tendon="voxel_7_4_5_spatial_7_5_5_to_8_4_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_4_5_motor_8_4_5_to_7_5_6" tendon="voxel_7_4_5_spatial_8_4_5_to_7_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_5_4_motor_7_5_4_to_8_6_5" tendon="voxel_7_5_4_spatial_7_5_4_to_8_6_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_5_4_motor_8_6_4_to_7_5_5" tendon="voxel_7_5_4_spatial_8_6_4_to_7_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_5_4_motor_7_6_4_to_8_5_5" tendon="voxel_7_5_4_spatial_7_6_4_to_8_5_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_5_4_motor_8_5_4_to_7_6_5" tendon="voxel_7_5_4_spatial_8_5_4_to_7_6_5" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_5_5_motor_7_5_5_to_8_6_6" tendon="voxel_7_5_5_spatial_7_5_5_to_8_6_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_5_5_motor_8_6_5_to_7_5_6" tendon="voxel_7_5_5_spatial_8_6_5_to_7_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_5_5_motor_7_6_5_to_8_5_6" tendon="voxel_7_5_5_spatial_7_6_5_to_8_5_6" ctrlrange="0 1" gear="70"/>
-    <motor name="voxel_7_5_5_motor_8_5_5_to_7_6_6" tendon="voxel_7_5_5_spatial_8_5_5_to_7_6_6" ctrlrange="0 1" gear="70"/>
+    <motor name="voxel_4_4_4_motor_4_4_4_to_5_5_5" tendon="voxel_4_4_4_spatial_4_4_4_to_5_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_4_4_motor_5_5_4_to_4_4_5" tendon="voxel_4_4_4_spatial_5_5_4_to_4_4_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_4_4_motor_4_5_4_to_5_4_5" tendon="voxel_4_4_4_spatial_4_5_4_to_5_4_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_4_4_motor_5_4_4_to_4_5_5" tendon="voxel_4_4_4_spatial_5_4_4_to_4_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_4_5_motor_4_4_5_to_5_5_6" tendon="voxel_4_4_5_spatial_4_4_5_to_5_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_4_5_motor_5_5_5_to_4_4_6" tendon="voxel_4_4_5_spatial_5_5_5_to_4_4_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_4_5_motor_4_5_5_to_5_4_6" tendon="voxel_4_4_5_spatial_4_5_5_to_5_4_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_4_5_motor_5_4_5_to_4_5_6" tendon="voxel_4_4_5_spatial_5_4_5_to_4_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_5_4_motor_4_5_4_to_5_6_5" tendon="voxel_4_5_4_spatial_4_5_4_to_5_6_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_5_4_motor_5_6_4_to_4_5_5" tendon="voxel_4_5_4_spatial_5_6_4_to_4_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_5_4_motor_4_6_4_to_5_5_5" tendon="voxel_4_5_4_spatial_4_6_4_to_5_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_5_4_motor_5_5_4_to_4_6_5" tendon="voxel_4_5_4_spatial_5_5_4_to_4_6_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_5_5_motor_4_5_5_to_5_6_6" tendon="voxel_4_5_5_spatial_4_5_5_to_5_6_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_5_5_motor_5_6_5_to_4_5_6" tendon="voxel_4_5_5_spatial_5_6_5_to_4_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_5_5_motor_4_6_5_to_5_5_6" tendon="voxel_4_5_5_spatial_4_6_5_to_5_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_4_5_5_motor_5_5_5_to_4_6_6" tendon="voxel_4_5_5_spatial_5_5_5_to_4_6_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_4_4_motor_5_4_4_to_6_5_5" tendon="voxel_5_4_4_spatial_5_4_4_to_6_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_4_4_motor_6_5_4_to_5_4_5" tendon="voxel_5_4_4_spatial_6_5_4_to_5_4_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_4_4_motor_5_5_4_to_6_4_5" tendon="voxel_5_4_4_spatial_5_5_4_to_6_4_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_4_4_motor_6_4_4_to_5_5_5" tendon="voxel_5_4_4_spatial_6_4_4_to_5_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_4_5_motor_5_4_5_to_6_5_6" tendon="voxel_5_4_5_spatial_5_4_5_to_6_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_4_5_motor_6_5_5_to_5_4_6" tendon="voxel_5_4_5_spatial_6_5_5_to_5_4_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_4_5_motor_5_5_5_to_6_4_6" tendon="voxel_5_4_5_spatial_5_5_5_to_6_4_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_4_5_motor_6_4_5_to_5_5_6" tendon="voxel_5_4_5_spatial_6_4_5_to_5_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_5_4_motor_5_5_4_to_6_6_5" tendon="voxel_5_5_4_spatial_5_5_4_to_6_6_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_5_4_motor_6_6_4_to_5_5_5" tendon="voxel_5_5_4_spatial_6_6_4_to_5_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_5_4_motor_5_6_4_to_6_5_5" tendon="voxel_5_5_4_spatial_5_6_4_to_6_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_5_4_motor_6_5_4_to_5_6_5" tendon="voxel_5_5_4_spatial_6_5_4_to_5_6_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_5_5_motor_5_5_5_to_6_6_6" tendon="voxel_5_5_5_spatial_5_5_5_to_6_6_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_5_5_motor_6_6_5_to_5_5_6" tendon="voxel_5_5_5_spatial_6_6_5_to_5_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_5_5_motor_5_6_5_to_6_5_6" tendon="voxel_5_5_5_spatial_5_6_5_to_6_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_5_5_5_motor_6_5_5_to_5_6_6" tendon="voxel_5_5_5_spatial_6_5_5_to_5_6_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_4_4_motor_6_4_4_to_7_5_5" tendon="voxel_6_4_4_spatial_6_4_4_to_7_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_4_4_motor_7_5_4_to_6_4_5" tendon="voxel_6_4_4_spatial_7_5_4_to_6_4_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_4_4_motor_6_5_4_to_7_4_5" tendon="voxel_6_4_4_spatial_6_5_4_to_7_4_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_4_4_motor_7_4_4_to_6_5_5" tendon="voxel_6_4_4_spatial_7_4_4_to_6_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_4_5_motor_6_4_5_to_7_5_6" tendon="voxel_6_4_5_spatial_6_4_5_to_7_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_4_5_motor_7_5_5_to_6_4_6" tendon="voxel_6_4_5_spatial_7_5_5_to_6_4_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_4_5_motor_6_5_5_to_7_4_6" tendon="voxel_6_4_5_spatial_6_5_5_to_7_4_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_4_5_motor_7_4_5_to_6_5_6" tendon="voxel_6_4_5_spatial_7_4_5_to_6_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_5_4_motor_6_5_4_to_7_6_5" tendon="voxel_6_5_4_spatial_6_5_4_to_7_6_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_5_4_motor_7_6_4_to_6_5_5" tendon="voxel_6_5_4_spatial_7_6_4_to_6_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_5_4_motor_6_6_4_to_7_5_5" tendon="voxel_6_5_4_spatial_6_6_4_to_7_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_5_4_motor_7_5_4_to_6_6_5" tendon="voxel_6_5_4_spatial_7_5_4_to_6_6_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_5_5_motor_6_5_5_to_7_6_6" tendon="voxel_6_5_5_spatial_6_5_5_to_7_6_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_5_5_motor_7_6_5_to_6_5_6" tendon="voxel_6_5_5_spatial_7_6_5_to_6_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_5_5_motor_6_6_5_to_7_5_6" tendon="voxel_6_5_5_spatial_6_6_5_to_7_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_6_5_5_motor_7_5_5_to_6_6_6" tendon="voxel_6_5_5_spatial_7_5_5_to_6_6_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_4_4_motor_7_4_4_to_8_5_5" tendon="voxel_7_4_4_spatial_7_4_4_to_8_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_4_4_motor_8_5_4_to_7_4_5" tendon="voxel_7_4_4_spatial_8_5_4_to_7_4_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_4_4_motor_7_5_4_to_8_4_5" tendon="voxel_7_4_4_spatial_7_5_4_to_8_4_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_4_4_motor_8_4_4_to_7_5_5" tendon="voxel_7_4_4_spatial_8_4_4_to_7_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_4_5_motor_7_4_5_to_8_5_6" tendon="voxel_7_4_5_spatial_7_4_5_to_8_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_4_5_motor_8_5_5_to_7_4_6" tendon="voxel_7_4_5_spatial_8_5_5_to_7_4_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_4_5_motor_7_5_5_to_8_4_6" tendon="voxel_7_4_5_spatial_7_5_5_to_8_4_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_4_5_motor_8_4_5_to_7_5_6" tendon="voxel_7_4_5_spatial_8_4_5_to_7_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_5_4_motor_7_5_4_to_8_6_5" tendon="voxel_7_5_4_spatial_7_5_4_to_8_6_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_5_4_motor_8_6_4_to_7_5_5" tendon="voxel_7_5_4_spatial_8_6_4_to_7_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_5_4_motor_7_6_4_to_8_5_5" tendon="voxel_7_5_4_spatial_7_6_4_to_8_5_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_5_4_motor_8_5_4_to_7_6_5" tendon="voxel_7_5_4_spatial_8_5_4_to_7_6_5" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_5_5_motor_7_5_5_to_8_6_6" tendon="voxel_7_5_5_spatial_7_5_5_to_8_6_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_5_5_motor_8_6_5_to_7_5_6" tendon="voxel_7_5_5_spatial_8_6_5_to_7_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_5_5_motor_7_6_5_to_8_5_6" tendon="voxel_7_5_5_spatial_7_6_5_to_8_5_6" ctrlrange="0 1" gear="100"/>
+    <motor name="voxel_7_5_5_motor_8_5_5_to_7_6_6" tendon="voxel_7_5_5_spatial_8_5_5_to_7_6_6" ctrlrange="0 1" gear="100"/>
   </actuator>
 </mujoco>
