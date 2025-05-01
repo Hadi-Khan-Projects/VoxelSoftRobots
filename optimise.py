@@ -602,10 +602,10 @@ def optimise(
 if __name__ == "__main__":
     # CONFIG: Evolutionary Algorithm
     CONTROLLER_TYPE = "rnn"  # 'mlp', 'mlp_plus', 'rnn'
-    NUM_WORKERS = 8
-    NUM_GENERATIONS = 3
-    POPULATION_SIZE = 8  # paper used 250
-    TOURNAMENT_SIZE = 3  # paper used 8
+    NUM_WORKERS = 30
+    NUM_GENERATIONS = 200
+    POPULATION_SIZE = 60  # paper used 250
+    TOURNAMENT_SIZE = 6  # paper used 8
 
     CROSSOVER_PROBABILITY = 0.8
     MUTATION_SIGMA = 0.2  # paper used 0.15
