@@ -1,0 +1,599 @@
+nohup: ignoring input
+Running optimization for model: quadruped_v3_copy using rnn controller.
+Generating/Loading MuJoCo model and VSR info...
+Formatted XML saved to vsr_models/quadruped_v3_copy/quadruped_v3_copy_modded.xml
+MuJoCo XML generated. Sim timestep: 0.001, Control timestep: 0.2
+VSR Gear: 100, Active Voxels: 159
+Model loaded in main process for setup analysis.
+--- Starting Optimisation ---
+Controller Type: rnn
+  RNN Hidden: 16
+Using 30 workers.
+Found 159 active voxels.
+Controller Base Input Size: 28
+Controller Base Output Size: 13
+Total parameters per individual: 957
+Initializing population of size 60...
+Population initialized.
+
+
+
+--- Generation 1/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 131.09 seconds.
+Best fitness in generation: -278.1924
+Average fitness (valid):   -297.2611
+*** New overall best fitness found: -278.1924 ***
+Generation 1 finished in 131.13 seconds.
+
+--- Generation 2/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 131.14 seconds.
+Best fitness in generation: -285.0663
+Average fitness (valid):   -296.8261
+Generation 2 finished in 131.17 seconds.
+
+--- Generation 3/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.51 seconds.
+Best fitness in generation: -278.7180
+Average fitness (valid):   -295.4186
+Generation 3 finished in 130.54 seconds.
+
+--- Generation 4/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 136.07 seconds.
+Best fitness in generation: -280.2107
+Average fitness (valid):   -297.1530
+Generation 4 finished in 136.10 seconds.
+
+--- Generation 5/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 139.40 seconds.
+Best fitness in generation: -277.4905
+Average fitness (valid):   -296.1047
+*** New overall best fitness found: -277.4905 ***
+Generation 5 finished in 139.44 seconds.
+
+--- Generation 6/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 131.35 seconds.
+Best fitness in generation: -278.7406
+Average fitness (valid):   -294.2401
+Generation 6 finished in 131.39 seconds.
+
+--- Generation 7/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.56 seconds.
+Best fitness in generation: -277.1050
+Average fitness (valid):   -289.5351
+*** New overall best fitness found: -277.1050 ***
+Generation 7 finished in 130.59 seconds.
+
+--- Generation 8/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.11 seconds.
+Best fitness in generation: -271.7647
+Average fitness (valid):   -287.3639
+*** New overall best fitness found: -271.7647 ***
+Generation 8 finished in 130.15 seconds.
+
+--- Generation 9/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.71 seconds.
+Best fitness in generation: -276.1161
+Average fitness (valid):   -287.0149
+Generation 9 finished in 130.75 seconds.
+
+--- Generation 10/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.77 seconds.
+Best fitness in generation: -274.7897
+Average fitness (valid):   -288.3924
+Generation 10 finished in 130.80 seconds.
+
+--- Generation 11/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.02 seconds.
+Best fitness in generation: -270.8555
+Average fitness (valid):   -288.7891
+*** New overall best fitness found: -270.8555 ***
+Generation 11 finished in 130.06 seconds.
+
+--- Generation 12/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 132.92 seconds.
+Best fitness in generation: -269.9230
+Average fitness (valid):   -287.3149
+*** New overall best fitness found: -269.9230 ***
+Generation 12 finished in 132.96 seconds.
+
+--- Generation 13/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.46 seconds.
+Best fitness in generation: -270.6808
+Average fitness (valid):   -287.4092
+Generation 13 finished in 130.49 seconds.
+
+--- Generation 14/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.58 seconds.
+Best fitness in generation: -273.6690
+Average fitness (valid):   -291.8472
+Generation 14 finished in 130.62 seconds.
+
+--- Generation 15/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.34 seconds.
+Best fitness in generation: -268.8973
+Average fitness (valid):   -288.9176
+*** New overall best fitness found: -268.8973 ***
+Generation 15 finished in 130.37 seconds.
+
+--- Generation 16/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.58 seconds.
+Best fitness in generation: -267.1334
+Average fitness (valid):   -294.1483
+*** New overall best fitness found: -267.1334 ***
+Generation 16 finished in 130.61 seconds.
+
+--- Generation 17/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.35 seconds.
+Best fitness in generation: -264.8965
+Average fitness (valid):   -290.0335
+*** New overall best fitness found: -264.8965 ***
+Generation 17 finished in 130.38 seconds.
+
+--- Generation 18/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.90 seconds.
+Best fitness in generation: -268.7188
+Average fitness (valid):   -291.2369
+Generation 18 finished in 130.94 seconds.
+
+--- Generation 19/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 135.78 seconds.
+Best fitness in generation: -267.9194
+Average fitness (valid):   -287.2190
+Generation 19 finished in 135.81 seconds.
+
+--- Generation 20/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.12 seconds.
+Best fitness in generation: -261.4345
+Average fitness (valid):   -284.6386
+*** New overall best fitness found: -261.4345 ***
+Generation 20 finished in 130.15 seconds.
+
+--- Generation 21/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.29 seconds.
+Best fitness in generation: -261.4345
+Average fitness (valid):   -281.3696
+Generation 21 finished in 130.33 seconds.
+
+--- Generation 22/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.64 seconds.
+Best fitness in generation: -261.4345
+Average fitness (valid):   -277.7619
+Generation 22 finished in 130.68 seconds.
+
+--- Generation 23/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.62 seconds.
+Best fitness in generation: -258.5580
+Average fitness (valid):   -277.1627
+*** New overall best fitness found: -258.5580 ***
+Generation 23 finished in 130.66 seconds.
+
+--- Generation 24/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.45 seconds.
+Best fitness in generation: -258.5580
+Average fitness (valid):   -280.0262
+Generation 24 finished in 130.48 seconds.
+
+--- Generation 25/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.53 seconds.
+Best fitness in generation: -254.4708
+Average fitness (valid):   -281.1775
+*** New overall best fitness found: -254.4708 ***
+Generation 25 finished in 130.57 seconds.
+
+--- Generation 26/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.40 seconds.
+Best fitness in generation: -251.8663
+Average fitness (valid):   -274.1936
+*** New overall best fitness found: -251.8663 ***
+Generation 26 finished in 130.44 seconds.
+
+--- Generation 27/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 131.45 seconds.
+Best fitness in generation: -257.0778
+Average fitness (valid):   -270.1417
+Generation 27 finished in 131.49 seconds.
+
+--- Generation 28/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.40 seconds.
+Best fitness in generation: -257.4602
+Average fitness (valid):   -267.9105
+Generation 28 finished in 130.43 seconds.
+
+--- Generation 29/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.27 seconds.
+Best fitness in generation: -258.6351
+Average fitness (valid):   -270.1483
+Generation 29 finished in 130.30 seconds.
+
+--- Generation 30/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 129.92 seconds.
+Best fitness in generation: -253.0691
+Average fitness (valid):   -270.4593
+Generation 30 finished in 129.96 seconds.
+
+--- Generation 31/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.22 seconds.
+Best fitness in generation: -251.3400
+Average fitness (valid):   -271.7238
+*** New overall best fitness found: -251.3400 ***
+Generation 31 finished in 130.26 seconds.
+
+--- Generation 32/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 131.37 seconds.
+Best fitness in generation: -251.3400
+Average fitness (valid):   -272.4184
+Generation 32 finished in 131.40 seconds.
+
+--- Generation 33/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 129.96 seconds.
+Best fitness in generation: -251.3400
+Average fitness (valid):   -272.3921
+Generation 33 finished in 130.00 seconds.
+
+--- Generation 34/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.30 seconds.
+Best fitness in generation: -243.7868
+Average fitness (valid):   -269.3244
+*** New overall best fitness found: -243.7868 ***
+Generation 34 finished in 130.33 seconds.
+
+--- Generation 35/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.76 seconds.
+Best fitness in generation: -249.3690
+Average fitness (valid):   -268.0357
+Generation 35 finished in 130.79 seconds.
+
+--- Generation 36/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 133.22 seconds.
+Best fitness in generation: -248.1052
+Average fitness (valid):   -267.9314
+Generation 36 finished in 133.26 seconds.
+
+--- Generation 37/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.33 seconds.
+Best fitness in generation: -248.1052
+Average fitness (valid):   -266.5066
+Generation 37 finished in 130.36 seconds.
+
+--- Generation 38/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.99 seconds.
+Best fitness in generation: -244.2600
+Average fitness (valid):   -265.0506
+Generation 38 finished in 131.02 seconds.
+
+--- Generation 39/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 132.97 seconds.
+Best fitness in generation: -246.6873
+Average fitness (valid):   -266.8637
+Generation 39 finished in 133.00 seconds.
+
+--- Generation 40/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.78 seconds.
+Best fitness in generation: -246.6873
+Average fitness (valid):   -263.5354
+Generation 40 finished in 130.81 seconds.
+
+--- Generation 41/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 129.99 seconds.
+Best fitness in generation: -247.7287
+Average fitness (valid):   -265.1297
+Generation 41 finished in 130.02 seconds.
+
+--- Generation 42/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 134.46 seconds.
+Best fitness in generation: -247.7287
+Average fitness (valid):   -265.2131
+Generation 42 finished in 134.50 seconds.
+
+--- Generation 43/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.01 seconds.
+Best fitness in generation: -247.7287
+Average fitness (valid):   -268.1591
+Generation 43 finished in 130.04 seconds.
+
+--- Generation 44/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 131.32 seconds.
+Best fitness in generation: -247.0015
+Average fitness (valid):   -266.5740
+Generation 44 finished in 131.36 seconds.
+
+--- Generation 45/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.09 seconds.
+Best fitness in generation: -250.1958
+Average fitness (valid):   -272.7387
+Generation 45 finished in 130.12 seconds.
+
+--- Generation 46/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 129.70 seconds.
+Best fitness in generation: -248.4956
+Average fitness (valid):   -271.2760
+Generation 46 finished in 129.73 seconds.
+
+--- Generation 47/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 129.66 seconds.
+Best fitness in generation: -243.8382
+Average fitness (valid):   -268.9362
+Generation 47 finished in 129.70 seconds.
+
+--- Generation 48/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 129.77 seconds.
+Best fitness in generation: -247.1584
+Average fitness (valid):   -265.2874
+Generation 48 finished in 129.80 seconds.
+
+--- Generation 49/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.02 seconds.
+Best fitness in generation: -247.2354
+Average fitness (valid):   -265.3075
+Generation 49 finished in 130.06 seconds.
+
+--- Generation 50/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 129.60 seconds.
+Best fitness in generation: -248.3059
+Average fitness (valid):   -269.4735
+Generation 50 finished in 129.64 seconds.
+
+--- Generation 51/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.36 seconds.
+Best fitness in generation: -248.3059
+Average fitness (valid):   -273.4492
+Generation 51 finished in 130.40 seconds.
+
+--- Generation 52/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 138.32 seconds.
+Best fitness in generation: -247.6836
+Average fitness (valid):   -270.3376
+Generation 52 finished in 138.35 seconds.
+
+--- Generation 53/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 133.39 seconds.
+Best fitness in generation: -243.1692
+Average fitness (valid):   -267.3344
+*** New overall best fitness found: -243.1692 ***
+Generation 53 finished in 133.42 seconds.
+
+--- Generation 54/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.54 seconds.
+Best fitness in generation: -248.3059
+Average fitness (valid):   -258.1602
+Generation 54 finished in 130.58 seconds.
+
+--- Generation 55/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 131.18 seconds.
+Best fitness in generation: -248.3059
+Average fitness (valid):   -253.5865
+Generation 55 finished in 131.22 seconds.
+
+--- Generation 56/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 129.97 seconds.
+Best fitness in generation: -248.3059
+Average fitness (valid):   -251.8816
+Generation 56 finished in 130.00 seconds.
+
+--- Generation 57/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 136.32 seconds.
+Best fitness in generation: -243.3142
+Average fitness (valid):   -253.9439
+Generation 57 finished in 136.36 seconds.
+
+--- Generation 58/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.61 seconds.
+Best fitness in generation: -243.8946
+Average fitness (valid):   -254.9392
+Generation 58 finished in 130.64 seconds.
+
+--- Generation 59/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 131.46 seconds.
+Best fitness in generation: -248.3059
+Average fitness (valid):   -261.6279
+Generation 59 finished in 131.49 seconds.
+
+--- Generation 60/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.66 seconds.
+Best fitness in generation: -248.3059
+Average fitness (valid):   -255.0204
+Generation 60 finished in 130.70 seconds.
+
+--- Generation 61/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.72 seconds.
+Best fitness in generation: -248.3059
+Average fitness (valid):   -250.9742
+Generation 61 finished in 130.76 seconds.
+
+--- Generation 62/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.46 seconds.
+Best fitness in generation: -248.3059
+Average fitness (valid):   -251.7664
+Generation 62 finished in 130.49 seconds.
+
+--- Generation 63/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.96 seconds.
+Best fitness in generation: -248.3059
+Average fitness (valid):   -252.1892
+Generation 63 finished in 131.00 seconds.
+
+--- Generation 64/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.34 seconds.
+Best fitness in generation: -244.6389
+Average fitness (valid):   -251.0248
+Generation 64 finished in 130.37 seconds.
+
+--- Generation 65/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.67 seconds.
+Best fitness in generation: -244.6389
+Average fitness (valid):   -256.6054
+Generation 65 finished in 130.70 seconds.
+
+--- Generation 66/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.05 seconds.
+Best fitness in generation: -244.6389
+Average fitness (valid):   -256.6869
+Generation 66 finished in 130.09 seconds.
+
+--- Generation 67/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 134.99 seconds.
+Best fitness in generation: -242.8893
+Average fitness (valid):   -254.4233
+*** New overall best fitness found: -242.8893 ***
+Generation 67 finished in 135.02 seconds.
+
+--- Generation 68/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.15 seconds.
+Best fitness in generation: -237.7352
+Average fitness (valid):   -259.7543
+*** New overall best fitness found: -237.7352 ***
+Generation 68 finished in 130.18 seconds.
+
+--- Generation 69/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.34 seconds.
+Best fitness in generation: -243.3216
+Average fitness (valid):   -259.6811
+Generation 69 finished in 130.37 seconds.
+
+--- Generation 70/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.79 seconds.
+Best fitness in generation: -240.5447
+Average fitness (valid):   -259.6141
+Generation 70 finished in 130.82 seconds.
+
+--- Generation 71/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.42 seconds.
+Best fitness in generation: -240.5447
+Average fitness (valid):   -256.7567
+Generation 71 finished in 130.46 seconds.
+
+--- Generation 72/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 135.68 seconds.
+Best fitness in generation: -236.6255
+Average fitness (valid):   -262.9186
+*** New overall best fitness found: -236.6255 ***
+Generation 72 finished in 135.72 seconds.
+
+--- Generation 73/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 131.08 seconds.
+Best fitness in generation: -241.2163
+Average fitness (valid):   -258.5609
+Generation 73 finished in 131.11 seconds.
+
+--- Generation 74/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.17 seconds.
+Best fitness in generation: -244.6389
+Average fitness (valid):   -255.1504
+Generation 74 finished in 130.21 seconds.
+
+--- Generation 75/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 133.80 seconds.
+Best fitness in generation: -244.6389
+Average fitness (valid):   -250.0442
+Generation 75 finished in 133.84 seconds.
+
+--- Generation 76/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.03 seconds.
+Best fitness in generation: -244.6389
+Average fitness (valid):   -248.8859
+Generation 76 finished in 130.06 seconds.
+
+--- Generation 77/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.57 seconds.
+Best fitness in generation: -244.6389
+Average fitness (valid):   -247.9464
+Generation 77 finished in 130.61 seconds.
+
+--- Generation 78/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 130.46 seconds.
+Best fitness in generation: -244.6389
+Average fitness (valid):   -247.4940
+Generation 78 finished in 130.49 seconds.
+
+--- Generation 79/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................Evaluation finished in 129.35 seconds.
+Best fitness in generation: -244.6389
+Average fitness (valid):   -247.9086
+Generation 79 finished in 129.39 seconds.
+
+--- Generation 80/80 ---
+Evaluating 60 individuals using 30 workers...
+............................................................/mnt/evolution_data/VoxelSoftRobots/.venv/lib/python3.12/site-packages/glfw/__init__.py:914: GLFWError: (65544) b'X11: The DISPLAY environment variable is missing'
+  warnings.warn(message, GLFWError)
+ERROR: could not initialize GLFW
+
+Press Enter to exit ...

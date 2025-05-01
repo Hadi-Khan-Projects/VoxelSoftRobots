@@ -4,7 +4,6 @@ import os
 import random
 import time
 import traceback
-from functools import partial
 
 import numpy as np
 import pandas as pd
@@ -20,12 +19,28 @@ MUTATION_RETRY_LIMIT = 10  # Max attempts to get a valid mutation
 
 
 def _is_within_bounds(coord):
-    """Check if a coordinate is within the defined grid."""
+    """
+    Check if a coordinate is within the defined grid.
+
+    Args:
+        coord (tuple): A tuple of (x, y, z) coordinates.
+
+    Returns:
+        bool: True if within bounds, False otherwise.
+    """
     return all(0 <= c < GRID_SIZE for c in coord)
 
 
 def _get_neighbors(coord):
-    """Get the 6 neighboring coordinates."""
+    """
+    Get the 6 neighboring coordinates.
+
+    Args:
+        coord (tuple): A tuple of (x, y, z) coordinates.
+
+    Returns:
+        list: A list of neighboring coordinates.
+    """
     x, y, z = coord
     neighbors = [
         (x + 1, y, z),
@@ -39,7 +54,15 @@ def _get_neighbors(coord):
 
 
 def _find_surface_voxels(vsr: VoxelRobot):
-    """Find all voxels on the surface of the VSR."""
+    """
+    Find all voxels on the surface of the VSR.
+
+    Args:
+        vsr (VoxelRobot): The VSR instance.
+
+    Returns:
+        list: A list of surface voxel coordinates.
+    """
     surface_voxels = []
     active_voxels = list(zip(*np.where(vsr.voxel_grid == 1)))
     active_voxel_set = set(active_voxels)
@@ -56,7 +79,16 @@ def _find_surface_voxels(vsr: VoxelRobot):
 
 
 def _count_connections(coord, active_voxel_set):
-    """Count how many active neighbors a coordinate has."""
+    """
+    Count how many active neighbors a coordinate has.
+
+    Args:
+        coord (tuple): A tuple of (x, y, z) coordinates.
+        active_voxel_set (set): Set of active voxel coordinates.
+
+    Returns:
+        int: Number of active neighbors.
+    """
     count = 0
     for n_coord in _get_neighbors(coord):
         if n_coord in active_voxel_set:
@@ -70,6 +102,14 @@ def _find_candidate_neighbors(coord, vsr: VoxelRobot, find_empty: bool):
     Returns a list of (neighbor_coord, connectivity_score) tuples, sorted.
     For add (find_empty=True): higher score is better.
     For remove (find_empty=False): lower score is better.
+
+    Args:
+        coord (tuple): The coordinate to check neighbors for.
+        vsr (VoxelRobot): The VSR instance.
+        find_empty (bool): True to find empty neighbors, False for active.
+
+    Returns:
+        list: A list of candidate neighbors with their scores.
     """
     active_voxel_set = set(list(zip(*np.where(vsr.voxel_grid == 1))))
     candidates = []
@@ -77,16 +117,16 @@ def _find_candidate_neighbors(coord, vsr: VoxelRobot, find_empty: bool):
         is_empty = n_coord not in active_voxel_set
         is_active = not is_empty
 
-        if find_empty and is_empty:  # Candidate for ADDITION
-            # Score based on how many connections it *would* have
+        if find_empty and is_empty:  # candidate for ADDITION
+            # score based on how many connections it *would* have
             score = _count_connections(n_coord, active_voxel_set)
             candidates.append((n_coord, score))
-        elif not find_empty and is_active and n_coord != coord:  # Candidate for REMOVAL
-            # Score based on current connections (lower is less critical)
+        elif not find_empty and is_active and n_coord != coord:  # candidate for REMOVAL
+            # score based on current connections (lower is less critical)
             score = _count_connections(n_coord, active_voxel_set)
             candidates.append((n_coord, score))
 
-    # Sort based on score (desc for add, asc for remove)
+    # sort based on score (desc for add, asc for remove)
     candidates.sort(key=lambda item: item[1], reverse=find_empty)
     return candidates
 
@@ -97,29 +137,38 @@ def _bfs_find_candidates(
     """
     Use BFS starting from start_coord over *surface* voxels to find
     enough candidate neighbors for addition or removal.
+
+    Args:
+        start_coord (tuple): Starting coordinate for BFS.
+        vsr (VoxelRobot): The VSR instance.
+        find_empty (bool): True to find empty neighbors, False for active.
+        num_needed (int): Number of unique candidates needed.
+
+    Returns:
+        list: A list of candidate coordinates.
     """
     surface_voxels = _find_surface_voxels(vsr)
     if not surface_voxels:
-        return []  # Should not happen if called correctly
+        return []  # should not happen if called correctly
 
     queue = collections.deque([(start_coord, 0)])  # (coord, distance)
     visited = {start_coord}
-    all_candidates = []  # List of (coord, score, distance)
+    all_candidates = []  # list of (coord, score, distance)
 
     while queue:
         current_coord, dist = queue.popleft()
 
-        # Find candidates around the current surface voxel
+        # find candidates around the current surface voxel
         local_candidates = _find_candidate_neighbors(current_coord, vsr, find_empty)
         for cand_coord, score in local_candidates:
-            # Add distance to allow prioritization
+            # add distance to allow prioritisation
             all_candidates.append((cand_coord, score, dist))
 
-        # Stop if we potentially have enough unique candidates
+        # stop if we potentially have enough unique candidates
         if len(set(c[0] for c in all_candidates)) >= num_needed:
-            break  # Optimization, might collect more than needed
+            break  # Optimisation, might collect more than needed
 
-        # Explore neighbors on the surface
+        # explore neighbors on the surface
         active_voxel_set = set(list(zip(*np.where(vsr.voxel_grid == 1))))
         for neighbor in _get_neighbors(current_coord):
             if (
@@ -130,40 +179,47 @@ def _bfs_find_candidates(
                 visited.add(neighbor)
                 queue.append((neighbor, dist + 1))
 
-    # Post-process candidates: remove duplicates, sort primarily by score, then distance
+    # post-process candidates: remove duplicates, sort primarily by score, then distance
     unique_candidates = {}
     for cand_coord, score, dist in all_candidates:
         if (
             cand_coord not in unique_candidates
             or unique_candidates[cand_coord][1] > dist
         ):
-            # Keep the one found with the shortest BFS distance
+            # keep the one found with the shortest BFS distance
             unique_candidates[cand_coord] = (score, dist)
 
-    # Convert back to list and sort
+    # convert back to list and sort
     sorted_candidates = sorted(
         [(coord, score, dist) for coord, (score, dist) in unique_candidates.items()],
         key=lambda item: (
             item[1],
             item[2],
-        ),  # Sort by score (primary), then distance (secondary)
-        reverse=find_empty,  # High score first for add, Low score first for remove
+        ),  # sort by score (primary), then distance (secondary)
+        reverse=find_empty,  # high score first for add, Low score first for remove
     )
 
-    # Return only the coordinates of the top candidates needed
+    # return only the coordinates of the top candidates needed
     return [c[0] for c in sorted_candidates[:num_needed]]
 
 
-def mutate_morphology(vsr: VoxelRobot, verbose=False):  # Add verbose flag
+def mutate_morphology(vsr: VoxelRobot, verbose=False):  # verbose flag
     """
     Mutates the VSR morphology by adding 3 or removing 2 voxels from the surface.
     Ensures contiguity and bounds. Biased towards growth.
     Returns a *new* mutated VoxelRobot instance, or None if mutation fails.
+
+    Args:
+        vsr (VoxelRobot): The VSR instance to mutate.
+        verbose (bool): If True, print detailed mutation process.
+
+    Returns:
+        VoxelRobot: A new mutated VSR instance, or None if mutation fails.
     """
     for attempt in range(MUTATION_RETRY_LIMIT):
         if verbose:
             print(f"\nMutation Attempt {attempt + 1}/{MUTATION_RETRY_LIMIT}")
-        new_vsr = None  # Ensure new_vsr is reset each attempt
+        new_vsr = None  # ensure new_vsr is reset each attempt
         try:
             new_vsr = VoxelRobot(vsr.max_x, vsr.max_y, vsr.max_z, vsr.gear)
             new_vsr.voxel_grid = np.copy(vsr.voxel_grid)  # Work on a copy
@@ -172,22 +228,21 @@ def mutate_morphology(vsr: VoxelRobot, verbose=False):  # Add verbose flag
             if not surface_voxels:
                 if verbose:
                     print("  Failure: No surface voxels found.")
-                # Cannot mutate if no surface exists (e.g., single voxel)
-                # Might need a different strategy for very small VSRs if this happens
-                return None  # Or maybe return the original vsr? For now, fail.
+                # cannot mutate if no surface exists (e.g., single voxel)
+                return None  # fail.
 
             start_coord = random.choice(surface_voxels)
             if verbose:
                 print(f"  Starting BFS from surface voxel: {start_coord}")
 
-            # Decide operation: 50% add, 50% remove
+            # decide operation: 50% add, 50% remove
             add_operation = random.random() < 0.5
             operation_type = "ADD" if add_operation else "REMOVE"
             if verbose:
                 print(f"  Operation Type: {operation_type}")
 
             if add_operation:
-                # --- ADD 3 VOXELS ---
+                # add 3 voxels
                 num_to_operate = 3
                 candidates = _bfs_find_candidates(
                     start_coord, new_vsr, find_empty=True, num_needed=num_to_operate
@@ -200,9 +255,9 @@ def mutate_morphology(vsr: VoxelRobot, verbose=False):  # Add verbose flag
                 if len(candidates) < num_to_operate:
                     if verbose:
                         print(
-                            f"  Failure: Not enough valid locations found for addition."
+                            "  Failure: Not enough valid locations found for addition."
                         )
-                    continue  # Try mutation again
+                    continue  # try mutation again
 
                 voxels_to_change = candidates[:num_to_operate]
                 if verbose:
@@ -213,14 +268,14 @@ def mutate_morphology(vsr: VoxelRobot, verbose=False):  # Add verbose flag
                     else:
                         if verbose:
                             print(f"  Warning: Candidate {x, y, z} out of bounds.")
-                        # This shouldn't happen if _get_neighbors checks bounds correctly
+                        # this shouldnt happen if _get_neighbors checks bounds correctly
                         # but as a safeguard, maybe fail this attempt
                         raise ValueError("Candidate out of bounds")
 
-                # Check contiguity (Catch ValueError)
+                # check contiguity (catch ValueError)
                 is_contiguous = False
                 try:
-                    new_vsr._check_contiguous()  # This raises ValueError on failure
+                    new_vsr._check_contiguous()  # this raises ValueError on failure
                     is_contiguous = True  # If no error, it's contiguous
                     if verbose:
                         print("  Contiguity Check: PASSED")
@@ -236,12 +291,12 @@ def mutate_morphology(vsr: VoxelRobot, verbose=False):  # Add verbose flag
                 else:
                     if verbose:
                         print("  Failure: Resulting VSR (ADD) is not contiguous.")
-                    continue  # Try mutation again
+                    continue  # try mutation again
 
             else:
-                # --- REMOVE 2 VOXELS ---
+                # remove 2 voxels
                 num_to_operate = 2
-                # Use BFS to find the least connected *active* neighbors
+                # use BFS to find the least connected *active* neighbors
                 candidates = _bfs_find_candidates(
                     start_coord, new_vsr, find_empty=False, num_needed=num_to_operate
                 )
@@ -252,39 +307,36 @@ def mutate_morphology(vsr: VoxelRobot, verbose=False):  # Add verbose flag
 
                 if len(candidates) < num_to_operate:
                     if verbose:
-                        print(f"  Failure: Not enough removable voxels found.")
-                    continue  # Try mutation again
+                        print("  Failure: Not enough removable voxels found.")
+                    continue  # try mutation again
 
                 voxels_to_change = candidates[:num_to_operate]
                 if verbose:
                     print(f"  Selected voxels to remove: {voxels_to_change}")
 
-                # Store original state for checks
-                original_voxel_count = np.sum(new_vsr.voxel_grid)
-
                 for x, y, z in voxels_to_change:
-                    if new_vsr.voxel_grid[x, y, z] == 1:  # Make sure it's active
+                    if new_vsr.voxel_grid[x, y, z] == 1:  # make sure it's active
                         new_vsr.voxel_grid[x, y, z] = 0
                     else:
-                        # This indicates a logic error in candidate selection
+                        # this indicates a logic error in candidate selection
                         if verbose:
                             print(
                                 f"  ERROR: Tried to remove non-active voxel {x, y, z}"
                             )
                         raise RuntimeError("Tried to remove non-active voxel")
 
-                # Check if VSR became empty
+                # check if VSR became empty
                 is_empty = np.sum(new_vsr.voxel_grid) == 0
                 if is_empty:
                     if verbose:
                         print("  Failure: Resulting VSR is empty.")
-                    continue  # Cannot have an empty VSR
+                    continue  # cannot have an empty VSR
 
-                # Check contiguity (Catch ValueError)
+                # check contiguity (catch ValueError)
                 is_contiguous = False
                 try:
-                    new_vsr._check_contiguous()  # This raises ValueError on failure
-                    is_contiguous = True  # If no error, it's contiguous
+                    new_vsr._check_contiguous()  # this raises ValueError on failure
+                    is_contiguous = True  # if no error, it's contiguous
                     if verbose:
                         print("  Contiguity Check: PASSED")
                 except ValueError:
@@ -299,47 +351,58 @@ def mutate_morphology(vsr: VoxelRobot, verbose=False):  # Add verbose flag
                 else:
                     if verbose:
                         print("  Failure: Resulting VSR (REMOVE) is not contiguous.")
-                    continue  # Try mutation again
+                    continue  # try mutation again
 
         except Exception as e:
             print(f"  Error during mutation attempt {attempt + 1}: {e}")
-            # print(traceback.format_exc()) # Uncomment for more detail if needed
-            continue  # Try again
+            # print(traceback.format_exc())
+            continue  # try again
 
-    # If loop finishes without returning, all attempts failed
+    # if loop finishes without returning, all attempts failed
     print(f"Mutation failed after {MUTATION_RETRY_LIMIT} attempts.")
     return None
-
-
-# --- Main Evolution Function (Modified Call to mutate_morphology) ---
 
 
 def evolve(
     initial_morphology_csv: str,
     output_dir: str,
-    # Evolution Params
+    # evolution Params
     num_batches: int,
     num_mutations_per_batch: int,  # e.g., 12
     num_parents_select: int,  # e.g., 3
-    # Optimisation Params (passed to optimise.optimise)
-    optimise_generations: int,  # Generations *per morphology*
+    # optimisation Params (passed to optimise.optimise)
+    optimise_generations: int,  # generations per morphology
     optimise_population_size: int,
-    optimise_args: dict,  # Other args for optimise.optimise
+    optimise_args: dict,  # other args for optimise.optimise
     # VSR Params
     vsr_grid_dims: tuple = (GRID_SIZE, GRID_SIZE, GRID_SIZE),
     vsr_gear_ratio: float = 100.0,
-    # Debugging
-    mutation_verbose: bool = False,  # Add flag to control mutation logging
+    # debugging
+    mutation_verbose: bool = False,  # add flag to control mutation logging
 ):
     """
     Co-evolves VSR morphology and control strategy.
-    # ... (docstring remains the same)
+
+    Args:
+        initial_morphology_csv (str): Path to the initial morphology CSV file.
+        output_dir (str): Directory to save results.
+        num_batches (int): Number of evolution batches.
+        num_mutations_per_batch (int): Number of mutations per batch.
+        num_parents_select (int): Number of parents to select for next batch.
+        optimise_generations (int): Generations for controller optimisation.
+        optimise_population_size (int): Population size for optimisation.
+        optimise_args (dict): Additional arguments for optimisation.
+        vsr_grid_dims (tuple): Dimensions of the VSR grid.
+        vsr_gear_ratio (float): Gear ratio for the VSR.
+        mutation_verbose (bool): If True, print detailed mutation process.
+
+    Returns:
+        tuple: Best overall morphology VSR and a list of all batch histories.
     """
     print("--- Starting VSR Morphology & Control Co-Evolution ---")
     os.makedirs(output_dir, exist_ok=True)
 
-    # --- Load Initial Morphology ---
-    # ... (loading remains the same) ...
+    # Load initial morphology
     try:
         initial_vsr = VoxelRobot(*vsr_grid_dims, gear=vsr_gear_ratio)
         initial_vsr.load_model_csv(initial_morphology_csv)
@@ -349,21 +412,20 @@ def evolve(
         print(f"Fatal Error: Could not load or validate initial morphology: {e}")
         print(traceback.format_exc())
         return None, []
-    # ... (rest of setup remains the same) ...
-    current_morphologies = [initial_vsr]  # List of VoxelRobot instances
+
+    current_morphologies = [initial_vsr]  # list of VoxelRobot instances
     all_batch_histories = []
     best_overall_fitness = -np.inf
     best_overall_morphology_vsr = initial_vsr
-    best_overall_morphology_path = initial_morphology_csv
 
-    # --- Evolution Loop (Batches) ---
+    # evolution loop (batches)
     for batch_num in range(num_batches):
         batch_start_time = time.time()
         print(f"\n--- Starting Batch {batch_num + 1}/{num_batches} ---")
         print(f"Parent morphologies for this batch: {len(current_morphologies)}")
 
         mutations_to_process = []
-        # Ensure we don't get stuck if parent list is empty (shouldn't happen with current logic but good practice)
+        # ensure we don't get stuck if parent list is empty (shouldn't happen with current logic but just to be safe)
         if not current_morphologies:
             print("Error: No parent morphologies available. Stopping.")
             break
@@ -371,12 +433,12 @@ def evolve(
             num_mutations_per_batch // len(current_morphologies) + 1
         )
 
-        # 1. Generate Mutations
+        # STEP 1: Generate mutations
         print(f"Generating {num_mutations_per_batch} mutations...")
         attempts = 0
         max_total_attempts = (
             num_mutations_per_batch * MUTATION_RETRY_LIMIT * 3
-        )  # Increase total attempts limit slightly
+        )  # increase total attempts limit slightly
 
         while (
             len(mutations_to_process) < num_mutations_per_batch
@@ -385,10 +447,9 @@ def evolve(
             parent_index = len(mutations_to_process) % len(parents_cycle)
             parent_vsr = parents_cycle[parent_index]
 
-            # --- Call the updated mutate_morphology ---
             mutated_vsr = mutate_morphology(
                 parent_vsr, verbose=mutation_verbose
-            )  # Pass verbose flag
+            )  # verbose flag
 
             if mutated_vsr:
                 mutations_to_process.append(mutated_vsr)
@@ -399,7 +460,7 @@ def evolve(
             # else: # mutate_morphology now prints its own failure message
             #     pass
             attempts += 1
-        # --- End Generation Loop ---
+        # end of generation loop
 
         print(
             f"Generated {len(mutations_to_process)} mutations successfully for batch {batch_num + 1}."
@@ -409,30 +470,27 @@ def evolve(
             print(
                 "Error: Could not generate any valid mutations for this batch. Stopping."
             )
-            break  # Exit evolve loop if no mutations could be made
+            break  # exit evolve loop if no mutations could be made
 
-        # 2. Optimise Controller for Each Mutation
-        # ... (optimisation loop remains the same) ...
-        batch_results = []  # List of (VoxelRobot, best_fitness, best_params_vector)
-        batch_history_records = []  # Aggregated history from optimise runs
+        # STEP 2: Optimise Controller for Each Mutation
+        batch_results = []  # list of (VoxelRobot, best_fitness, best_params_vector)
+        batch_history_records = []  # aggregated history from optimise runs
 
         for mut_idx, mutated_vsr in enumerate(mutations_to_process):
-            mutation_start_time = time.time()
             print(
                 f"\nOptimizing Mutation {mut_idx + 1}/{len(mutations_to_process)} (Batch {batch_num + 1})..."
             )
-            # ... (rest of the optimisation call and result processing is the same) ...
-            # Define paths for this specific mutation
+            # define paths for this specific mutation
             mutation_id = f"batch{batch_num + 1}_mut{mut_idx + 1}"
             mutation_model_dir = os.path.join(output_dir, "models", mutation_id)
             os.makedirs(mutation_model_dir, exist_ok=True)
             mutation_csv_path = os.path.join(mutation_model_dir, f"{mutation_id}.csv")
             mutation_base_path = os.path.join(
                 mutation_model_dir, mutation_id
-            )  # Base for vsr.generate_model output
+            )  # base for vsr.generate_model output
 
             try:
-                # Save morphology and generate XML string
+                # save morphology and generate XML string
                 mutated_vsr.save_model_csv(mutation_csv_path)
                 xml_string = mutated_vsr.generate_model(mutation_base_path)
                 active_coords = [
@@ -449,7 +507,7 @@ def evolve(
                 # print(f"  Generated MuJoCo model files at {mutation_base_path}*.xml") # Less verbose
                 print(f"  Number of active voxels: {len(active_coords)}")
 
-                # Run controller optimisation
+                # run controller optimisation
                 optimise_start_time = time.time()
                 best_params_vector, history_df = optimise.optimise(
                     xml_string=xml_string,
@@ -462,17 +520,17 @@ def evolve(
                 optimise_duration = time.time() - optimise_start_time
                 print(f"  Optimisation finished in {optimise_duration:.2f} seconds.")
 
-                # Process results
+                # process results
                 best_fitness_for_mutation = -np.inf
                 if not history_df.empty:
-                    # Add batch and mutation index to the history
+                    # add batch and mutation index to the history
                     history_df.insert(0, "mutation_index", mut_idx + 1)
                     history_df.insert(0, "batch", batch_num + 1)
                     batch_history_records.append(history_df)
 
-                    # Find the best fitness achieved during this optimisation run
+                    # find the best fitness achieved during this optimisation run
                     if "fitness" in history_df.columns:
-                        # Ensure we get a finite number, default to -inf
+                        # ensure we get a finite number, default to -inf
                         try:
                             max_fit = history_df["fitness"].max()
                             best_fitness_for_mutation = (
@@ -488,13 +546,10 @@ def evolve(
                     (mutated_vsr, best_fitness_for_mutation, best_params_vector)
                 )
 
-                # Update overall best if needed
+                # update overall best if needed
                 if best_fitness_for_mutation > best_overall_fitness:
                     best_overall_fitness = best_fitness_for_mutation
-                    best_overall_morphology_vsr = mutated_vsr  # Keep the VSR object
-                    best_overall_morphology_path = (
-                        mutation_csv_path  # Store path to best CSV
-                    )
+                    best_overall_morphology_vsr = mutated_vsr  # keep the VSR object
                     print(
                         f"  *** New overall best morphology found (Fitness: {best_overall_fitness:.4f}) ***"
                     )
@@ -502,13 +557,9 @@ def evolve(
             except Exception as e:
                 print(f"Error processing mutation {mut_idx + 1}: {e}")
                 # print(traceback.format_exc()) # Uncomment for debug
-                batch_results.append((mutated_vsr, -np.inf, None))  # Record failure
+                batch_results.append((mutated_vsr, -np.inf, None))  # record failure
 
-            mutation_duration = time.time() - mutation_start_time
-            # print(f"Mutation {mut_idx + 1} processed in {mutation_duration:.2f} seconds.") # Less verbose
-
-        # 3. Save Combined Batch History
-        # ... (saving history remains the same) ...
+        # STEP 3: Save combined batch history
         if batch_history_records:
             combined_batch_history_df = pd.concat(
                 batch_history_records, ignore_index=True
@@ -525,40 +576,37 @@ def evolve(
         else:
             print("\nNo history records generated for this batch.")
 
-        # 4. Select Top Parents for Next Batch
-        # ... (selection remains the same) ...
-        # Filter out results where fitness is -inf before sorting
+        # STEP 4: Select top parents for next batch
+        # filter out results where fitness is -inf before sorting
         valid_results = [
             res for res in batch_results if np.isfinite(res[1]) and res[1] > -np.inf
         ]
 
         if not valid_results:
             print("Warning: No successful candidates in this batch to select from.")
-            # What to do? Options:
-            # 1. Stop evolution
-            # 2. Re-use parents from the *previous* batch (current_morphologies)
-            # 3. Generate new random mutations from parents
-            # Let's choose option 2 for now, but print a clear warning.
+            # re-use parents from the previous batch (current_morphologies)
+            # BUT COULD TRY IN FUTURE:
+            # a) Stop evolution
+            # b) Generate new random mutations from parents
             print("Re-using parents from the previous batch.")
             if not current_morphologies:  # If even the initial parents failed somehow
                 print("Error: No previous parents to re-use. Stopping.")
                 break
         else:
-            # Sort valid results by fitness (descending)
+            # sort valid results by fitness (descending)
             valid_results.sort(key=lambda x: x[1], reverse=True)
-            # Select top N parents
+            # select top N parents
             top_candidates = valid_results[:num_parents_select]
             current_morphologies = [
                 res[0] for res in top_candidates
-            ]  # Update parents for next loop
+            ]  # update parents for next loop
             print(f"\nSelected {len(current_morphologies)} parents for the next batch.")
             print(f"Top fitness in batch: {top_candidates[0][1]:.4f}")
 
         batch_duration = time.time() - batch_start_time
         print(f"Batch {batch_num + 1} finished in {batch_duration:.2f} seconds.")
 
-    # --- End of Evolution ---
-    # ... (final saving and printing remains the same) ...
+    # end of evolution
     print("\n--- Evolution Finished ---")
     print(f"Best overall fitness achieved: {best_overall_fitness:.4f}")
 
@@ -567,7 +615,7 @@ def evolve(
         try:
             best_overall_morphology_vsr.save_model_csv(final_best_path)
             print(f"Saved best overall morphology structure to: {final_best_path}")
-            # Note: The best *parameters* for this morphology are not explicitly saved here,
+            # best *parameters* for this morphology are not explicitly saved here,
             # but can be found in the corresponding batch history file.
         except Exception as e:
             print(f"Error saving final best morphology: {e}")
@@ -575,7 +623,7 @@ def evolve(
         final_best_path = None
         print("No best morphology was recorded.")
 
-    # --- Optional: Combine all batch histories ---
+    # combine all batch histories
     if all_batch_histories:
         try:
             full_history_df = pd.concat(all_batch_histories, ignore_index=True)
@@ -588,10 +636,8 @@ def evolve(
     return final_best_path, all_batch_histories
 
 
-# --- Example Usage ---
+# example usage
 if __name__ == "__main__":
-    # --- CONFIGURATION ---
-
     # VSR / Model
     MODEL_NAME = "co_evolve_4x2x2"
     INITIAL_MORPHOLOGY_COORDS = [  # 4x2x2 block starting at (4,4,4)
@@ -618,10 +664,10 @@ if __name__ == "__main__":
     # Evolution Control
     NUM_BATCHES = 50  # Total morphology evolution batches
     NUM_MUTATIONS_PER_BATCH = 12  # Morphologies generated/tested per batch
-    NUM_PARENTS_SELECT = 3 # Top morphologies selected as parents
+    NUM_PARENTS_SELECT = 3  # Top morphologies selected as parents
 
     # Controller Optimisation (per morphology)
-    OPTIMISE_GENERATIONS = 16 # Generations for *controller* opt
+    OPTIMISE_GENERATIONS = 16  # Generations for *controller* opt
     OPTIMISE_POPULATION_SIZE = 30  # Population size for *controller* opt
     OPTIMISE_NUM_WORKERS = 30  # Workers for *controller* opt
 

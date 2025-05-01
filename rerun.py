@@ -1,4 +1,4 @@
-import ast  # for safe evaluation of string representations of lists
+import ast
 import os
 import traceback
 
@@ -6,7 +6,7 @@ import mujoco
 import numpy as np
 import pandas as pd
 
-from optimise import _get_vsr_details_and_controller_dims, unflatten_params
+from optimise import _get_vsr_details_and_base_dims
 from simulate import run_simulation
 from vsr import VoxelRobot
 
@@ -44,7 +44,7 @@ def rerun_simulation_from_log(
     print(f"Mode: {'Headless' if headless else 'Viewer'}")
     print(f"VSR Grid Dimensions: {vsr_grid_dims}")
 
-    # 1. Load Log Data
+    # STEP 1: Load log data
     try:
         history_df = pd.read_csv(log_csv_path)
         print(f"Loaded log file with {len(history_df)} records.")
@@ -55,7 +55,7 @@ def rerun_simulation_from_log(
         print(f"Error loading log file: {e}")
         return None
 
-    # 2. Find the Specific Record
+    # STEP 2: Find the specific record
     try:
         # filter on generation and individual index
         target_row = history_df[
@@ -82,14 +82,15 @@ def rerun_simulation_from_log(
         print(f"Error finding record in DataFrame: {e}")
         return None
 
-    # 3. Extract Simulation Parameters and Voxel Coordinates from Record
+    # STEP 3: Extract simulation parameters and voxel coordinates from Record
     try:
         print("Extracting parameters from log record...")
         voxel_coords_str = record["voxel_coords_str"]
         control_timestep = record["control_timestep"]
         simulation_timestep_logged = record["simulation_timestep"]
         gear_ratio = record["gear_ratio"]
-        param_vector_str = record["params_vector"]
+        param_vector_str = record["params_vector_str"]
+        controller_type = record["controller_type"]
 
         # convert voxel coords string back to list of tuples
         voxel_coords_list = ast.literal_eval(voxel_coords_str)
@@ -158,23 +159,20 @@ def rerun_simulation_from_log(
             f"MuJoCo model reconstructed successfully. Sim Timestep (Actual): {model.opt.timestep}"
         )
 
-        # --- CRITICAL CHECK ---
-        # Use np.isclose for float comparison
+        # critical check
+        # ese np.isclose for float comparison
         if not np.isclose(model.opt.timestep, simulation_timestep_logged):
             print(
                 f"FATAL MISMATCH: Reconstructed model timestep ({model.opt.timestep}) "
                 f"does not match logged timestep ({simulation_timestep_logged})."
             )
             print("Rerun would be inaccurate. Ensure VSR generation is deterministic.")
-            # Clean up temporary file if desired
-            # try: os.remove(temp_model_path + "_modded.xml") except OSError: pass
-            return None  # Abort rerun
-        # ----------------------
+            return None  # abort rerun
 
     except ImportError:
         print("Error: Could not import VoxelRobot class.")
         return None
-    except FileNotFoundError:  # Should not happen with temp path unless perms issue
+    except FileNotFoundError:  # should not happen with temp path unless perms issue
         print(f"Error generating model file at {temp_model_path}.")
         return None
     except Exception as e:
@@ -182,12 +180,10 @@ def rerun_simulation_from_log(
         print(traceback.format_exc())
         return None
 
-    # 5. Get Parameter Shapes for the *Reconstructed* Model
+    # STEP 5: Get parameter shapes for the *reconstructed* Model
     try:
         print("Determining controller dimensions from reconstructed model...")
-        n_voxels, _, input_size, output_size = _get_vsr_details_and_controller_dims(
-            model
-        )
+        n_voxels, _, input_size, output_size = _get_vsr_details_and_base_dims(model)
         weight_shape = (output_size, input_size)
         bias_shape = (output_size,)
         print(f"Determined Shapes: Weights={weight_shape}, Biases={bias_shape}")
@@ -204,31 +200,17 @@ def rerun_simulation_from_log(
         print(traceback.format_exc())
         return None
 
-    # 6. Unflatten Parameters
-    try:
-        weights, biases = unflatten_params(param_vector, weight_shape, bias_shape)
-        print("Controller parameters unflattened successfully.")
-    except ValueError as e:
-        print(f"Error unflattening parameters: {e}")
-        print(
-            "Check if parameter vector length matches the reconstructed model's expected size."
-        )
-        return None
-    except Exception as e:
-        print(f"Unexpected error during unflattening: {e}")
-        return None
-
-    # 7. Run Simulation
+    # STEP 6: Run Simulation
     results = None
     try:
         print(f"Starting simulation rerun (Duration: {duration}s)...")
         results = run_simulation(
-            model=model,  # Use the reconstructed model
-            duration=duration,  # Use the duration specified for the rerun
-            control_timestep=control_timestep,  # Use the control timestep from the log
-            weights=weights,  # Use the unflattened weights
-            biases=biases,  # Use the unflattened biases
-            headless=headless,  # Use the requested mode
+            model=model,  # use the reconstructed model
+            duration=duration,  # use the duration specified for the rerun
+            control_timestep=control_timestep,  # use the control timestep from the log
+            param_vector=param_vector,
+            controller_type=controller_type,
+            headless=headless,  # use the requested mode
         )
         print("Simulation rerun finished.")
 
@@ -256,35 +238,32 @@ if __name__ == "__main__":
     # --- Configuration for Rerun ---
     MODEL_NAME = "quadruped_v3"  # The prefix used during the optimization run
 
-    # --- Log File Identification ---
-    # These should match the parameters used when running optimise.py
-    GENERATIONS_IN_LOG = 4  # Number of generations run to create the log
-    POPULATION_IN_LOG = 8  # Population size used to create the log
-    # --- Path to the log file ---
-    LOG_FILE_PATH = f"vsr_models/{MODEL_NAME}/{MODEL_NAME}_full_history_gen{GENERATIONS_IN_LOG}_pop{POPULATION_IN_LOG}.csv"
+    LOG_FILE_PATH = (
+        "experiment_results/quadruped_v3_copy_full_history_rnn_h16_gen80_pop60.csv"
+    )
 
-    # --- Specific Run to Replay ---
-    GENERATION_TO_RUN = 3  # Generation number from the log (1-based)
-    INDIVIDUAL_TO_RUN = 4  # Individual index from that generation (0-based)
+    # specific run to replay
+    GENERATION_TO_RUN = 27  # generation number from the log (1-based)
+    INDIVIDUAL_TO_RUN = 59  # individual index from that generation (0-based)
 
-    # --- VSR Grid Dimensions (MUST match the original run) ---
-    VSR_GRID_DIMS = (10, 10, 10)  # The max grid size used
+    # VSR grid dimensions (MUST match the original run)
+    VSR_GRID_DIMS = (10, 10, 10)  # the max grid size used
 
-    # --- Rerun Parameters ---
-    RERUN_DURATION = 60  # How long to run this specific replay
-    RERUN_HEADLESS = False  # Set to False to show viewer
+    # rerun parameters
+    RERUN_DURATION = 60  # H=how long to run this specific replay
+    RERUN_HEADLESS = False  # set to False to show viewer
 
-    # --- Check if Log File Exists ---
+    # check if log file exists ---
     if not os.path.exists(LOG_FILE_PATH):
         print(f"Error: Log file not found at {LOG_FILE_PATH}")
         print(
             "Please ensure the path and parameters (GENERATIONS_IN_LOG, POPULATION_IN_LOG) are correct."
         )
     else:
-        # Define a base path for temporary files generated during rerun
+        # define a base path for temporary files generated during rerun
         temp_model_base = f"vsr_models/{MODEL_NAME}/temp_rerun_{GENERATION_TO_RUN}_{INDIVIDUAL_TO_RUN}"
 
-        # --- Attempt Rerun ---
+        # attempt rerun
         print(
             f"\nAttempting rerun for Gen {GENERATION_TO_RUN}, Idx {INDIVIDUAL_TO_RUN}..."
         )
@@ -298,7 +277,7 @@ if __name__ == "__main__":
             temp_model_path=temp_model_base,
         )
 
-        # --- Display Results ---
+        # display results
         if rerun_results is not None:
             print("\n--- Rerun Simulation Results ---")
             fitness, x_dist, y_dist, reached = rerun_results

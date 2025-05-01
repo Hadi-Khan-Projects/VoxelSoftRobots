@@ -1,5 +1,3 @@
-# results_analyzer.py
-
 import ast
 import glob
 import math
@@ -7,27 +5,13 @@ import os
 import traceback
 
 import matplotlib.pyplot as plt
-import mujoco  # Needed by simulate/rerun indirectly
+import mujoco
 import numpy as np
 import pandas as pd
 
-from controller import DistributedNeuralController  # Needed for simulation call
-from simulate import run_simulation  # Direct simulation call might be needed
+from simulate import run_simulation
 
-# Imports from your project
 from vsr import VoxelRobot
-
-# Attempt to import the rerun function - adjust path if needed
-try:
-    from rerun import rerun_simulation_from_log
-
-    RERUN_AVAILABLE = True
-except ImportError:
-    print("Warning: Could not import rerun_simulation_from_log from rerun.py.")
-    print(
-        "         The 'rerun_specific_simulation' method using the external script will not work."
-    )
-    RERUN_AVAILABLE = False
 
 
 class Results:
