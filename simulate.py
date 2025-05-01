@@ -73,6 +73,26 @@ def run_simulation(
     else:
         print(".", end="", flush=True)
 
+    # Get Vertex Body IDs for COM calculations
+    vertex_body_ids = []
+    # flex_body_names_str = model.flex_bodyid.map(lambda x: mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_BODY, x)) 
+    # iterate through potential names
+    vertex_body_ids = []
+    i = 0
+    while True:
+        body_name = f"vsr_{i}"
+        body_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, body_name)
+        if body_id == -1: # No more bodies found with this pattern
+            break
+        vertex_body_ids.append(body_id)
+        i += 1
+
+    if not vertex_body_ids:
+        raise ValueError("Could not find any vertex body IDs (e.g., 'vsr_0', 'vsr_1', ...)")
+    vertex_body_ids = np.array(vertex_body_ids) # Convert to numpy array for easier indexing
+    if not headless:
+        print(f"Found {len(vertex_body_ids)} vertex bodies for COM calculations.")
+
     # Controller Setup
     N_SENSORS_PER_VOXEL = 8  # 4 tendon lengths + 4 tendon velocities
     N_COMM_CHANNELS = 2  # as per paper's experiments (nc=2)
@@ -162,28 +182,19 @@ def run_simulation(
                         tendon_indices = voxel_tendon_map[voxel_coord]
                         sensor_data_all[i, :4] = data.ten_length[tendon_indices]
                         sensor_data_all[i, 4:] = data.ten_velocity[tendon_indices]
+                    
+                    if len(vertex_body_ids) > 0:
+                        current_com_pos = np.mean(data.xpos[vertex_body_ids], axis=0)
+                        # Use cvel which includes angular; take linear part [3:6]
+                        current_com_vel = np.mean(data.cvel[vertex_body_ids][:, 3:], axis=0)
+                    else: # Fallback if no vertex bodies found (should not happen)
+                        print("Warning: No vertex bodies found for COM calculations. Using zeros.")
+                        current_com_pos = np.zeros(3)
+                        current_com_vel = np.zeros(3)
 
-                    # 2. Run controller step
-                    # actuation_outputs are in range [-1, 1]
-                    actuation_outputs = controller.step(sensor_data_all, sim_time)
+                    # 2. Calculate target distances and orientation
 
-                    # 3. Initial mapping to [0, 1]
-                    # initial_motor_signals shape: (n_voxels, 1)
-                    initial_motor_signals = (actuation_outputs + 1.0) / 2.0
-
-                    # 4. Apply Clipped actuation to motors
-                    for i, voxel_coord in enumerate(active_voxel_coords):
-                        # clip to be extra safe
-                        motor_control_signal = np.clip(
-                            initial_motor_signals[i, 0], 0.0, 1.0
-                        )
-
-                        motor_indices = voxel_motor_map[voxel_coord]
-                        for motor_id in motor_indices:
-                            data.ctrl[motor_id] = motor_control_signal
-
-                    last_control_time = sim_time
-
+                    # distance
                     # this instead of data.xpos[target_body_id, 0] because it gives centre of mass
                     target_body_id = mujoco.mj_name2id(
                         model, mujoco.mjtObj.mjOBJ_BODY, "target"
@@ -198,8 +209,36 @@ def run_simulation(
                     x_dist_target = target_x - robot_x
                     y_dist_target = target_y - robot_y
 
+                    # orientation
+                    target_pos = data.subtree_com[target_body_id] # Use subtree_com for target
+                    vec_to_target = target_pos - current_com_pos
+                    vec_to_target_xy = vec_to_target[[0, 1]] # Project onto X and Y
+                    norm = np.linalg.norm(vec_to_target_xy)
+                    target_orientation_vector = vec_to_target_xy / (norm + 1e-6) # Normalize, add epsilon for safety
+
                     if abs(x_dist_target) < 10 and abs(y_dist_target) < 10:
                         target_reached = True
+
+                    # 3. Run controller step
+                    # actuation_outputs are in range [-1, 1]
+                    actuation_outputs = controller.step(sensor_data_all, sim_time, current_com_vel, target_orientation_vector)
+
+                    # 4. Initial mapping to [0, 1]
+                    # initial_motor_signals shape: (n_voxels, 1)
+                    initial_motor_signals = (actuation_outputs + 1.0) / 2.0
+
+                    # 5. Apply Clipped actuation to motors
+                    for i, voxel_coord in enumerate(active_voxel_coords):
+                        # clip to be extra safe
+                        motor_control_signal = np.clip(
+                            initial_motor_signals[i, 0], 0.0, 1.0
+                        )
+
+                        motor_indices = voxel_motor_map[voxel_coord]
+                        for motor_id in motor_indices:
+                            data.ctrl[motor_id] = motor_control_signal
+
+                    last_control_time = sim_time
                 # ENDOF Control Step
 
                 if not paused:
@@ -230,29 +269,20 @@ def run_simulation(
                     tendon_indices = voxel_tendon_map[voxel_coord]
                     sensor_data_all[i, :4] = data.ten_length[tendon_indices]
                     sensor_data_all[i, 4:] = data.ten_velocity[tendon_indices]
+                
+                if len(vertex_body_ids) > 0:
+                    current_com_pos = np.mean(data.xpos[vertex_body_ids], axis=0)
+                    # Use cvel which includes angular; take linear part [3:6]
+                    current_com_vel = np.mean(data.cvel[vertex_body_ids][:, 3:], axis=0)
+                else: # Fallback if no vertex bodies found (should not happen)
+                    print("Warning: No vertex bodies found for COM calculations. Using zeros.")
+                    current_com_pos = np.zeros(3)
+                    current_com_vel = np.zeros(3)
 
-                # 2. Run Controller Step
-                # actuation_outputs are in range [-1, 1]
-                actuation_outputs = controller.step(sensor_data_all, sim_time)
+                # 2. Calculate target distances and orientation
 
-                # 3. Initial Mapping to [0, 1]
-                # initial_motor_signals shape: (n_voxels, 1)
-                initial_motor_signals = (actuation_outputs + 1.0) / 2.0
-
-                # 4. Apply Clipped Actuation to Motors
-                for i, voxel_coord in enumerate(active_voxel_coords):
-                    # clip to be extra safe
-                    motor_control_signal = np.clip(
-                        initial_motor_signals[i, 0], 0.0, 1.0
-                    )
-
-                    motor_indices = voxel_motor_map[voxel_coord]
-                    for motor_id in motor_indices:
-                        data.ctrl[motor_id] = motor_control_signal
-
-                last_control_time = sim_time
-
-                # use this instead of data.xpos[target_body_id, 0] because it gives centre of mass
+                # distance
+                # this instead of data.xpos[target_body_id, 0] because it gives centre of mass
                 target_body_id = mujoco.mj_name2id(
                     model, mujoco.mjtObj.mjOBJ_BODY, "target"
                 )
@@ -266,8 +296,36 @@ def run_simulation(
                 x_dist_target = target_x - robot_x
                 y_dist_target = target_y - robot_y
 
+                # orientation
+                target_pos = data.subtree_com[target_body_id] # Use subtree_com for target
+                vec_to_target = target_pos - current_com_pos
+                vec_to_target_xy = vec_to_target[[0, 1]] # Project onto X and Y
+                norm = np.linalg.norm(vec_to_target_xy)
+                target_orientation_vector = vec_to_target_xy / (norm + 1e-6) # Normalize, add epsilon for safety
+
                 if abs(x_dist_target) < 10 and abs(y_dist_target) < 10:
                     target_reached = True
+
+                # 3. Run controller step
+                # actuation_outputs are in range [-1, 1]
+                actuation_outputs = controller.step(sensor_data_all, sim_time, current_com_vel, target_orientation_vector)
+
+                # 4. Initial mapping to [0, 1]
+                # initial_motor_signals shape: (n_voxels, 1)
+                initial_motor_signals = (actuation_outputs + 1.0) / 2.0
+
+                # 5. Apply Clipped actuation to motors
+                for i, voxel_coord in enumerate(active_voxel_coords):
+                    # clip to be extra safe
+                    motor_control_signal = np.clip(
+                        initial_motor_signals[i, 0], 0.0, 1.0
+                    )
+
+                    motor_indices = voxel_motor_map[voxel_coord]
+                    for motor_id in motor_indices:
+                        data.ctrl[motor_id] = motor_control_signal
+
+                last_control_time = sim_time
             # ENDOF Control Step
 
             try:
