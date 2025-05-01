@@ -1,0 +1,740 @@
+<?xml version="1.0" ?>
+<mujoco model="MuJoCo Model">
+  <compiler angle="radian" meshdir="asset/" texturedir="asset/"/>
+  <option timestep="0.001" tolerance="1e-06" integrator="implicitfast"/>
+  <size memory="2000M"/>
+  <visual>
+    <map stiffness="700" fogstart="1" fogend="15" zfar="40" haze="1" shadowscale="0.5"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+  </visual>
+  <statistic meansize="0.05"/>
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="texplane" builtin="checker" mark="cross" rgb1="0.2 0.3 0.4" rgb2="0.1 0.15 0.2" markrgb="0.8 0.8 0.8" width="512" height="512"/>
+    <material name="matplane" texture="texplane" texuniform="true" texrepeat="10 10" reflectance="0.3"/>
+  </asset>
+  <worldbody>
+    <geom name="ground" size="0 0 1" pos="0 0 -2" type="plane" condim="1" material="matplane"/>
+    <light pos="30 30 20" dir="0 0 -1" diffuse="0.4 0.4 0.4" specular="0.1 0.1 0.1"/>
+    <light pos="-20 -20 40" dir="0.0990148 0.0990148 -0.990148" directional="true" diffuse="0.8 0.8 0.8" specular="0.2 0.2 0.2"/>
+    <body name="target" pos="-300 3 3.5">
+      <geom size="1 1 3" type="box" rgba="1 0 0 0.7"/>
+      <site name="site_-300_3_3.5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_0" pos="4 4 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_4_4_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_1" pos="4 4 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_4_4_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_2" pos="4 5 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_4_5_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_3" pos="4 5 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_4_5_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_4" pos="4 5 6">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_4_5_6" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_5" pos="4 6 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_4_6_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_6" pos="4 6 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_4_6_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_7" pos="4 6 6">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_4_6_6" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_8" pos="5 4 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_5_4_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_9" pos="5 4 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_5_4_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_10" pos="5 4 6">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_5_4_6" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_11" pos="5 5 3">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_5_5_3" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_12" pos="5 5 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_5_5_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_13" pos="5 5 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_5_5_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_14" pos="5 5 6">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_5_5_6" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_15" pos="5 6 3">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_5_6_3" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_16" pos="5 6 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_5_6_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_17" pos="5 6 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_5_6_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_18" pos="5 6 6">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_5_6_6" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_19" pos="5 7 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_5_7_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_20" pos="5 7 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_5_7_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_21" pos="6 4 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_6_4_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_22" pos="6 4 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_6_4_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_23" pos="6 4 6">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_6_4_6" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_24" pos="6 5 3">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_6_5_3" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_25" pos="6 5 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_6_5_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_26" pos="6 5 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_6_5_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_27" pos="6 5 6">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_6_5_6" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_28" pos="6 6 3">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_6_6_3" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_29" pos="6 6 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_6_6_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_30" pos="6 6 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_6_6_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_31" pos="6 6 6">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_6_6_6" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_32" pos="6 7 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_6_7_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_33" pos="6 7 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_6_7_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_34" pos="7 4 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_7_4_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_35" pos="7 4 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_7_4_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_36" pos="7 4 6">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_7_4_6" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_37" pos="7 5 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_7_5_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_38" pos="7 5 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_7_5_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_39" pos="7 5 6">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_7_5_6" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_40" pos="7 6 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_7_6_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_41" pos="7 6 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_7_6_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_42" pos="7 6 6">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_7_6_6" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_43" pos="8 4 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_8_4_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_44" pos="8 4 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_8_4_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_45" pos="8 4 6">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_8_4_6" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_46" pos="8 5 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_8_5_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_47" pos="8 5 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_8_5_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_48" pos="8 5 6">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_8_5_6" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_49" pos="8 6 4">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_8_6_4" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_50" pos="8 6 5">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_8_6_5" pos="0 0 0" size="0.005"/>
+    </body>
+    <body name="vsr_51" pos="8 6 6">
+      <inertial pos="0 0 0" mass="0.1" diaginertia="1.66667e-06 1.66667e-06 1.66667e-06"/>
+      <joint pos="0 0 0" axis="1 0 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 1 0" type="slide"/>
+      <joint pos="0 0 0" axis="0 0 1" type="slide"/>
+      <site name="site_8_6_6" pos="0 0 0" size="0.005"/>
+    </body>
+  </worldbody>
+  <deformable>
+    <flex name="vsr" rgba="0.1 0.9 0.1 1" dim="3" body="vsr_0 vsr_1 vsr_2 vsr_3 vsr_4 vsr_5 vsr_6 vsr_7 vsr_8 vsr_9 vsr_10 vsr_11 vsr_12 vsr_13 vsr_14 vsr_15 vsr_16 vsr_17 vsr_18 vsr_19 vsr_20 vsr_21 vsr_22 vsr_23 vsr_24 vsr_25 vsr_26 vsr_27 vsr_28 vsr_29 vsr_30 vsr_31 vsr_32 vsr_33 vsr_34 vsr_35 vsr_36 vsr_37 vsr_38 vsr_39 vsr_40 vsr_41 vsr_42 vsr_43 vsr_44 vsr_45 vsr_46 vsr_47 vsr_48 vsr_49 vsr_50 vsr_51" element="0 3 2 13 0 1 3 13 0 9 1 13 0 8 9 13 0 12 8 13 0 2 12 13 2 6 5 17 2 3 6 17 2 13 3 17 2 12 13 17 2 16 12 17 2 5 16 17 3 7 6 18 3 4 7 18 3 14 4 18 3 13 14 18 3 17 13 18 3 6 17 18 8 13 12 26 8 9 13 26 8 22 9 26 8 21 22 26 8 25 21 26 8 12 25 26 9 14 13 27 9 10 14 27 9 23 10 27 9 22 23 27 9 26 22 27 9 13 26 27 11 16 15 29 11 12 16 29 11 25 12 29 11 24 25 29 11 28 24 29 11 15 28 29 12 17 16 30 12 13 17 30 12 26 13 30 12 25 26 30 12 29 25 30 12 16 29 30 13 18 17 31 13 14 18 31 13 27 14 31 13 26 27 31 13 30 26 31 13 17 30 31 16 20 19 33 16 17 20 33 16 30 17 33 16 29 30 33 16 32 29 33 16 19 32 33 21 26 25 38 21 22 26 38 21 35 22 38 21 34 35 38 21 37 34 38 21 25 37 38 22 27 26 39 22 23 27 39 22 36 23 39 22 35 36 39 22 38 35 39 22 26 38 39 25 30 29 41 25 26 30 41 25 38 26 41 25 37 38 41 25 40 37 41 25 29 40 41 26 31 30 42 26 27 31 42 26 39 27 42 26 38 39 42 26 41 38 42 26 30 41 42 34 38 37 47 34 35 38 47 34 44 35 47 34 43 44 47 34 46 43 47 34 37 46 47 35 39 38 48 35 36 39 48 35 45 36 48 35 44 45 48 35 47 44 48 35 38 47 48 37 41 40 50 37 38 41 50 37 47 38 50 37 46 47 50 37 49 46 50 37 40 49 50 38 42 41 51 38 39 42 51 38 48 39 51 38 47 48 51 38 50 47 51 38 41 50 51">
+      <contact solref="0.01 1" solimp="0.95 0.99 0.0001 0.5 2" selfcollide="none"/>
+      <elasticity young="250" poisson="0.3"/>
+      <edge damping="1"/>
+    </flex>
+  </deformable>
+  <tendon>
+    <spatial name="voxel_4_4_4_spatial_4_4_4_to_5_5_5" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_4_4_4"/>
+      <site site="site_5_5_5"/>
+    </spatial>
+    <spatial name="voxel_4_4_4_spatial_5_5_4_to_4_4_5" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_5_5_4"/>
+      <site site="site_4_4_5"/>
+    </spatial>
+    <spatial name="voxel_4_4_4_spatial_4_5_4_to_5_4_5" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_4_5_4"/>
+      <site site="site_5_4_5"/>
+    </spatial>
+    <spatial name="voxel_4_4_4_spatial_5_4_4_to_4_5_5" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_5_4_4"/>
+      <site site="site_4_5_5"/>
+    </spatial>
+    <spatial name="voxel_4_5_4_spatial_4_5_4_to_5_6_5" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_4_5_4"/>
+      <site site="site_5_6_5"/>
+    </spatial>
+    <spatial name="voxel_4_5_4_spatial_5_6_4_to_4_5_5" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_5_6_4"/>
+      <site site="site_4_5_5"/>
+    </spatial>
+    <spatial name="voxel_4_5_4_spatial_4_6_4_to_5_5_5" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_4_6_4"/>
+      <site site="site_5_5_5"/>
+    </spatial>
+    <spatial name="voxel_4_5_4_spatial_5_5_4_to_4_6_5" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_5_5_4"/>
+      <site site="site_4_6_5"/>
+    </spatial>
+    <spatial name="voxel_4_5_5_spatial_4_5_5_to_5_6_6" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_4_5_5"/>
+      <site site="site_5_6_6"/>
+    </spatial>
+    <spatial name="voxel_4_5_5_spatial_5_6_5_to_4_5_6" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_5_6_5"/>
+      <site site="site_4_5_6"/>
+    </spatial>
+    <spatial name="voxel_4_5_5_spatial_4_6_5_to_5_5_6" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_4_6_5"/>
+      <site site="site_5_5_6"/>
+    </spatial>
+    <spatial name="voxel_4_5_5_spatial_5_5_5_to_4_6_6" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_5_5_5"/>
+      <site site="site_4_6_6"/>
+    </spatial>
+    <spatial name="voxel_5_4_4_spatial_5_4_4_to_6_5_5" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_5_4_4"/>
+      <site site="site_6_5_5"/>
+    </spatial>
+    <spatial name="voxel_5_4_4_spatial_6_5_4_to_5_4_5" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_6_5_4"/>
+      <site site="site_5_4_5"/>
+    </spatial>
+    <spatial name="voxel_5_4_4_spatial_5_5_4_to_6_4_5" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_5_5_4"/>
+      <site site="site_6_4_5"/>
+    </spatial>
+    <spatial name="voxel_5_4_4_spatial_6_4_4_to_5_5_5" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_6_4_4"/>
+      <site site="site_5_5_5"/>
+    </spatial>
+    <spatial name="voxel_5_4_5_spatial_5_4_5_to_6_5_6" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_5_4_5"/>
+      <site site="site_6_5_6"/>
+    </spatial>
+    <spatial name="voxel_5_4_5_spatial_6_5_5_to_5_4_6" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_6_5_5"/>
+      <site site="site_5_4_6"/>
+    </spatial>
+    <spatial name="voxel_5_4_5_spatial_5_5_5_to_6_4_6" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_5_5_5"/>
+      <site site="site_6_4_6"/>
+    </spatial>
+    <spatial name="voxel_5_4_5_spatial_6_4_5_to_5_5_6" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_6_4_5"/>
+      <site site="site_5_5_6"/>
+    </spatial>
+    <spatial name="voxel_5_5_3_spatial_5_5_3_to_6_6_4" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_5_5_3"/>
+      <site site="site_6_6_4"/>
+    </spatial>
+    <spatial name="voxel_5_5_3_spatial_6_6_3_to_5_5_4" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_6_6_3"/>
+      <site site="site_5_5_4"/>
+    </spatial>
+    <spatial name="voxel_5_5_3_spatial_5_6_3_to_6_5_4" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_5_6_3"/>
+      <site site="site_6_5_4"/>
+    </spatial>
+    <spatial name="voxel_5_5_3_spatial_6_5_3_to_5_6_4" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_6_5_3"/>
+      <site site="site_5_6_4"/>
+    </spatial>
+    <spatial name="voxel_5_5_4_spatial_5_5_4_to_6_6_5" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_5_5_4"/>
+      <site site="site_6_6_5"/>
+    </spatial>
+    <spatial name="voxel_5_5_4_spatial_6_6_4_to_5_5_5" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_6_6_4"/>
+      <site site="site_5_5_5"/>
+    </spatial>
+    <spatial name="voxel_5_5_4_spatial_5_6_4_to_6_5_5" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_5_6_4"/>
+      <site site="site_6_5_5"/>
+    </spatial>
+    <spatial name="voxel_5_5_4_spatial_6_5_4_to_5_6_5" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_6_5_4"/>
+      <site site="site_5_6_5"/>
+    </spatial>
+    <spatial name="voxel_5_5_5_spatial_5_5_5_to_6_6_6" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_5_5_5"/>
+      <site site="site_6_6_6"/>
+    </spatial>
+    <spatial name="voxel_5_5_5_spatial_6_6_5_to_5_5_6" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_6_6_5"/>
+      <site site="site_5_5_6"/>
+    </spatial>
+    <spatial name="voxel_5_5_5_spatial_5_6_5_to_6_5_6" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_5_6_5"/>
+      <site site="site_6_5_6"/>
+    </spatial>
+    <spatial name="voxel_5_5_5_spatial_6_5_5_to_5_6_6" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_6_5_5"/>
+      <site site="site_5_6_6"/>
+    </spatial>
+    <spatial name="voxel_5_6_4_spatial_5_6_4_to_6_7_5" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_5_6_4"/>
+      <site site="site_6_7_5"/>
+    </spatial>
+    <spatial name="voxel_5_6_4_spatial_6_7_4_to_5_6_5" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_6_7_4"/>
+      <site site="site_5_6_5"/>
+    </spatial>
+    <spatial name="voxel_5_6_4_spatial_5_7_4_to_6_6_5" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_5_7_4"/>
+      <site site="site_6_6_5"/>
+    </spatial>
+    <spatial name="voxel_5_6_4_spatial_6_6_4_to_5_7_5" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_6_6_4"/>
+      <site site="site_5_7_5"/>
+    </spatial>
+    <spatial name="voxel_6_4_4_spatial_6_4_4_to_7_5_5" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_6_4_4"/>
+      <site site="site_7_5_5"/>
+    </spatial>
+    <spatial name="voxel_6_4_4_spatial_7_5_4_to_6_4_5" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_7_5_4"/>
+      <site site="site_6_4_5"/>
+    </spatial>
+    <spatial name="voxel_6_4_4_spatial_6_5_4_to_7_4_5" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_6_5_4"/>
+      <site site="site_7_4_5"/>
+    </spatial>
+    <spatial name="voxel_6_4_4_spatial_7_4_4_to_6_5_5" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_7_4_4"/>
+      <site site="site_6_5_5"/>
+    </spatial>
+    <spatial name="voxel_6_4_5_spatial_6_4_5_to_7_5_6" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_6_4_5"/>
+      <site site="site_7_5_6"/>
+    </spatial>
+    <spatial name="voxel_6_4_5_spatial_7_5_5_to_6_4_6" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_7_5_5"/>
+      <site site="site_6_4_6"/>
+    </spatial>
+    <spatial name="voxel_6_4_5_spatial_6_5_5_to_7_4_6" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_6_5_5"/>
+      <site site="site_7_4_6"/>
+    </spatial>
+    <spatial name="voxel_6_4_5_spatial_7_4_5_to_6_5_6" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_7_4_5"/>
+      <site site="site_6_5_6"/>
+    </spatial>
+    <spatial name="voxel_6_5_4_spatial_6_5_4_to_7_6_5" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_6_5_4"/>
+      <site site="site_7_6_5"/>
+    </spatial>
+    <spatial name="voxel_6_5_4_spatial_7_6_4_to_6_5_5" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_7_6_4"/>
+      <site site="site_6_5_5"/>
+    </spatial>
+    <spatial name="voxel_6_5_4_spatial_6_6_4_to_7_5_5" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_6_6_4"/>
+      <site site="site_7_5_5"/>
+    </spatial>
+    <spatial name="voxel_6_5_4_spatial_7_5_4_to_6_6_5" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_7_5_4"/>
+      <site site="site_6_6_5"/>
+    </spatial>
+    <spatial name="voxel_6_5_5_spatial_6_5_5_to_7_6_6" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_6_5_5"/>
+      <site site="site_7_6_6"/>
+    </spatial>
+    <spatial name="voxel_6_5_5_spatial_7_6_5_to_6_5_6" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_7_6_5"/>
+      <site site="site_6_5_6"/>
+    </spatial>
+    <spatial name="voxel_6_5_5_spatial_6_6_5_to_7_5_6" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_6_6_5"/>
+      <site site="site_7_5_6"/>
+    </spatial>
+    <spatial name="voxel_6_5_5_spatial_7_5_5_to_6_6_6" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_7_5_5"/>
+      <site site="site_6_6_6"/>
+    </spatial>
+    <spatial name="voxel_7_4_4_spatial_7_4_4_to_8_5_5" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_7_4_4"/>
+      <site site="site_8_5_5"/>
+    </spatial>
+    <spatial name="voxel_7_4_4_spatial_8_5_4_to_7_4_5" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_8_5_4"/>
+      <site site="site_7_4_5"/>
+    </spatial>
+    <spatial name="voxel_7_4_4_spatial_7_5_4_to_8_4_5" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_7_5_4"/>
+      <site site="site_8_4_5"/>
+    </spatial>
+    <spatial name="voxel_7_4_4_spatial_8_4_4_to_7_5_5" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_8_4_4"/>
+      <site site="site_7_5_5"/>
+    </spatial>
+    <spatial name="voxel_7_4_5_spatial_7_4_5_to_8_5_6" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_7_4_5"/>
+      <site site="site_8_5_6"/>
+    </spatial>
+    <spatial name="voxel_7_4_5_spatial_8_5_5_to_7_4_6" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_8_5_5"/>
+      <site site="site_7_4_6"/>
+    </spatial>
+    <spatial name="voxel_7_4_5_spatial_7_5_5_to_8_4_6" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_7_5_5"/>
+      <site site="site_8_4_6"/>
+    </spatial>
+    <spatial name="voxel_7_4_5_spatial_8_4_5_to_7_5_6" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_8_4_5"/>
+      <site site="site_7_5_6"/>
+    </spatial>
+    <spatial name="voxel_7_5_4_spatial_7_5_4_to_8_6_5" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_7_5_4"/>
+      <site site="site_8_6_5"/>
+    </spatial>
+    <spatial name="voxel_7_5_4_spatial_8_6_4_to_7_5_5" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_8_6_4"/>
+      <site site="site_7_5_5"/>
+    </spatial>
+    <spatial name="voxel_7_5_4_spatial_7_6_4_to_8_5_5" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_7_6_4"/>
+      <site site="site_8_5_5"/>
+    </spatial>
+    <spatial name="voxel_7_5_4_spatial_8_5_4_to_7_6_5" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_8_5_4"/>
+      <site site="site_7_6_5"/>
+    </spatial>
+    <spatial name="voxel_7_5_5_spatial_7_5_5_to_8_6_6" width="0.006" rgba="1 0 0 1" stiffness="1" damping="0">
+      <site site="site_7_5_5"/>
+      <site site="site_8_6_6"/>
+    </spatial>
+    <spatial name="voxel_7_5_5_spatial_8_6_5_to_7_5_6" width="0.006" rgba="0 1 0 1" stiffness="1" damping="0">
+      <site site="site_8_6_5"/>
+      <site site="site_7_5_6"/>
+    </spatial>
+    <spatial name="voxel_7_5_5_spatial_7_6_5_to_8_5_6" width="0.006" rgba="0 0 1 1" stiffness="1" damping="0">
+      <site site="site_7_6_5"/>
+      <site site="site_8_5_6"/>
+    </spatial>
+    <spatial name="voxel_7_5_5_spatial_8_5_5_to_7_6_6" width="0.006" rgba="1 0 1 1" stiffness="1" damping="0">
+      <site site="site_8_5_5"/>
+      <site site="site_7_6_6"/>
+    </spatial>
+  </tendon>
+  <actuator>
+    <motor name="voxel_4_4_4_motor_4_4_4_to_5_5_5" tendon="voxel_4_4_4_spatial_4_4_4_to_5_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_4_4_4_motor_5_5_4_to_4_4_5" tendon="voxel_4_4_4_spatial_5_5_4_to_4_4_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_4_4_4_motor_4_5_4_to_5_4_5" tendon="voxel_4_4_4_spatial_4_5_4_to_5_4_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_4_4_4_motor_5_4_4_to_4_5_5" tendon="voxel_4_4_4_spatial_5_4_4_to_4_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_4_5_4_motor_4_5_4_to_5_6_5" tendon="voxel_4_5_4_spatial_4_5_4_to_5_6_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_4_5_4_motor_5_6_4_to_4_5_5" tendon="voxel_4_5_4_spatial_5_6_4_to_4_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_4_5_4_motor_4_6_4_to_5_5_5" tendon="voxel_4_5_4_spatial_4_6_4_to_5_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_4_5_4_motor_5_5_4_to_4_6_5" tendon="voxel_4_5_4_spatial_5_5_4_to_4_6_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_4_5_5_motor_4_5_5_to_5_6_6" tendon="voxel_4_5_5_spatial_4_5_5_to_5_6_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_4_5_5_motor_5_6_5_to_4_5_6" tendon="voxel_4_5_5_spatial_5_6_5_to_4_5_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_4_5_5_motor_4_6_5_to_5_5_6" tendon="voxel_4_5_5_spatial_4_6_5_to_5_5_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_4_5_5_motor_5_5_5_to_4_6_6" tendon="voxel_4_5_5_spatial_5_5_5_to_4_6_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_4_4_motor_5_4_4_to_6_5_5" tendon="voxel_5_4_4_spatial_5_4_4_to_6_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_4_4_motor_6_5_4_to_5_4_5" tendon="voxel_5_4_4_spatial_6_5_4_to_5_4_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_4_4_motor_5_5_4_to_6_4_5" tendon="voxel_5_4_4_spatial_5_5_4_to_6_4_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_4_4_motor_6_4_4_to_5_5_5" tendon="voxel_5_4_4_spatial_6_4_4_to_5_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_4_5_motor_5_4_5_to_6_5_6" tendon="voxel_5_4_5_spatial_5_4_5_to_6_5_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_4_5_motor_6_5_5_to_5_4_6" tendon="voxel_5_4_5_spatial_6_5_5_to_5_4_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_4_5_motor_5_5_5_to_6_4_6" tendon="voxel_5_4_5_spatial_5_5_5_to_6_4_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_4_5_motor_6_4_5_to_5_5_6" tendon="voxel_5_4_5_spatial_6_4_5_to_5_5_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_5_3_motor_5_5_3_to_6_6_4" tendon="voxel_5_5_3_spatial_5_5_3_to_6_6_4" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_5_3_motor_6_6_3_to_5_5_4" tendon="voxel_5_5_3_spatial_6_6_3_to_5_5_4" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_5_3_motor_5_6_3_to_6_5_4" tendon="voxel_5_5_3_spatial_5_6_3_to_6_5_4" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_5_3_motor_6_5_3_to_5_6_4" tendon="voxel_5_5_3_spatial_6_5_3_to_5_6_4" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_5_4_motor_5_5_4_to_6_6_5" tendon="voxel_5_5_4_spatial_5_5_4_to_6_6_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_5_4_motor_6_6_4_to_5_5_5" tendon="voxel_5_5_4_spatial_6_6_4_to_5_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_5_4_motor_5_6_4_to_6_5_5" tendon="voxel_5_5_4_spatial_5_6_4_to_6_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_5_4_motor_6_5_4_to_5_6_5" tendon="voxel_5_5_4_spatial_6_5_4_to_5_6_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_5_5_motor_5_5_5_to_6_6_6" tendon="voxel_5_5_5_spatial_5_5_5_to_6_6_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_5_5_motor_6_6_5_to_5_5_6" tendon="voxel_5_5_5_spatial_6_6_5_to_5_5_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_5_5_motor_5_6_5_to_6_5_6" tendon="voxel_5_5_5_spatial_5_6_5_to_6_5_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_5_5_motor_6_5_5_to_5_6_6" tendon="voxel_5_5_5_spatial_6_5_5_to_5_6_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_6_4_motor_5_6_4_to_6_7_5" tendon="voxel_5_6_4_spatial_5_6_4_to_6_7_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_6_4_motor_6_7_4_to_5_6_5" tendon="voxel_5_6_4_spatial_6_7_4_to_5_6_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_6_4_motor_5_7_4_to_6_6_5" tendon="voxel_5_6_4_spatial_5_7_4_to_6_6_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_5_6_4_motor_6_6_4_to_5_7_5" tendon="voxel_5_6_4_spatial_6_6_4_to_5_7_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_4_4_motor_6_4_4_to_7_5_5" tendon="voxel_6_4_4_spatial_6_4_4_to_7_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_4_4_motor_7_5_4_to_6_4_5" tendon="voxel_6_4_4_spatial_7_5_4_to_6_4_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_4_4_motor_6_5_4_to_7_4_5" tendon="voxel_6_4_4_spatial_6_5_4_to_7_4_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_4_4_motor_7_4_4_to_6_5_5" tendon="voxel_6_4_4_spatial_7_4_4_to_6_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_4_5_motor_6_4_5_to_7_5_6" tendon="voxel_6_4_5_spatial_6_4_5_to_7_5_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_4_5_motor_7_5_5_to_6_4_6" tendon="voxel_6_4_5_spatial_7_5_5_to_6_4_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_4_5_motor_6_5_5_to_7_4_6" tendon="voxel_6_4_5_spatial_6_5_5_to_7_4_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_4_5_motor_7_4_5_to_6_5_6" tendon="voxel_6_4_5_spatial_7_4_5_to_6_5_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_5_4_motor_6_5_4_to_7_6_5" tendon="voxel_6_5_4_spatial_6_5_4_to_7_6_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_5_4_motor_7_6_4_to_6_5_5" tendon="voxel_6_5_4_spatial_7_6_4_to_6_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_5_4_motor_6_6_4_to_7_5_5" tendon="voxel_6_5_4_spatial_6_6_4_to_7_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_5_4_motor_7_5_4_to_6_6_5" tendon="voxel_6_5_4_spatial_7_5_4_to_6_6_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_5_5_motor_6_5_5_to_7_6_6" tendon="voxel_6_5_5_spatial_6_5_5_to_7_6_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_5_5_motor_7_6_5_to_6_5_6" tendon="voxel_6_5_5_spatial_7_6_5_to_6_5_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_5_5_motor_6_6_5_to_7_5_6" tendon="voxel_6_5_5_spatial_6_6_5_to_7_5_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_6_5_5_motor_7_5_5_to_6_6_6" tendon="voxel_6_5_5_spatial_7_5_5_to_6_6_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_4_4_motor_7_4_4_to_8_5_5" tendon="voxel_7_4_4_spatial_7_4_4_to_8_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_4_4_motor_8_5_4_to_7_4_5" tendon="voxel_7_4_4_spatial_8_5_4_to_7_4_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_4_4_motor_7_5_4_to_8_4_5" tendon="voxel_7_4_4_spatial_7_5_4_to_8_4_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_4_4_motor_8_4_4_to_7_5_5" tendon="voxel_7_4_4_spatial_8_4_4_to_7_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_4_5_motor_7_4_5_to_8_5_6" tendon="voxel_7_4_5_spatial_7_4_5_to_8_5_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_4_5_motor_8_5_5_to_7_4_6" tendon="voxel_7_4_5_spatial_8_5_5_to_7_4_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_4_5_motor_7_5_5_to_8_4_6" tendon="voxel_7_4_5_spatial_7_5_5_to_8_4_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_4_5_motor_8_4_5_to_7_5_6" tendon="voxel_7_4_5_spatial_8_4_5_to_7_5_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_5_4_motor_7_5_4_to_8_6_5" tendon="voxel_7_5_4_spatial_7_5_4_to_8_6_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_5_4_motor_8_6_4_to_7_5_5" tendon="voxel_7_5_4_spatial_8_6_4_to_7_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_5_4_motor_7_6_4_to_8_5_5" tendon="voxel_7_5_4_spatial_7_6_4_to_8_5_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_5_4_motor_8_5_4_to_7_6_5" tendon="voxel_7_5_4_spatial_8_5_4_to_7_6_5" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_5_5_motor_7_5_5_to_8_6_6" tendon="voxel_7_5_5_spatial_7_5_5_to_8_6_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_5_5_motor_8_6_5_to_7_5_6" tendon="voxel_7_5_5_spatial_8_6_5_to_7_5_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_5_5_motor_7_6_5_to_8_5_6" tendon="voxel_7_5_5_spatial_7_6_5_to_8_5_6" ctrlrange="0 1" gear="100.0"/>
+    <motor name="voxel_7_5_5_motor_8_5_5_to_7_6_6" tendon="voxel_7_5_5_spatial_8_5_5_to_7_6_6" ctrlrange="0 1" gear="100.0"/>
+  </actuator>
+</mujoco>
