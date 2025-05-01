@@ -616,18 +616,18 @@ if __name__ == "__main__":
     VSR_GEAR = 100.0  # Potentially needs tuning
 
     # Evolution Control
-    NUM_BATCHES = 2  # Total morphology evolution batches
-    NUM_MUTATIONS_PER_BATCH = 6  # Morphologies generated/tested per batch
-    NUM_PARENTS_SELECT = 2  # Top morphologies selected as parents
+    NUM_BATCHES = 50  # Total morphology evolution batches
+    NUM_MUTATIONS_PER_BATCH = 12  # Morphologies generated/tested per batch
+    NUM_PARENTS_SELECT = 3 # Top morphologies selected as parents
 
     # Controller Optimisation (per morphology)
-    OPTIMISE_GENERATIONS = 5  # Generations for *controller* opt
-    OPTIMISE_POPULATION_SIZE = 16  # Population size for *controller* opt
-    OPTIMISE_NUM_WORKERS = 8  # Workers for *controller* opt
+    OPTIMISE_GENERATIONS = 16 # Generations for *controller* opt
+    OPTIMISE_POPULATION_SIZE = 30  # Population size for *controller* opt
+    OPTIMISE_NUM_WORKERS = 30  # Workers for *controller* opt
 
     # Simulation Parameters (used within optimise)
     SIMULATION_DURATION = 60  # Seconds
-    CONTROL_TIMESTEP = 0.1  # Control decision frequency (lower is faster control)
+    CONTROL_TIMESTEP = 0.2  # Control decision frequency (lower is faster control)
 
     # Controller Configuration (used within optimise)
     CONTROLLER_TYPE = "mlp"  # 'mlp', 'mlp_plus', 'rnn'
@@ -635,7 +635,7 @@ if __name__ == "__main__":
     RNN_HIDDEN_SIZE = 16  # Only used if controller_type='rnn'
 
     # EA Parameters (for optimise.optimise)
-    TOURNAMENT_SIZE = 3
+    TOURNAMENT_SIZE = 4
     CROSSOVER_PROBABILITY = 0.8
     MUTATION_SIGMA = 0.2
     CLIP_RANGE = (-5.0, 5.0)
