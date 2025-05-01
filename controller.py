@@ -74,12 +74,17 @@ class DistributedNeuralController:
                 self.driving_voxel_coord
             ]
 
-        # MLP Input Size: Sensors + N_COMM_DIRECTIONS*Comm_Inputs + Driving_Signal + Time_Signals
+        self.N_COM_VEL_INPUTS = 3  # vx, vy, vz
+        self.N_TARGET_ORIENT_INPUTS = 2 # dx, dy (normalized vector in XY plane)
+
+        # MLP Input Size: Sensors + N_COMM_DIRECTIONS*Comm_Inputs + Driving_Signal + Time_Signals + COM_Vel + Target_Orient
         self.input_size = (
             self.n_sensors
             + self.N_COMM_DIRECTIONS * self.n_comm
             + 1
             + self.N_TIME_INPUTS
+            + self.N_COM_VEL_INPUTS
+            + self.N_TARGET_ORIENT_INPUTS
         )
         # MLP Output Size: Actuation + N_COMM_DIRECTIONS*Comm_Outputs
         self.output_size = 1 + self.N_COMM_DIRECTIONS * self.n_comm
@@ -121,6 +126,8 @@ class DistributedNeuralController:
         # print(f"  Comm Channels/Side: {self.n_comm}")
         # print(f"  Comm Directions: {self.N_COMM_DIRECTIONS} (N, E, S, W, Up, Down)")
         # print(f"  Time Signal Inputs: {self.N_TIME_INPUTS} (Freq: {self.time_signal_frequency} Hz)")
+        # print(f"  COM Velocity Inputs: {self.N_COM_VEL_INPUTS}")
+        # print(f"  Target Orientation Inputs: {self.N_TARGET_ORIENT_INPUTS}")
         # print(f"  MLP Input Size: {self.input_size}")
         # print(f"  MLP Output Size: {self.output_size}")
         # if self.driving_voxel_index != -1:
@@ -216,14 +223,15 @@ class DistributedNeuralController:
             # neighbor doesn't exist (boundary)
             return np.zeros(self.n_comm)
 
-    def step(self, sensor_data_all_voxels, time):
+    def step(self, sensor_data_all_voxels, time, com_velocity, target_orientation_vector):
         """
-        Performs one control step for all voxels using 6-neighbor communication.
+        Performs one control step for all voxels.
 
         Args:
-            sensor_data_all_voxels (np.ndarray): Array of sensor data, shape (n_voxels, n_sensors).
-                                                 The order must match self.voxel_coords.
+            sensor_data_all_voxels (np.ndarray): Shape (n_voxels, n_sensors).
             time (float): Current simulation time.
+            com_velocity (np.ndarray): Global COM velocity (shape [3,]).
+            target_orientation_vector (np.ndarray): Normalized 2D vector from COM to target (shape [2,]).
 
         Returns:
             np.ndarray: Array of actuation signals, shape (n_voxels, 1). Range [-1, 1].
@@ -282,13 +290,17 @@ class DistributedNeuralController:
                 [
                     local_sensors,
                     comm_inputs_flat,
+                    com_velocity,
+                    target_orientation_vector,
                     [driving_input],
-                    time_inputs,  # Added time signals
+                    time_inputs,
                 ]
             )
+            # Runtime check (optional but recommended during debugging)
             if mlp_input.shape[0] != self.input_size:
                 raise RuntimeError(
-                    f"MLP input size mismatch for voxel {i}. Expected {self.input_size}, got {mlp_input.shape[0]}. Check sensor/comm/driving/time components."
+                    f"MLP input size mismatch for voxel {i}. Expected {self.input_size}, "
+                    f"got {mlp_input.shape[0]}. Check sensor/comm/vel/target/driving/time components."
                 )
 
             # 5. Run MLP Forward Pass

@@ -94,12 +94,16 @@ def _get_vsr_details_and_controller_dims(model):
         N_COMM_CHANNELS = 2
         N_COMM_DIRECTIONS = 6
         N_TIME_INPUTS = 2  # sin(t), cos(t)
+        N_COM_VEL_INPUTS = 3
+        N_TARGET_ORIENT_INPUTS = 2
 
         input_size = (
             N_SENSORS_PER_VOXEL
             + N_COMM_DIRECTIONS * N_COMM_CHANNELS
             + 1
             + N_TIME_INPUTS
+            + N_COM_VEL_INPUTS
+            + N_TARGET_ORIENT_INPUTS
         )  # +1 for driving signal
         output_size = 1 + N_COMM_DIRECTIONS * N_COMM_CHANNELS  # +1 for actuation
 
@@ -626,13 +630,14 @@ def optimise(
 # example on how to use, actual usage in evolve.py
 if __name__ == "__main__":
     # --- Evolutionary Algorithm Config ---
-    POPULATION_SIZE = 8  # paper used 250
-    TOURNAMENT_SIZE = 2  # paper used 8
+    NUM_WORKERS = 8
+    NUM_GENERATIONS = 8
+    POPULATION_SIZE = 16  # paper used 250
+    TOURNAMENT_SIZE = 3  # paper used 8
+    
     CROSSOVER_PROBABILITY = 0.8
     MUTATION_SIGMA = 0.2  # std deviation for mutation
     CLIP_RANGE = (-5.0, 5.0)  # clip parameters to this range
-    NUM_WORKERS = 16
-    NUM_GENERATIONS = 4
 
     # --- Simulation Config ---
     SIMULATION_DURATION = 60  # seconds (MUST stay consistent)
@@ -641,7 +646,7 @@ if __name__ == "__main__":
     VSR_GRID_DIMS = (10, 10, 10)  # (MUST stay consistent)
 
     # --- Model Config ---
-    MODEL_NAME = "quadruped_v3"  # test model from vsr_model
+    MODEL_NAME = "quadruped_v2"  # test model from vsr_model
     MODEL_BASE_PATH = f"vsr_models/{MODEL_NAME}/{MODEL_NAME}"
     MODEL_CSV_PATH = MODEL_BASE_PATH + ".csv"
 
