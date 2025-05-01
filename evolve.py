@@ -1,21 +1,21 @@
-# evolve.py
+import argparse
 import collections
 import os
 import random
+import sys
 import time
 import traceback
+from multiprocessing import cpu_count
 
 import numpy as np
 import pandas as pd
 
-import optimise  # Import the optimisation script
+import optimise
 from vsr import VoxelRobot
 
-# --- Constants ---
+# constants
 GRID_SIZE = 10  # VSR operates within a 10x10x10 grid
-MUTATION_RETRY_LIMIT = 10  # Max attempts to get a valid mutation
-
-# --- Morphology Helper Functions ---
+MUTATION_RETRY_LIMIT = 10  # max attempts to get a valid mutation
 
 
 def _is_within_bounds(coord):
@@ -636,112 +636,261 @@ def evolve(
     return final_best_path, all_batch_histories
 
 
+# cli params:
+
+# python evolve.py \
+#     --initial_morphology_csv <path_to_start_shape.csv> \
+#     --output_dir <path_for_all_evolution_results> \
+#     --controller_type <mlp|mlp_plus|rnn> \
+#     --gear <gear_ratio_float> \
+#     [--num_batches <int>] \
+#     [--num_mutations_per_batch <int>] \
+#     [--num_parents_select <int>] \
+#     [--optimise_generations <int>] \
+#     [--optimise_population_size <int>] \
+#     [--optimise_num_workers <int>] \
+#     [--tournament_size <int>] \
+#     [--crossover_probability <float_0_to_1>] \
+#     [--mutation_sigma <float>] \
+#     [--clip_range_min <float>] [--clip_range_max <float>] \
+#     [--mlp_plus_hidden_sizes <size1_int> <size2_int> ...] \
+#     [--rnn_hidden_size <size_int>] \
+#     [--simulation_duration <seconds_int>] \
+#     [--control_timestep <seconds_float>] \
+#     [--vsr_grid_dims <X_int> <Y_int> <Z_int>] \
+#     [--mutation_verbose]
+
+# cli usage example:
+
+# python evolve.py \
+#     --initial_morphology_csv vsr_models/voxel_v1/voxel_v1.csv \
+#     --output_dir results_evolution/block_evo_mlp_run_A \
+#     --controller_type mlp \
+#     --gear 100.0 \
+#     --num_batches 2 \
+#     --num_mutations_per_batch 6 \
+#     --num_parents_select 2 \
+#     --optimise_generations 4 \
+#     --optimise_population_size 8 \
+#     --optimise_num_workers 8 \
+#     --tournament_size 3 \
+#     --mutation_sigma 0.2 \
+#     --clip_range_min -5.0 --clip_range_max 5.0 \
+#     --simulation_duration 60 \
+#     --control_timestep 0.2 \
+#     --vsr_grid_dims 10 10 10 \
+
 # example usage
 if __name__ == "__main__":
-    # VSR / Model
-    MODEL_NAME = "co_evolve_4x2x2"
-    INITIAL_MORPHOLOGY_COORDS = [  # 4x2x2 block starting at (4,4,4)
-        (4, 4, 4),
-        (5, 4, 4),
-        (6, 4, 4),
-        (7, 4, 4),
-        (4, 5, 4),
-        (5, 5, 4),
-        (6, 5, 4),
-        (7, 5, 4),
-        (4, 4, 5),
-        (5, 4, 5),
-        (6, 4, 5),
-        (7, 4, 5),
-        (4, 5, 5),
-        (5, 5, 5),
-        (6, 5, 5),
-        (7, 5, 5),
-    ]
-    VSR_GRID_DIMS = (10, 10, 10)
-    VSR_GEAR = 100.0  # Potentially needs tuning
+    # STEP 1: Get arguments/paremeters
+    parser = argparse.ArgumentParser(
+        description="Co-evolve VSR morphology and control."
+    )
 
-    # Evolution Control
-    NUM_BATCHES = 50  # Total morphology evolution batches
-    NUM_MUTATIONS_PER_BATCH = 12  # Morphologies generated/tested per batch
-    NUM_PARENTS_SELECT = 3  # Top morphologies selected as parents
+    # required arguments
+    parser.add_argument(
+        "--initial_morphology_csv",
+        type=str,
+        required=True,
+        help="Path to the CSV file defining the starting VSR morphology.",
+    )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        required=True,
+        help="Directory to save all evolution results, models, and histories.",
+    )
+    parser.add_argument(
+        "--controller_type",
+        type=str,
+        required=True,
+        choices=["mlp", "mlp_plus", "rnn"],
+        help="Type of distributed controller to optimise for each morphology.",
+    )
+    parser.add_argument(
+        "--gear", type=float, required=True, help="Gear ratio for the VSR motors."
+    )
 
-    # Controller Optimisation (per morphology)
-    OPTIMISE_GENERATIONS = 16  # Generations for *controller* opt
-    OPTIMISE_POPULATION_SIZE = 30  # Population size for *controller* opt
-    OPTIMISE_NUM_WORKERS = 30  # Workers for *controller* opt
+    # evolution control args
+    parser.add_argument(
+        "--num_batches",
+        type=int,
+        default=50,
+        help="Number of morphology evolution batches.",
+    )
+    parser.add_argument(
+        "--num_mutations_per_batch",
+        type=int,
+        default=12,
+        help="Number of new morphologies generated and tested per batch.",
+    )
+    parser.add_argument(
+        "--num_parents_select",
+        type=int,
+        default=3,
+        help="Number of top morphologies selected as parents for the next batch.",
+    )
 
-    # Simulation Parameters (used within optimise)
-    SIMULATION_DURATION = 60  # Seconds
-    CONTROL_TIMESTEP = 0.2  # Control decision frequency (lower is faster control)
+    # controller pptimisation parameters (for each morphology)
+    parser.add_argument(
+        "--optimise_generations",
+        type=int,
+        default=16,
+        help="Number of generations for controller optimisation.",
+    )
+    parser.add_argument(
+        "--optimise_population_size",
+        type=int,
+        default=30,
+        help="Population size for controller optimisation.",
+    )
+    parser.add_argument(
+        "--optimise_num_workers",
+        type=int,
+        default=cpu_count(),  # default to max available
+        help="Number of parallel workers for controller optimisation.",
+    )
+    parser.add_argument(
+        "--tournament_size",
+        type=int,
+        default=4,
+        help="Tournament size for controller EA.",
+    )
+    parser.add_argument(
+        "--crossover_probability",
+        type=float,
+        default=0.8,
+        help="Crossover probability for controller EA.",
+    )
+    parser.add_argument(
+        "--mutation_sigma",
+        type=float,
+        default=0.2,
+        help="Mutation sigma for controller EA.",
+    )
+    parser.add_argument(
+        "--clip_range_min",
+        type=float,
+        default=-5.0,
+        help="Minimum value for controller parameter clipping.",
+    )
+    parser.add_argument(
+        "--clip_range_max",
+        type=float,
+        default=5.0,
+        help="Maximum value for controller parameter clipping.",
+    )
+    parser.add_argument(
+        "--mlp_plus_hidden_sizes",
+        type=int,
+        nargs="+",
+        default=[],
+        help="List of hidden layer sizes for mlp_plus controller.",
+    )
+    parser.add_argument(
+        "--rnn_hidden_size",
+        type=int,
+        default=0,
+        help="Hidden state size for rnn controller.",
+    )
 
-    # Controller Configuration (used within optimise)
-    CONTROLLER_TYPE = "mlp"  # 'mlp', 'mlp_plus', 'rnn'
-    MLP_PLUS_HIDDEN_SIZES = [24, 16]  # Only used if controller_type='mlp_plus'
-    RNN_HIDDEN_SIZE = 16  # Only used if controller_type='rnn'
+    # simulation Parameters (for each evaluation)
+    parser.add_argument(
+        "--simulation_duration",
+        type=int,
+        default=60,
+        help="Duration of each simulation evaluation in seconds.",
+    )
+    parser.add_argument(
+        "--control_timestep",
+        type=float,
+        default=0.2,
+        help="Time step for control updates in seconds.",
+    )
 
-    # EA Parameters (for optimise.optimise)
-    TOURNAMENT_SIZE = 4
-    CROSSOVER_PROBABILITY = 0.8
-    MUTATION_SIGMA = 0.2
-    CLIP_RANGE = (-5.0, 5.0)
+    # VSR Parameters (optional)
+    parser.add_argument(
+        "--vsr_grid_dims",
+        type=int,
+        nargs=3,
+        default=[GRID_SIZE, GRID_SIZE, GRID_SIZE],
+        help="Dimensions (X Y Z) of the voxel grid (default: 10 10 10).",
+    )
 
-    # Output Directory
-    TIMESTAMP = time.strftime("%Y%m%d-%H%M%S")
-    OUTPUT_DIR = f"results_evolution/{MODEL_NAME}_{TIMESTAMP}"
+    # debugging
+    parser.add_argument(
+        "--mutation_verbose",
+        action="store_true",
+        help="Enable detailed logging during the morphology mutation process.",
+    )
 
-    MUTATION_VERBOSE_LOGGING = True  # Set to True to see detailed mutation logs
+    args = parser.parse_args()
 
-    initial_csv_dir = os.path.join(OUTPUT_DIR, "initial_model")
-    os.makedirs(initial_csv_dir, exist_ok=True)
-    initial_csv_path = os.path.join(initial_csv_dir, f"{MODEL_NAME}_initial.csv")
-    try:
-        print(f"Creating initial morphology file at: {initial_csv_path}")
-        initial_df = pd.DataFrame(INITIAL_MORPHOLOGY_COORDS, columns=["x", "y", "z"])
-        initial_df.to_csv(initial_csv_path, index=False)
-        # Validate creation
-        temp_vsr = VoxelRobot(*VSR_GRID_DIMS, gear=VSR_GEAR)
-        temp_vsr.load_model_csv(initial_csv_path)
-        temp_vsr._check_contiguous()
-        print("Initial morphology created and validated.")
-        del temp_vsr
-    except Exception as e:
-        print(f"Error creating or validating initial morphology CSV: {e}")
-        exit()
+    # validates args
+    if not os.path.exists(args.initial_morphology_csv):
+        print(
+            f"Error: Initial morphology CSV file not found: {args.initial_morphology_csv}"
+        )
+        sys.exit(1)
+    if args.controller_type == "mlp_plus" and not args.mlp_plus_hidden_sizes:
+        print(
+            "Error: --mlp_plus_hidden_sizes must be provided for controller_type 'mlp_plus'"
+        )
+        sys.exit(1)
+    if args.controller_type == "rnn" and args.rnn_hidden_size <= 0:
+        print(
+            "Error: --rnn_hidden_size must be provided and positive for controller_type 'rnn'"
+        )
+        sys.exit(1)
+    if args.clip_range_min >= args.clip_range_max:
+        print("Error: --clip_range_min must be less than --clip_range_max")
+        sys.exit(1)
+    if len(args.vsr_grid_dims) != 3 or any(d <= 0 for d in args.vsr_grid_dims):
+        print("Error: --vsr_grid_dims requires 3 positive integers.")
+        sys.exit(1)
 
-    # --- Prepare arguments for optimise.optimise ---
-    # ... (remains the same) ...
-    optimise_args = {
-        "controller_type": CONTROLLER_TYPE,
-        "tournament_size": TOURNAMENT_SIZE,
-        "crossover_probability": CROSSOVER_PROBABILITY,
-        "mutation_sigma": MUTATION_SIGMA,
-        "clip_range": CLIP_RANGE,
-        "simulation_duration": SIMULATION_DURATION,
-        "control_timestep": CONTROL_TIMESTEP,
-        "num_workers": OPTIMISE_NUM_WORKERS,
-        "mlp_plus_hidden_sizes": MLP_PLUS_HIDDEN_SIZES,
-        "rnn_hidden_size": RNN_HIDDEN_SIZE,
+    # create output directory if it doesn't exist
+    os.makedirs(args.output_dir, exist_ok=True)
+    print(f"Using output directory: {args.output_dir}")
+
+    # assemble arguments for optimise.optimise
+    optimise_args_dict = {
+        "controller_type": args.controller_type,
+        "tournament_size": args.tournament_size,
+        "crossover_probability": args.crossover_probability,
+        "mutation_sigma": args.mutation_sigma,
+        "clip_range": (args.clip_range_min, args.clip_range_max),
+        "simulation_duration": args.simulation_duration,
+        "control_timestep": args.control_timestep,
+        "num_workers": args.optimise_num_workers,
+        "mlp_plus_hidden_sizes": args.mlp_plus_hidden_sizes,
+        "rnn_hidden_size": args.rnn_hidden_size,
+        # 'initial_param_vector' is not used here, optimisation starts fresh for each morphology
+        "initial_param_vector": None,  # Explicitly set to None
     }
 
-    # --- Run Evolution ---
+    # STEP 2: Run simulation
+
     evo_start_time = time.time()
 
     final_best_morph_path, all_history = evolve(
-        initial_morphology_csv=initial_csv_path,
-        output_dir=OUTPUT_DIR,
-        num_batches=NUM_BATCHES,
-        num_mutations_per_batch=NUM_MUTATIONS_PER_BATCH,
-        num_parents_select=NUM_PARENTS_SELECT,
-        optimise_generations=OPTIMISE_GENERATIONS,
-        optimise_population_size=OPTIMISE_POPULATION_SIZE,
-        optimise_args=optimise_args,
-        vsr_grid_dims=VSR_GRID_DIMS,
-        vsr_gear_ratio=VSR_GEAR,
-        mutation_verbose=MUTATION_VERBOSE_LOGGING,  # Pass the flag
+        initial_morphology_csv=args.initial_morphology_csv,
+        output_dir=args.output_dir,
+        # evolution params
+        num_batches=args.num_batches,
+        num_mutations_per_batch=args.num_mutations_per_batch,
+        num_parents_select=args.num_parents_select,
+        # optimisation params (passed as dict)
+        optimise_generations=args.optimise_generations,
+        optimise_population_size=args.optimise_population_size,
+        optimise_args=optimise_args_dict,
+        # VSR params
+        vsr_grid_dims=tuple(args.vsr_grid_dims),  # Convert list to tuple
+        vsr_gear_ratio=args.gear,
+        # debugging
+        mutation_verbose=args.mutation_verbose,
     )
 
-    # ... (rest of the __main__ block remains the same) ...
     evo_end_time = time.time()
     print(f"\nTotal Co-Evolution duration: {evo_end_time - evo_start_time:.2f} seconds")
 

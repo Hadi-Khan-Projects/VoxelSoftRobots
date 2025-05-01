@@ -1,13 +1,19 @@
-# simulate.py
+import argparse
+import ast
 import math
-from typing import Any  # Keep Any for weight/bias type hints for now
+import os
+import sys
+import traceback
+from typing import Any
 
 import mujoco
 import mujoco.viewer
 import numpy as np
+import pandas as pd
 
-from controller import DistributedNeuralController  # Import the updated class
+from controller import DistributedNeuralController
 from vsr import VoxelRobot
+
 
 def voxel_motor_mapping(
     model: mujoco.MjModel,
@@ -17,7 +23,7 @@ def voxel_motor_mapping(
 
     Args:
         model (mujoco.MjModel): The MuJoCo model.
-    
+
     Returns:
         list[tuple[int, int, int]]: List of active voxel coordinates.
     """
@@ -54,9 +60,10 @@ def voxel_motor_mapping(
         active_voxel_coords,
         voxel_motor_map,
         voxel_tendon_map,
-    ) 
+    )
 
     return active_voxel_coords_validated, voxel_motor_map, voxel_tendon_map
+
 
 def validate_mapping(
     active_voxel_coords: list,
@@ -85,8 +92,9 @@ def validate_mapping(
 
     if n_active_voxels == 0:
         raise ValueError("No valid active voxels found during simulation setup.")
-    
+
     return active_voxel_coords
+
 
 def get_vertex_body_ids(
     model: mujoco.MjModel,
@@ -105,6 +113,7 @@ def get_vertex_body_ids(
     vertex_body_ids = np.array(vertex_body_ids)
 
     return vertex_body_ids
+
 
 def run_simulation(
     model: mujoco.MjModel,
@@ -400,59 +409,316 @@ def run_simulation(
     return fitness, x_dist_target, y_dist_target, target_reached
 
 
-# example on how to use, actual usage in optimise.py
-if __name__ == "__main__":
-    MODEL = "quadruped_v3"  # test model from vsr_model
-    model_path = f"vsr_models/{MODEL}/{MODEL}"
-    DURATION = 60
-    CONTROL_TIMESTEP = 0.2
-    GEAR = 100
-    VSR_DIMS = (10, 10, 10)
-
-    vsr = VoxelRobot(*VSR_DIMS, gear=GEAR)
+def parse_literal(value_str):
     try:
-        vsr.load_model_csv(model_path + ".csv")
-        vsr.visualise_model()
-        xml_string = vsr.generate_model(model_path)
-        model = mujoco.MjModel.from_xml_string(xml_string)
-        print("Model loaded/generated.")
-    except Exception as e:
-        print(f"Error loading/generating model: {e}")
-        exit()
+        return ast.literal_eval(value_str)
+    except (ValueError, SyntaxError, TypeError):
+        # handle cases where the string might be [], None, or malformed
+        if isinstance(value_str, str):
+            if value_str.strip() == "[]":
+                return []
+            if value_str.strip().lower() in ["none", "nan", "null"]:
+                return None
+        # if its already a list/None
+        if isinstance(value_str, (list, type(None))):
+            return value_str
+        print(f"Warning: Could not parse literal string: {value_str}. Returning None.")
+        return None
 
-    # --- Test different controller types ---
-    for ctrl_type in ["mlp", "mlp_plus", "rnn"]:
-        print(f"\n--- Testing Controller Type: {ctrl_type} ---")
 
-        # determine param vector size for random init
-        # instantiate temporarily just to get size
-        temp_controller = DistributedNeuralController(
-            controller_type=ctrl_type,
-            n_voxels=1,  # dummy, actual needed later
-            voxel_coords=[(0, 0, 0)],  # dummy coords for init
-            n_sensors_per_voxel=8,
-            n_comm_channels=2,
-            # default configs even if not used by this type
-            mlp_plus_hidden_sizes=[16],
-            rnn_hidden_size=16,
+# cli usage for an optimise.py log file:
+
+# python simulate.py \
+#     --csv_path <path_to_optimise_history.csv> \
+#     --generation <gen_number> \
+#     --individual_index <index_number> \
+#     --vsr_grid_dims 10 10 10 \
+#     [--duration <seconds>] \
+#     [--control_timestep <seconds>] \
+#     [--headless]
+
+# cli usage example for an optimise.py log file:
+
+# python simulate.py \
+#     --csv_path vsr_models/quadruped_v3/results_optimise/my_rnn_run_1/full_history_rnn_h16_gen2_pop8.csv \
+#     --generation 2 \
+#     --individual_index 0 \
+#     --vsr_grid_dims 10 10 10
+
+# cli usage for an evolve.py log file:
+
+# python simulate.py \
+#     --csv_path <path_to_evolve_history.csv> \
+#     --batch <batch_number> \
+#     --mutation_index <mutation_number> \
+#     --generation <gen_number_within_optimise> \
+#     --individual_index <index_number_within_gen> \
+#     --vsr_grid_dims 10 10 10 \
+#     [--duration <seconds>] \
+#     [--control_timestep <seconds>] \
+#     [--headless]
+
+# cli usage example for an evolve.py log file:
+
+# python simulate.py \
+#     --csv_path results_evolution/block_evo_mlp_run_A/full_evolution_history.csv \
+#     --batch 5 \
+#     --mutation_index 3 \
+#     --generation 20 \
+#     --individual_index 5 \
+#     --vsr_grid_dims 10 10 10 \
+
+# can use via cli, actual usage in optimise.py
+if __name__ == "__main__":
+    # STEP 1: Get arguments/paremeters
+    parser = argparse.ArgumentParser(
+        description="Run a single VSR simulation loaded from a history CSV log file."
+    )
+
+    # required arguments
+    parser.add_argument(
+        "--csv_path",
+        type=str,
+        required=True,
+        help="Path to the history CSV file (from optimise.py or evolve.py).",
+    )
+    parser.add_argument(
+        "--generation",
+        type=int,
+        required=True,
+        help="Generation number of the individual to simulate.",
+    )
+    parser.add_argument(
+        "--individual_index",
+        type=int,
+        required=True,
+        help="Index of the individual within the generation to simulate.",
+    )
+    parser.add_argument(
+        "--vsr_grid_dims",
+        type=int,
+        nargs=3,
+        required=True,  # required to build the VSR without original CSV
+        help="Dimensions (X Y Z) of the voxel grid (e.g., 10 10 10). Must match the grid used during evolution/optimisation.",
+    )
+
+    # optional arguments (for identifying evolve.py logs)
+    parser.add_argument(
+        "--batch",
+        type=int,
+        default=None,
+        help="Batch number (only needed for evolve.py logs).",
+    )
+    parser.add_argument(
+        "--mutation_index",
+        type=int,
+        default=None,
+        help="Mutation index within the batch (only needed for evolve.py logs).",
+    )
+
+    # simulation control args (override historical values if desired)
+    parser.add_argument(
+        "--duration",
+        type=int,
+        default=None,  # default to historical value if available
+        help="Duration of the simulation in seconds (overrides value used in log). Default: Use historical duration (60s fallback).",
+    )
+    parser.add_argument(
+        "--control_timestep",
+        type=float,
+        default=None,  # default to historical value if available
+        help="Time step for control updates in seconds (overrides value used in log). Default: Use historical timestep (0.2s fallback).",
+    )
+    parser.add_argument(
+        "--headless", action="store_true", help="Run simulation without the GUI viewer."
+    )
+
+    args = parser.parse_args()
+
+    # STEP 2: Load data from .csv log file
+    if not os.path.exists(args.csv_path):
+        print(f"Error: History CSV file not found: {args.csv_path}")
+        sys.exit(1)
+    if (args.batch is not None and args.mutation_index is None) or (
+        args.batch is None and args.mutation_index is not None
+    ):
+        print(
+            "Error: --batch and --mutation_index must be provided together (or neither)."
         )
-        param_size = temp_controller.get_total_parameter_count()
-        print(f"Parameter vector size for {ctrl_type}: {param_size}")
+        sys.exit(1)
+    if len(args.vsr_grid_dims) != 3 or any(d <= 0 for d in args.vsr_grid_dims):
+        print("Error: --vsr_grid_dims requires 3 positive integers.")
+        sys.exit(1)
 
-        # generate random parameters for testing
-        random_params = np.random.uniform(-0.5, 0.5, param_size)
+    try:
+        history_df = pd.read_csv(args.csv_path)
 
+        # filter based on provided indices
+        if args.batch is not None:  # evolve.py log
+            # check if columns exist
+            required_cols = [
+                "batch",
+                "mutation_index",
+                "generation",
+                "individual_index",
+            ]
+            if not all(col in history_df.columns for col in required_cols):
+                print(
+                    f"Error: CSV file '{args.csv_path}' is missing required columns for evolve log: {required_cols}"
+                )
+                sys.exit(1)
+            target_row = history_df[
+                (history_df["batch"] == args.batch)
+                & (history_df["mutation_index"] == args.mutation_index)
+                & (history_df["generation"] == args.generation)
+                & (history_df["individual_index"] == args.individual_index)
+            ]
+        else:  # optimise.py log
+            required_cols = ["generation", "individual_index"]
+            if not all(col in history_df.columns for col in required_cols):
+                print(
+                    f"Error: CSV file '{args.csv_path}' is missing required columns for optimise log: {required_cols}"
+                )
+                sys.exit(1)
+            target_row = history_df[
+                (history_df["generation"] == args.generation)
+                & (history_df["individual_index"] == args.individual_index)
+            ]
+
+        if target_row.empty:
+            print(
+                f"Error: No individual found in '{args.csv_path}' matching the provided indices."
+            )
+            print(
+                f"  Batch: {args.batch}, Mutation: {args.mutation_index}, Gen: {args.generation}, Index: {args.individual_index}"
+            )
+            sys.exit(1)
+        if len(target_row) > 1:
+            print(
+                f"Error: Multiple individuals found in '{args.csv_path}' matching the provided indices. Check the CSV."
+            )
+            sys.exit(1)
+
+        # extract data from the unique row
+        data = target_row.iloc[0]
+
+        # parse necessary columns
+        controller_type = data["controller_type"]
+        gear_ratio = float(data["gear_ratio"])
+        param_vector_str = data["params_vector_str"]
+        mlp_hidden_str = data.get("mlp_plus_hidden_sizes_str", "[]")
+        rnn_hidden_size = int(data.get("rnn_hidden_size", 0))
+        voxel_coords_str = data["voxel_coords_str"]
+
+        # safely parse string representations
+        param_vector = np.array(parse_literal(param_vector_str))
+        mlp_plus_hidden_sizes = parse_literal(mlp_hidden_str)
+        voxel_coords_list = parse_literal(voxel_coords_str)
+
+        # get simulation parameters (use cli overrides or historical/defaults)
+        historical_control_ts = float(
+            data.get("control_timestep", 0.2)
+        )  # default fallback
+        sim_duration = (
+            args.duration if args.duration is not None else 60
+        )  # simple fallback, historical duration not logged
+        control_timestep = (
+            args.control_timestep
+            if args.control_timestep is not None
+            else historical_control_ts
+        )
+
+        # validate parsed data
+        if param_vector is None or not isinstance(param_vector, np.ndarray):
+            raise ValueError("Failed to parse 'params_vector_str' into a numpy array.")
+        if mlp_plus_hidden_sizes is None or not isinstance(mlp_plus_hidden_sizes, list):
+            raise ValueError("Failed to parse 'mlp_plus_hidden_sizes_str' into a list.")
+        if voxel_coords_list is None or not isinstance(voxel_coords_list, list):
+            raise ValueError("Failed to parse 'voxel_coords_str' into a list.")
+        if not all(isinstance(c, tuple) and len(c) == 3 for c in voxel_coords_list):
+            raise ValueError("Parsed 'voxel_coords_list' does not contain 3D tuples.")
+
+        print("\n--- Loaded Configuration from CSV Row ---")
+        print(f"  Controller Type: {controller_type}")
+        print(f"  Gear Ratio: {gear_ratio}")
+        print(f"  MLP+ Hidden: {mlp_plus_hidden_sizes}")
+        print(f"  RNN Hidden: {rnn_hidden_size}")
+        print(f"  Num Voxels: {len(voxel_coords_list)}")
+        print(f"  Parameter Vector Shape: {param_vector.shape}")
+
+    except Exception as e:
+        print(f"Error loading or parsing data from CSV: {e}")
+        traceback.print_exc()
+        sys.exit(1)
+
+    # STEP 3: Setup VSR
+    try:
+        print("\nGenerating VSR structure and MuJoCo model...")
+        vsr = VoxelRobot(*args.vsr_grid_dims, gear=gear_ratio)
+
+        # clear the grid and set voxels based on loaded coordinates
+        vsr.voxel_grid = np.zeros(args.vsr_grid_dims, dtype=np.uint8)
+        for x, y, z in voxel_coords_list:
+            # check bounds just in case coordinates are outside the specified grid dims
+            if (
+                0 <= x < args.vsr_grid_dims[0]
+                and 0 <= y < args.vsr_grid_dims[1]
+                and 0 <= z < args.vsr_grid_dims[2]
+            ):
+                vsr.set_val(x, y, z, 1)
+            else:
+                print(
+                    f"Warning: Voxel coordinate ({x},{y},{z}) from CSV is outside specified grid dimensions {args.vsr_grid_dims}. Skipping."
+                )
+
+        # check contiguity after building
+        vsr._check_contiguous()
+
+        # generate XML string
+        # create a dummy path for generate_model internal saving if needed
+        temp_model_path = f"temp_simulate_model_{os.getpid()}"
+        xml_string = vsr.generate_model(temp_model_path)
+        # clean up dummy files generate_model might create
+        try:
+            if os.path.exists(temp_model_path + ".xml"):
+                os.remove(temp_model_path + ".xml")
+            if os.path.exists(temp_model_path + "_modded.xml"):
+                os.remove(temp_model_path + "_modded.xml")
+        except OSError:
+            pass  # Ignore cleanup errors
+
+        model = mujoco.MjModel.from_xml_string(xml_string)
+        print("Model generated successfully.")
+
+    except Exception as e:
+        print(f"Error generating VSR or MuJoCo model: {e}")
+        traceback.print_exc()
+        sys.exit(1)
+
+    # STEP 4: Run simulations
+    print("\n--- Running Simulation ---")
+    print(f"  Duration: {sim_duration}s")
+    print(f"  Control Timestep: {control_timestep}s")
+    print(f"  Headless: {args.headless}")
+    try:
         results = run_simulation(
             model=model,
-            duration=DURATION,
-            control_timestep=CONTROL_TIMESTEP,
-            param_vector=random_params,  # use param_vector input
-            controller_type=ctrl_type,
-            # pass configs used for size calculation if type matches
-            mlp_plus_hidden_sizes=[16] if ctrl_type == "mlp_plus" else [],
-            rnn_hidden_size=16 if ctrl_type == "rnn" else 0,
-            headless=False,  # show viewer for testing
+            duration=sim_duration,
+            control_timestep=control_timestep,
+            controller_type=controller_type,
+            mlp_plus_hidden_sizes=mlp_plus_hidden_sizes,
+            rnn_hidden_size=rnn_hidden_size,
+            param_vector=param_vector,
+            headless=args.headless,
         )
-        print(
-            f"Results for {ctrl_type}: {results}"
-        )  # (fitness, x_dist, y_dist, reached)
+        print("\n--- Simulation Results ---")
+        print(f"  Fitness: {results[0]:.4f}")
+        print(f"  Final X Distance to Target: {results[1]:.4f}")
+        print(f"  Final Y Distance to Target: {results[2]:.4f}")
+        print(f"  Target Reached: {results[3]}")
+
+    except Exception as e:
+        print("\n--- Simulation Failed ---")
+        print(f"Error during simulation: {e}")
+        traceback.print_exc()
+        sys.exit(1)
