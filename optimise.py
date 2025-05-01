@@ -141,11 +141,15 @@ def evaluate_individual(
     bias_shape,
     duration,
     control_timestep,
+    voxel_coords_list_str,  # string representation of the list of active voxel coords
+    simulation_timestep,
+    gear_ratio,
 ):
     """
     Evaluates a single individual (parameter vector) by running the simulation.
     Handles parameter unflattening and simulation execution.
     Designed to be used with multiprocessing.Pool.map.
+    Returns simulation results AND the parameters used for logging/rerunning.
     """
     try:
         weights, biases = unflatten_params(param_vector, weight_shape, bias_shape)
@@ -158,33 +162,58 @@ def evaluate_individual(
             biases=biases,
             headless=True,
         )
-        # Ensure fitness is a float
-        if not isinstance(fitness, (float, np.float64)):
-            print(
-                f"Warning: Fitness is not float ({type(fitness)}), value: {fitness}. Converting."
-            )
-            fitness = float(fitness)
-        # Ensure dists are floats
-        if not isinstance(x_dist, (float, np.float64)):
-            x_dist = float(x_dist)
-        if not isinstance(y_dist, (float, np.float64)):
-            y_dist = float(y_dist)
-        # Ensure reached is bool
-        if not isinstance(reached, bool):
-            reached = bool(reached)
+        # ensure types are correct
+        fitness = (
+            float(fitness) if not isinstance(fitness, (float, np.float64)) else fitness
+        )
+        x_dist = (
+            float(x_dist) if not isinstance(x_dist, (float, np.float64)) else x_dist
+        )
+        y_dist = (
+            float(y_dist) if not isinstance(y_dist, (float, np.float64)) else y_dist
+        )
+        reached = bool(reached) if not isinstance(reached, bool) else reached
 
-        # Return fitness, distances, reached status, AND the input parameters
-        return fitness, x_dist, y_dist, reached, param_vector
+        # Return fitness, distances, reached status, input params, AND the simulation metadata
+        return (
+            fitness,
+            x_dist,
+            y_dist,
+            reached,
+            param_vector,
+            voxel_coords_list_str,
+            control_timestep,
+            simulation_timestep,
+            gear_ratio,
+        )
 
     except mujoco.FatalError as e:
-        # Handle MuJoCo crashes specifically if needed (already handled in sim)
         print(f"!!! MuJoCo Fatal Error evaluating individual: {e} !!!")
-        return -np.inf, np.inf, np.inf, False, param_vector
+        return (
+            -np.inf,
+            np.inf,
+            np.inf,
+            False,
+            param_vector,
+            voxel_coords_list_str,
+            control_timestep,
+            simulation_timestep,
+            gear_ratio,
+        )
     except Exception as e:
         print(f"!!! Error evaluating individual: {e} !!!")
         print(f"Traceback: {traceback.format_exc()}")
-        # Return a very poor fitness score and default values
-        return -np.inf, np.inf, np.inf, False, param_vector
+        return (
+            -np.inf,
+            np.inf,
+            np.inf,
+            False,
+            param_vector,
+            voxel_coords_list_str,
+            control_timestep,
+            simulation_timestep,
+            gear_ratio,
+        )
 
 
 def tournament_selection(population, fitnesses, tournament_size):
@@ -238,6 +267,8 @@ def gaussian_mutation(individual, sigma, clip_range):
 
 def optimise(
     model,
+    vsr_voxel_coords_list,  # The actual list of (x,y,z) tuples
+    vsr_gear_ratio,
     num_generations: int,
     population_size: int,
     tournament_size: int,
@@ -252,47 +283,64 @@ def optimise(
 ):
     """
     Optimises the VSR controller parameters using a generational EA.
+    Stores detailed history including simulation parameters.
 
     Args:
         model (mujoco.MjModel): The MuJoCo model object.
+        vsr_voxel_coords_list (list): List of active voxel coordinates [(x,y,z), ...].
+        vsr_gear_ratio (float): Gear ratio used to generate the model.
+        num_generations (int): Number of generations to run the EA.
         population_size (int): Number of individuals in the population.
-        tournament_size (int): Number of individuals participating in each tournament selection.
+        tournament_size (int): Number of individuals participating in tournament selection.
         crossover_probability (float): Probability of performing crossover.
         mutation_sigma (float): Standard deviation for Gaussian mutation noise.
         clip_range (tuple): (min, max) values for clipping mutated parameters.
         simulation_duration (int): Duration of each simulation evaluation in seconds.
         control_timestep (float): Timestep for controller updates in seconds.
-        num_workers (int, optional): Number of parallel workers for evaluation. Defaults to cpu_count().
-        num_generations (int): Number of generations to run the EA.
+        num_workers (int): Number of parallel workers for evaluation.
         initial_weights (np.ndarray, optional): Starting weights for the first individual.
         initial_biases (np.ndarray, optional): Starting biases for the first individual.
 
     Returns:
         tuple: (best_weights, best_biases, history_df)
-               - best_weights (np.ndarray): Weights of the best individual found overall.
-               - best_biases (np.ndarray): Biases of the best individual found overall.
-               - history_df (pd.DataFrame): DataFrame containing performance metrics and parameters
-                                            for *every* individual in *each* generation.
     """
 
-    print("--- Starting Optisation ---")
-    # Ensure not requesting more workers than available
+    print("--- Starting Optimisation ---")
     num_workers = min(num_workers, cpu_count())
-    print(f"Using specified number of workers: {num_workers}")
+    print(f"Using {num_workers} workers.")
 
-    # 1. Get VSR details and controller dimensions
+    # 1. Get VSR details and controller dimensions from the provided model
     try:
-        n_voxels, voxel_coords, input_size, output_size = (
+        n_voxels, active_voxel_coords_from_model, input_size, output_size = (
             _get_vsr_details_and_controller_dims(model)
         )
+        # check the coords from model match those passed in
+        # (sort both lists of tuples to be order agnostic)
+        if sorted(active_voxel_coords_from_model) != sorted(vsr_voxel_coords_list):
+            print(
+                "Warning: Active voxel coordinates extracted from the model differ from those provided."
+            )
+            print(f"  Provided: {len(vsr_voxel_coords_list)} voxels")
+            print(f"  Model analysis: {len(active_voxel_coords_from_model)} voxels")
+            # as fallback, trust the provided list as it came from the VSR object used for generation
+            print("  Proceeding with the explicitly provided voxel coordinate list.")
+
     except Exception as e:
-        print(f"Fatal Error: Could not initialize VSR details. Aborting. \nError: {e}")
-        return None, None, pd.DataFrame()  # return empty DataFrame
+        print(
+            f"Fatal Error: Could not initialise VSR details from model. Aborting. \nError: {e}"
+        )
+        return None, None, pd.DataFrame()
 
     weight_shape = (output_size, input_size)
     bias_shape = (output_size,)
     param_vector_size = input_size * output_size + output_size
     print(f"Total parameters per individual: {param_vector_size}")
+
+    simulation_timestep = model.opt.timestep
+    voxel_coords_list_str = str(
+        vsr_voxel_coords_list
+    )  # convert list to string for logging
+    gear_ratio = vsr_gear_ratio  # use the passed-in gear ratio
 
     # 2. Initialize Population
     population = []
@@ -333,10 +381,9 @@ def optimise(
     best_fitness_so_far = -np.inf
     best_weights_so_far = None
     best_biases_so_far = None
-    # history as a list to store individual dictionaries
-    all_history_records = []
+    all_history_records = []  # history as a list to store individual dictionaries
 
-    # create partial function for evaluation to fix the constant arguments
+    # create partial function for evaluation
     evaluate_partial = partial(
         evaluate_individual,
         model=model,
@@ -344,8 +391,11 @@ def optimise(
         bias_shape=bias_shape,
         duration=simulation_duration,
         control_timestep=control_timestep,
+        voxel_coords_list_str=voxel_coords_list_str,
+        simulation_timestep=simulation_timestep,
+        gear_ratio=gear_ratio,
     )
-    print("\n") # newline the ..... loading from run_simulation() (headless)
+    print("\n")  # newline the ..... loading from run_simulation() (headless)
 
     for generation in range(num_generations):
         gen_start_time = time.time()
@@ -356,7 +406,6 @@ def optimise(
             f"Evaluating {len(population)} individuals using {num_workers} workers..."
         )
         eval_start_time = time.time()
-
         results = []
         current_population_to_eval = (
             population  # keep track of the population being evaluated
@@ -365,19 +414,17 @@ def optimise(
         # multiprocessing pool for parallel evaluation
         try:
             # pool uses the desired number of workers
-            actual_workers = min(
-                num_workers, len(current_population_to_eval)
-            )  # check as don't need more workers than individuals
+            actual_workers = min(num_workers, len(current_population_to_eval))
+            # check as don't need more workers than individuals
             if actual_workers < num_workers:
                 print(f"Note: Using {actual_workers} workers (population size limit).")
-                pass  # Reduce verbosity
             if actual_workers <= 0:
                 print("Warning: No individuals to evaluate.")
-                continue  # Skip to next generation or handle error
+                continue
 
             with Pool(processes=actual_workers) as pool:
                 # results will be a list of tuples:
-                # [(fitness, x, y, reached, params), (fitness, x, y, reached, params), ...]
+                # [(fitness, x, y, reached, ...), ...]
                 results = pool.map(evaluate_partial, current_population_to_eval)
 
         except Exception as e:
@@ -386,9 +433,8 @@ def optimise(
             # attempt to salvage results if some processes finished
             if not results:  # if results is empty, cannot continue
                 print("Aborting optimisation due to evaluation error.")
-                history_df = pd.DataFrame(
-                    all_history_records
-                )  # use records collected so far
+                history_df = pd.DataFrame(all_history_records)
+                # use records collected so far
                 return best_weights_so_far, best_biases_so_far, history_df
 
         eval_time = time.time() - eval_start_time
@@ -397,32 +443,54 @@ def optimise(
         # Process results and histroy
         fitnesses = []
         evaluated_population_params = []  # store params corresponding to fitnesses
-
         gen_best_fitness = -np.inf
         gen_best_params = None
-
         num_failed = 0
+
         for i, res in enumerate(results):
-            fitness, x_dist, y_dist, reached, params = res
+            # --- Unpack the expanded results tuple ---
+            (
+                fitness,
+                x_dist,
+                y_dist,
+                reached,
+                params,
+                res_voxel_coords_str,
+                res_ctrl_ts,
+                res_sim_ts,
+                res_gear,
+            ) = res
+            # -----------------------------------------
 
-            # store results for selection/stats
             fitnesses.append(fitness)
-            evaluated_population_params.append(
-                params
-            )  # store the params vector evaluated for reproducibility
+            evaluated_population_params.append(params)
 
-            # check for evaluation failure
             if fitness <= -np.inf:
                 num_failed += 1
-                # skip generation
-                continue
+                # still log the failure attempt if params are available
+                if params is not None:
+                    record = {
+                        "generation": generation + 1,
+                        "individual_index": i,
+                        "fitness": fitness,  # will be -inf
+                        "x_dist": x_dist,  # will be inf
+                        "y_dist": y_dist,  # will be inf
+                        "reached": reached,  # will be False
+                        "params_vector": list(params),
+                        "voxel_coords_str": res_voxel_coords_str,
+                        "control_timestep": res_ctrl_ts,
+                        "simulation_timestep": res_sim_ts,
+                        "gear_ratio": res_gear,
+                    }
+                    all_history_records.append(record)
+                continue  # skip updates for best fitness
             else:
                 # update generation's best
                 if fitness > gen_best_fitness:
                     gen_best_fitness = fitness
-                    gen_best_params = params  # params of the best in this gen
+                    gen_best_params = params
 
-            # add to history
+            # Add record to history for successful/valid runs
             record = {
                 "generation": generation + 1,
                 "individual_index": i,  # index within the generation population
@@ -430,8 +498,11 @@ def optimise(
                 "x_dist": x_dist,
                 "y_dist": y_dist,
                 "reached": reached,
-                # store params as a list (better for CSV/JSON than ndarray)
                 "params_vector": list(params) if params is not None else None,
+                "voxel_coords_str": res_voxel_coords_str,
+                "control_timestep": res_ctrl_ts,
+                "simulation_timestep": res_sim_ts,
+                "gear_ratio": res_gear,
             }
             all_history_records.append(record)
 
@@ -471,7 +542,9 @@ def optimise(
         parents = []
         # select from the parameters of the individuals that were *successfully* evaluated
         valid_population_params = [
-            p for p, f in zip(evaluated_population_params, fitnesses) if f > -np.inf
+            p
+            for p, f in zip(evaluated_population_params, fitnesses)
+            if f > -np.inf and p is not None
         ]
         valid_pop_fitnesses = [f for f in fitnesses if f > -np.inf]
 
@@ -484,12 +557,10 @@ def optimise(
                 np.random.uniform(clip_range[0], clip_range[1], size=param_vector_size)
                 for _ in range(population_size)
             ]
-            continue  # Skip variation and proceed to next generation's evaluation
+            continue  # skip variation and proceed to next generation's evaluation
 
         # proceed with selection using valid individuals
-        for _ in range(
-            population_size
-        ):  # need population_size parents for replacement strategy
+        for _ in range(population_size):
             selected_parent = tournament_selection(
                 valid_population_params, valid_pop_fitnesses, tournament_size
             )
@@ -497,10 +568,8 @@ def optimise(
 
         # 6. Variation (Create offspring using Crossover and Mutation)
         offspring_population = []
-        # shuffle parent indices to mix pairs for crossover
         parent_indices = np.random.permutation(len(parents))
-
-        for i in range(0, population_size):  # create one offspring per parent slot
+        for i in range(0, population_size):
             # Select parent(s) - simple strategy: use parent[i] for mutation basis,
             # and pair parent[i] with parent[j] for crossover.
             idx1 = parent_indices[i]
@@ -545,10 +614,7 @@ def optimise(
     history_df = pd.DataFrame(all_history_records)
 
     if best_weights_so_far is None:
-        print(
-            "Warning: No best individual found (optimisation might have failed early or found no valid solutions)."
-        )
-        # Return None and the history collected so far
+        print("Warning: No best individual found.")
         return None, None, history_df
     else:
         print(f"Overall best fitness achieved: {best_fitness_so_far:.4f}")
@@ -560,55 +626,76 @@ def optimise(
 # example on how to use, actual usage in evolve.py
 if __name__ == "__main__":
     # --- Evolutionary Algorithm Config ---
-    POPULATION_SIZE = 128  # paper used 250
-    TOURNAMENT_SIZE = 6  # paper used 8
+    POPULATION_SIZE = 8  # paper used 250
+    TOURNAMENT_SIZE = 2  # paper used 8
     CROSSOVER_PROBABILITY = 0.8
     MUTATION_SIGMA = 0.2  # std deviation for mutation
     CLIP_RANGE = (-5.0, 5.0)  # clip parameters to this range
     NUM_WORKERS = 16
-    NUM_GENERATIONS = 20
+    NUM_GENERATIONS = 4
 
-    SIMULATION_DURATION = 60  # seconds
-    CONTROL_TIMESTEP = 0.2  # seconds
-    GEAR = 100
+    # --- Simulation Config ---
+    SIMULATION_DURATION = 60  # seconds (MUST stay consistent)
+    CONTROL_TIMESTEP = 0.2  # seconds (MUST stay consistent)
+    GEAR = 100  # (MUST stay consistent)
+    VSR_GRID_DIMS = (10, 10, 10)  # (MUST stay consistent)
 
-    MODEL_NAME = "voxel_v3"  # test model from vsr_model
+    # --- Model Config ---
+    MODEL_NAME = "quadruped_v3"  # test model from vsr_model
     MODEL_BASE_PATH = f"vsr_models/{MODEL_NAME}/{MODEL_NAME}"
     MODEL_CSV_PATH = MODEL_BASE_PATH + ".csv"
-    MODEL_XML_PATH = MODEL_BASE_PATH + "_modded.xml"  # the final XML in same dir
 
     if not os.path.exists(MODEL_CSV_PATH):
         print(f"Error: Model CSV file not found at {MODEL_CSV_PATH}")
     else:
         print(f"Running optimization for model: {MODEL_NAME}")
+        vsr_instance = None
+        model = None
+        active_coords_list = []
 
-        # --- Prepare VSR ---
+        # --- Prepare VSR and get necessary info BEFORE optimise ---
         try:
-            print("Generating/Loading MuJoCo model...")
-            vsr = VoxelRobot(10, 10, 10, gear=GEAR)  # adjustable
-            vsr.load_model_csv(MODEL_CSV_PATH)
-            xml_string = vsr.generate_model(MODEL_BASE_PATH)  # generates _modded.xml
+            print("Generating/Loading MuJoCo model and VSR info...")
+            vsr_instance = VoxelRobot(*VSR_GRID_DIMS, gear=GEAR)
+            vsr_instance.load_model_csv(MODEL_CSV_PATH)
+            xml_string = vsr_instance.generate_model(MODEL_BASE_PATH)
             model = mujoco.MjModel.from_xml_string(xml_string)
-            print("MuJoCo model loaded successfully.")
+
+            # Get active coordinates from the instance used for generation
+            active_coords_list = []
+            grid = vsr_instance.voxel_grid
+            for x in range(grid.shape[0]):
+                for y in range(grid.shape[1]):
+                    for z in range(grid.shape[2]):
+                        if grid[x, y, z] == 1:
+                            active_coords_list.append((x, y, z))
+
+            print(f"MuJoCo model {MODEL_CSV_PATH} loaded successfully.")
+            print(f"Simulation timestep: {model.opt.timestep}")
+            print(f"Control timestep: {CONTROL_TIMESTEP}")
+            print(f"VSR Gear Ratio: {vsr_instance.gear}")
+            print(f"Active Voxel Coords ({len(active_coords_list)}.")
+
         except Exception as e:
             print(f"Failed to load or generate MuJoCo model: {e}")
             print(traceback.format_exc())
-            model = None
+            # Exit if model loading fails
 
-        if model:
+        if model and vsr_instance and active_coords_list:
             # --- Run Optimisation ---
-
             start_opt_time = time.time()
             best_w, best_b, history_data = optimise(
-                model=model,  # Pass the loaded model object
+                model=model,  # Pass the loaded model object-
+                vsr_voxel_coords_list=active_coords_list,
+                vsr_gear_ratio=vsr_instance.gear,
                 num_generations=NUM_GENERATIONS,
                 population_size=POPULATION_SIZE,
                 tournament_size=TOURNAMENT_SIZE,
                 crossover_probability=CROSSOVER_PROBABILITY,
                 mutation_sigma=MUTATION_SIGMA,
                 clip_range=CLIP_RANGE,
-                simulation_duration=SIMULATION_DURATION,
-                control_timestep=CONTROL_TIMESTEP,
+                simulation_duration=SIMULATION_DURATION,  # passed to evaluate_individual via partial
+                control_timestep=CONTROL_TIMESTEP,  # passed to evaluate_individual via partial
                 num_workers=NUM_WORKERS,
             )
             end_opt_time = time.time()
@@ -627,33 +714,93 @@ if __name__ == "__main__":
                 np.savez(save_path_params, weights=best_w, biases=best_b)
                 print(f"Best parameters saved to {save_path_params}")
 
-                print("\n--- Optimisation History (Last 5 records) ---")
-                print(history_data.tail().to_string())  # show tail for history
                 # save full history
                 save_path_history = f"{MODEL_BASE_PATH}_full_history_gen{NUM_GENERATIONS}_pop{POPULATION_SIZE}.csv"
                 try:
-                    history_data.to_csv(save_path_history, index=False)
-                    print(f"Full optimisation history saved to {save_path_history}")
+                    # Ensure columns are present before saving
+                    required_cols = [
+                        "generation",
+                        "individual_index",
+                        "fitness",
+                        "x_dist",
+                        "y_dist",
+                        "reached",
+                        "params_vector",
+                        "voxel_coords_str",
+                        "control_timestep",
+                        "simulation_timestep",
+                        "gear_ratio",
+                    ]
+                    if all(col in history_data.columns for col in required_cols):
+                        history_data.to_csv(save_path_history, index=False)
+                        print(f"Full optimisation history saved to {save_path_history}")
+                    else:
+                        print(
+                            "Error: History DataFrame is missing expected columns. Cannot save."
+                        )
+                        print(
+                            "Missing:",
+                            [
+                                col
+                                for col in required_cols
+                                if col not in history_data.columns
+                            ],
+                        )
+
                 except Exception as e:
                     print(f"Error saving history CSV: {e}")
 
                 # Run final simulation with viewer
-                print(
-                    "\nRunning final simulation with best parameters (requires vsr_simulate.py)..."
-                )
-                run_simulation(
-                    model,
-                    duration=60,
-                    control_timestep=0.2,
-                    weights=best_w,
-                    biases=best_b,
-                    headless=False
-                )
+                print("\nRunning final simulation with best parameters...")
+                try:
+                    # Need the model object again for this final run
+                    # already have the model loaded from the optimisation setup
+                    if model:
+                        run_simulation(
+                            model=model,
+                            duration=60,
+                            control_timestep=CONTROL_TIMESTEP,
+                            weights=best_w,
+                            biases=best_b,
+                            headless=False,  # show viewer
+                        )
+                    else:
+                        print(
+                            "Could not run final simulation: model object not available."
+                        )
+                except Exception as e:
+                    print(f"Error running final simulation: {e}")
+
             else:
                 print("\nOptimisation did not yield a valid best result.")
                 if not history_data.empty:
+                    # save history even if optimisation failed to find a best
                     save_path_history = f"{MODEL_BASE_PATH}_failed_opt_history_gen{NUM_GENERATIONS}_pop{POPULATION_SIZE}.csv"
-                    history_data.to_csv(save_path_history, index=False)
-                    print(
-                        f"Saved history from failed optimisation run to {save_path_history}"
-                    )
+                    # check columns before saving
+                    required_cols = [
+                        "generation",
+                        "individual_index",
+                        "fitness",
+                        "params_vector",
+                        "voxel_coords_str",
+                        "control_timestep",
+                        "simulation_timestep",
+                        "gear_ratio",
+                    ]
+                    if all(col in history_data.columns for col in required_cols):
+                        history_data.to_csv(save_path_history, index=False)
+                        print(
+                            f"Saved history from failed optimisation run to {save_path_history}"
+                        )
+                    else:
+                        print(
+                            "Error: Failed history DataFrame is missing expected columns. Cannot save."
+                        )
+                        print(
+                            "Missing:",
+                            [
+                                col
+                                for col in required_cols
+                                if col not in history_data.columns
+                            ],
+                        )
