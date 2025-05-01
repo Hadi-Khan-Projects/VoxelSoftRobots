@@ -1,26 +1,38 @@
+# controller.py
 import math
 
 import numpy as np
 
 
+# Activation Functions (using numpy)
 def tanh(x):
     """Element-wise tanh activation function."""
     return np.tanh(x)
 
 
+def relu(x):
+    """Element-wise ReLU activation function."""
+    return np.maximum(0, x)
+
+
 class DistributedNeuralController:
     """
-    Distributed Neural Controller where each voxel has an identical MLP.
+    Distributed Neural Controller supporting multiple internal network types:
+    - 'mlp': Original single linear layer + tanh.
+    - 'mlp_plus': Multi-layer perceptron with configurable hidden layers and ReLU activation (tanh output).
+    - 'rnn': Simple recurrent neural network (Elman-style) layer + tanh output.
+
     Supports 6-neighbor communication (N, E, S, W, Up, Down).
-    Includes time signals (sin(t), cos(t)) as inputs.
+    Includes time signals (sin(t), cos(t)) and global state (COM vel, Target orient) as inputs.
     """
 
-    # define the number of time-based inputs (sin(t), cos(t))
+    # Define constants
     N_TIME_INPUTS = 2
-    # define number of communication directions (N, E, S, W, Up, Down)
     N_COMM_DIRECTIONS = 6
-    # define indices for communication directions (consistent mapping)
-    # output side indices:
+    N_COM_VEL_INPUTS = 3
+    N_TARGET_ORIENT_INPUTS = 2
+
+    # Communication index mapping (output side indices)
     COMM_IDX_N = 0  # Z+ Output
     COMM_IDX_E = 1  # X+ Output
     COMM_IDX_S = 2  # Z- Output
@@ -30,33 +42,48 @@ class DistributedNeuralController:
 
     def __init__(
         self,
-        n_voxels,
-        voxel_coords,
-        n_sensors_per_voxel,
-        n_comm_channels,
-        weights,
-        biases,
-        driving_voxel_coord=None,
-        time_signal_frequency=1.0,
+        controller_type: str,  # 'mlp', 'mlp_plus', 'rnn'
+        n_voxels: int,
+        voxel_coords: list,
+        n_sensors_per_voxel: int,
+        n_comm_channels: int,
+        weights: np.ndarray = None,  # Can be None initially
+        biases: np.ndarray = None,  # Can be None initially
+        param_vector: np.ndarray = None,  # Alternative initialization
+        # MLP+ specific config
+        mlp_plus_hidden_sizes: list = [32, 32],
+        # RNN specific config
+        rnn_hidden_size: int = 32,
+        # General config
+        driving_voxel_coord: tuple = None,
+        time_signal_frequency: float = 1.0,
     ):
         """
         Initializes the distributed neural controller.
 
         Args:
+            controller_type (str): Type of internal network ('mlp', 'mlp_plus', 'rnn').
             n_voxels (int): Total number of active voxels.
             voxel_coords (list): List of (x, y, z) tuples for active voxels.
             n_sensors_per_voxel (int): Number of sensor inputs per voxel.
             n_comm_channels (int): Number of communication values exchanged per side (nc).
-            weights (np.ndarray): MLP weight matrix.
-            biases (np.ndarray): MLP bias vector.
-            driving_voxel_coord (tuple, optional): Coordinates (x, y, z) of the voxel receiving the central driving signal. Defaults to None.
-            time_signal_frequency (float): Frequency (Hz) for the sin(t)/cos(t) time inputs.
+            weights (np.ndarray, optional): MLP weight matrix (only for 'mlp' type init).
+            biases (np.ndarray, optional): MLP bias vector (only for 'mlp' type init).
+            param_vector (np.ndarray, optional): A flat vector containing all network parameters.
+                                               If provided, overrides weights/biases.
+            mlp_plus_hidden_sizes (list, optional): List of hidden layer sizes for 'mlp_plus'.
+            rnn_hidden_size (int, optional): Size of the hidden state for 'rnn'.
+            driving_voxel_coord (tuple, optional): Coordinates (x, y, z) of the driving voxel.
+            time_signal_frequency (float): Frequency (Hz) for sin(t)/cos(t) inputs.
         """
+        if controller_type not in ["mlp", "mlp_plus", "rnn"]:
+            raise ValueError(f"Invalid controller_type: {controller_type}")
         if not isinstance(voxel_coords, list):
             raise TypeError("voxel_coords must be a list of tuples.")
         if n_voxels != len(voxel_coords):
             raise ValueError("n_voxels must match the length of voxel_coords.")
 
+        self.controller_type = controller_type
         self.n_voxels = n_voxels
         self.voxel_coords = voxel_coords
         self.voxel_coord_to_index = {
@@ -74,80 +101,174 @@ class DistributedNeuralController:
                 self.driving_voxel_coord
             ]
 
-        self.N_COM_VEL_INPUTS = 3  # vx, vy, vz
-        self.N_TARGET_ORIENT_INPUTS = 2 # dx, dy (normalized vector in XY plane)
-
-        # MLP Input Size: Sensors + N_COMM_DIRECTIONS*Comm_Inputs + Driving_Signal + Time_Signals + COM_Vel + Target_Orient
-        self.input_size = (
+        # --- Calculate Base Input/Output Sizes (Same for all types) ---
+        # Base Input Size: Sensors + Comm_Inputs + Driving_Sig + Time_Sigs + COM_Vel + Target_Orient
+        self.base_input_size = (
             self.n_sensors
             + self.N_COMM_DIRECTIONS * self.n_comm
-            + 1
+            + 1  # Driving signal
             + self.N_TIME_INPUTS
             + self.N_COM_VEL_INPUTS
             + self.N_TARGET_ORIENT_INPUTS
         )
-        # MLP Output Size: Actuation + N_COMM_DIRECTIONS*Comm_Outputs
-        self.output_size = 1 + self.N_COMM_DIRECTIONS * self.n_comm
+        # Base Output Size: Actuation + Comm_Outputs
+        self.base_output_size = 1 + self.N_COMM_DIRECTIONS * self.n_comm
 
-        # --- Check provided parameters shape ---
-        expected_weights_shape = (self.output_size, self.input_size)
-        expected_biases_shape = (self.output_size,)
-        if weights.shape != expected_weights_shape:
-            raise ValueError(
-                f"Weights shape mismatch. Expected {expected_weights_shape}, got {weights.shape}"
-            )
-        if biases.shape != expected_biases_shape:
-            raise ValueError(
-                f"Biases shape mismatch. Expected {expected_biases_shape}, got {biases.shape}"
-            )
+        # --- Network Specific Setup ---
+        self.params = {}  # Dictionary to store parameters (e.g., {'W1': ..., 'b1': ...})
+        self.param_shapes = {}  # Dictionary to store shapes for unflattening
+        self.total_params = 0
 
-        self.weights = weights
-        self.biases = biases
-        # ---------------------------------------
+        if self.controller_type == "mlp":
+            self._setup_mlp()
+        elif self.controller_type == "mlp_plus":
+            self.mlp_plus_hidden_sizes = mlp_plus_hidden_sizes
+            self._setup_mlp_plus()
+        elif self.controller_type == "rnn":
+            self.rnn_hidden_size = rnn_hidden_size
+            self._setup_rnn()
+
+        # --- Load Parameters ---
+        # Priority: param_vector > weights/biases
+        if param_vector is not None:
+            self.set_parameter_vector(param_vector)
+        elif (
+            self.controller_type == "mlp" and weights is not None and biases is not None
+        ):
+            # Allow direct weight/bias setting only for simple MLP for compatibility
+            if (
+                weights.shape == self.param_shapes["W"]
+                and biases.shape == self.param_shapes["b"]
+            ):
+                self.params["W"] = np.copy(weights)
+                self.params["b"] = np.copy(biases)
+                # print("MLP initialized with provided weights and biases.")
+            else:
+                raise ValueError("Provided weights/biases shape mismatch for MLP.")
+        # else: parameters remain uninitialized (will be set by EA via set_parameter_vector)
+        # print(f"Controller '{self.controller_type}' initialized with {self.total_params} parameters (uninitialized).")
 
         # --- State Variables ---
-        # Store communication outputs from the *previous* control step
-        # shape: (n_voxels, N_COMM_DIRECTIONS, n_comm_channels)
+        # Communication state (external)
         self.previous_comm_outputs = np.zeros(
             (self.n_voxels, self.N_COMM_DIRECTIONS, self.n_comm)
         )
-        # to store outputs calculated in the current step before they become 'previous'
         self.current_comm_outputs_buffer = np.zeros(
             (self.n_voxels, self.N_COMM_DIRECTIONS, self.n_comm)
         )
-        # ---------------------
+        # RNN hidden state (internal, per voxel)
+        if self.controller_type == "rnn":
+            # Shape: (n_voxels, rnn_hidden_size)
+            self.rnn_hidden_state = np.zeros((self.n_voxels, self.rnn_hidden_size))
+        else:
+            self.rnn_hidden_state = None  # Not used
 
         # store frequency for time signals
         self.time_signal_frequency = time_signal_frequency
 
-        # print(f"Controller initialized:")
-        # print(f"  Num Voxels: {self.n_voxels}")
-        # print(f"  Sensors/Voxel: {self.n_sensors}")
-        # print(f"  Comm Channels/Side: {self.n_comm}")
-        # print(f"  Comm Directions: {self.N_COMM_DIRECTIONS} (N, E, S, W, Up, Down)")
-        # print(f"  Time Signal Inputs: {self.N_TIME_INPUTS} (Freq: {self.time_signal_frequency} Hz)")
-        # print(f"  COM Velocity Inputs: {self.N_COM_VEL_INPUTS}")
-        # print(f"  Target Orientation Inputs: {self.N_TARGET_ORIENT_INPUTS}")
-        # print(f"  MLP Input Size: {self.input_size}")
-        # print(f"  MLP Output Size: {self.output_size}")
-        # if self.driving_voxel_index != -1:
-        #     print(f"  Driving Voxel Index: {self.driving_voxel_index} (Coord: {self.driving_voxel_coord})")
-        # else:
-        #      print("  No specific driving voxel specified or found.")
+        # print(f"Controller '{self.controller_type}' setup complete.")
+        # print(f"  Base Input Size: {self.base_input_size}")
+        # print(f"  Base Output Size: {self.base_output_size}")
+        # print(f"  Total Parameters: {self.total_params}")
+        # if self.controller_type == 'mlp_plus':
+        #     print(f"  MLP+ Hidden Sizes: {self.mlp_plus_hidden_sizes}")
+        # elif self.controller_type == 'rnn':
+        #     print(f"  RNN Hidden Size: {self.rnn_hidden_size}")
+
+    # --- Setup Methods ---
+    def _setup_mlp(self):
+        """Calculate shapes and total parameters for the simple MLP."""
+        weight_shape = (self.base_output_size, self.base_input_size)
+        bias_shape = (self.base_output_size,)
+        self.param_shapes = {"W": weight_shape, "b": bias_shape}
+        self.total_params = np.prod(weight_shape) + np.prod(bias_shape)
+        # Initialize with zeros if not loading later
+        self.params = {"W": np.zeros(weight_shape), "b": np.zeros(bias_shape)}
+
+    def _setup_mlp_plus(self):
+        """Calculate shapes and total parameters for the MLP+."""
+        self.param_shapes = {}
+        self.total_params = 0
+        layer_input_size = self.base_input_size
+
+        # Hidden layers
+        for i, hidden_size in enumerate(self.mlp_plus_hidden_sizes):
+            layer_name = f"hidden_{i}"
+            w_shape = (hidden_size, layer_input_size)
+            b_shape = (hidden_size,)
+            self.param_shapes[f"W_{layer_name}"] = w_shape
+            self.param_shapes[f"b_{layer_name}"] = b_shape
+            self.total_params += np.prod(w_shape) + np.prod(b_shape)
+            layer_input_size = hidden_size  # Output of this layer is input to next
+
+        # Output layer
+        w_shape_out = (self.base_output_size, layer_input_size)
+        b_shape_out = (self.base_output_size,)
+        self.param_shapes["W_out"] = w_shape_out
+        self.param_shapes["b_out"] = b_shape_out
+        self.total_params += np.prod(w_shape_out) + np.prod(b_shape_out)
+
+        # Initialize with zeros
+        self.params = {
+            name: np.zeros(shape) for name, shape in self.param_shapes.items()
+        }
+
+    def _setup_rnn(self):
+        """Calculate shapes and total parameters for the simple RNN."""
+        # --- Add detailed print statement ---
+        # print(f"[_setup_rnn] Calculating shapes with: base_in={self.base_input_size}, base_out={self.base_output_size}, hidden={self.rnn_hidden_size}")
+        # -------------------------------------
+
+        self.param_shapes = {}
+        input_size = self.base_input_size
+        hidden_size = self.rnn_hidden_size  # Use the stored value
+        output_size = self.base_output_size
+
+        # --- Elman RNN Cell Parameters ---
+        w_ih_shape = (hidden_size, input_size)
+        b_ih_shape = (hidden_size,)
+        self.param_shapes["W_ih"] = w_ih_shape
+        self.param_shapes["b_ih"] = b_ih_shape
+        params_ih = np.prod(w_ih_shape) + np.prod(b_ih_shape)  # Calculate count
+
+        w_hh_shape = (hidden_size, hidden_size)
+        b_hh_shape = (hidden_size,)
+        self.param_shapes["W_hh"] = w_hh_shape
+        self.param_shapes["b_hh"] = b_hh_shape
+        params_hh = np.prod(w_hh_shape) + np.prod(b_hh_shape)  # Calculate count
+
+        # --- Output Layer Parameters ---
+        w_ho_shape = (output_size, hidden_size)
+        b_ho_shape = (output_size,)
+        self.param_shapes["W_ho"] = w_ho_shape
+        self.param_shapes["b_ho"] = b_ho_shape
+        params_ho = np.prod(w_ho_shape) + np.prod(b_ho_shape)  # Calculate count
+
+        # --- Calculate Total ---
+        self.total_params = params_ih + params_hh + params_ho
+
+        # --- Add print for calculated total ---
+        # print(f"[_setup_rnn] Calculated total parameters: {self.total_params} (ih={params_ih}, hh={params_hh}, ho={params_ho})")
+        # --------------------------------------
+
+        # Initialize with zeros (keep this)
+        self.params = {
+            name: np.zeros(shape) for name, shape in self.param_shapes.items()
+        }
+
+    # --- Core Logic ---
+
+    def reset(self):
+        """Resets communication and RNN hidden states (call before each trial)."""
+        self.previous_comm_outputs.fill(0)
+        self.current_comm_outputs_buffer.fill(0)
+        if self.rnn_hidden_state is not None:
+            self.rnn_hidden_state.fill(0)
+        # print("Controller state reset.")
 
     def get_neighbor_comm_input(self, voxel_index, direction_offset):
-        """
-        Gets the communication input vector from a neighbor from the *previous* step.
-        Handles boundary conditions (returns zeros if neighbor doesn't exist).
-
-        Args:
-            voxel_index (int): Index of the current voxel in self.voxel_coords.
-            direction_offset (tuple): (dx, dy, dz) indicating neighbor direction.
-
-        Returns:
-            np.ndarray: Communication vector from the specified neighbor (size n_comm),
-                        or zeros if the neighbor doesn't exist.
-        """
+        """Gets communication input from a neighbor from the *previous* step."""
+        # ... (implementation remains the same as before) ...
         if not (0 <= voxel_index < self.n_voxels):
             raise IndexError("voxel_index out of bounds.")
 
@@ -160,115 +281,116 @@ class DistributedNeuralController:
 
         if neighbor_coord in self.voxel_coord_to_index:
             neighbor_index = self.voxel_coord_to_index[neighbor_coord]
+            neighbor_output_side_index = -1
 
-            # Determine which output side of the neighbor corresponds to our input side
-            # mapping uses the COMM_IDX constants defined above for neighbor's output side.
-            neighbor_output_side_index = -1  # Default invalid index
-
-            if direction_offset == (
-                0,
-                0,
-                1,
-            ):  # Our North input (Z+) needs neighbor's South output (Z-)
-                neighbor_output_side_index = self.COMM_IDX_S
-            elif direction_offset == (
-                1,
-                0,
-                0,
-            ):  # Our East input (X+) needs neighbor's West output (X-)
-                neighbor_output_side_index = self.COMM_IDX_W
-            elif direction_offset == (
-                0,
-                0,
-                -1,
-            ):  # Our South input (Z-) needs neighbor's North output (Z+)
-                neighbor_output_side_index = self.COMM_IDX_N
-            elif direction_offset == (
-                -1,
-                0,
-                0,
-            ):  # Our West input (X-) needs neighbor's East output (X+)
-                neighbor_output_side_index = self.COMM_IDX_E
-            elif direction_offset == (
-                0,
-                1,
-                0,
-            ):  # Our Up input (Y+) needs neighbor's Down output (Y-)
-                neighbor_output_side_index = self.COMM_IDX_D
-            elif direction_offset == (
-                0,
-                -1,
-                0,
-            ):  # Our Down input (Y-) needs neighbor's Up output (Y+)
-                neighbor_output_side_index = self.COMM_IDX_U
+            if direction_offset == (0, 0, 1):
+                neighbor_output_side_index = self.COMM_IDX_S  # N input <- S output
+            elif direction_offset == (1, 0, 0):
+                neighbor_output_side_index = self.COMM_IDX_W  # E input <- W output
+            elif direction_offset == (0, 0, -1):
+                neighbor_output_side_index = self.COMM_IDX_N  # S input <- N output
+            elif direction_offset == (-1, 0, 0):
+                neighbor_output_side_index = self.COMM_IDX_E  # W input <- E output
+            elif direction_offset == (0, 1, 0):
+                neighbor_output_side_index = self.COMM_IDX_D  # U input <- D output
+            elif direction_offset == (0, -1, 0):
+                neighbor_output_side_index = self.COMM_IDX_U  # D input <- U output
             else:
-                # invalid offset for communication
-                print(
-                    f"Warning: Communication direction offset {direction_offset} not handled."
-                )
+                print(f"Warning: Invalid direction offset {direction_offset}")
                 return np.zeros(self.n_comm)
 
-            # Check if calculated index is valid for the stored outputs
             if 0 <= neighbor_output_side_index < self.N_COMM_DIRECTIONS:
                 return self.previous_comm_outputs[
                     neighbor_index, neighbor_output_side_index, :
                 ]
             else:
-                # this case should ideally not happen with correct mapping
                 print(
-                    f"Warning: Invalid neighbor output side index {neighbor_output_side_index} calculated for offset {direction_offset}."
+                    f"Warning: Invalid neighbor output side index {neighbor_output_side_index}"
                 )
                 return np.zeros(self.n_comm)
         else:
-            # neighbor doesn't exist (boundary)
-            return np.zeros(self.n_comm)
+            return np.zeros(self.n_comm)  # Boundary condition
 
-    def step(self, sensor_data_all_voxels, time, com_velocity, target_orientation_vector):
-        """
-        Performs one control step for all voxels.
+    def _forward_pass(self, input_vector, voxel_idx):
+        """Performs the forward pass based on the controller type."""
+        if self.controller_type == "mlp":
+            # Linear layer -> Tanh
+            output_raw = self.params["W"] @ input_vector + self.params["b"]
+            return tanh(output_raw)
 
-        Args:
-            sensor_data_all_voxels (np.ndarray): Shape (n_voxels, n_sensors).
-            time (float): Current simulation time.
-            com_velocity (np.ndarray): Global COM velocity (shape [3,]).
-            target_orientation_vector (np.ndarray): Normalized 2D vector from COM to target (shape [2,]).
+        elif self.controller_type == "mlp_plus":
+            # Hidden layers (Linear -> ReLU) -> Output layer (Linear -> Tanh)
+            x = input_vector
+            for i in range(len(self.mlp_plus_hidden_sizes)):
+                layer_name = f"hidden_{i}"
+                W = self.params[f"W_{layer_name}"]
+                b = self.params[f"b_{layer_name}"]
+                x = relu(W @ x + b)
+            # Output layer
+            W_out = self.params["W_out"]
+            b_out = self.params["b_out"]
+            output_raw = W_out @ x + b_out
+            return tanh(output_raw)
 
-        Returns:
-            np.ndarray: Array of actuation signals, shape (n_voxels, 1). Range [-1, 1].
-        """
-        if sensor_data_all_voxels.shape != (self.n_voxels, self.n_sensors):
-            raise ValueError(
-                f"Incorrect sensor data shape. Expected {(self.n_voxels, self.n_sensors)}, got {sensor_data_all_voxels.shape}"
+        elif self.controller_type == "rnn":
+            # Simple Elman RNN Cell -> Output Layer -> Tanh
+            # Get previous hidden state for this specific voxel
+            prev_hidden = self.rnn_hidden_state[voxel_idx, :]
+
+            # RNN update: h_t = tanh(W_ih * x_t + b_ih + W_hh * h_{t-1} + b_hh)
+            W_ih = self.params["W_ih"]
+            b_ih = self.params["b_ih"]
+            W_hh = self.params["W_hh"]
+            b_hh = self.params["b_hh"]
+            current_hidden = tanh(
+                W_ih @ input_vector + b_ih + W_hh @ prev_hidden + b_hh
             )
 
+            # Store the new hidden state for the next step *for this voxel*
+            self.rnn_hidden_state[voxel_idx, :] = current_hidden
+
+            # Output layer: y_t = W_ho * h_t + b_ho
+            W_ho = self.params["W_ho"]
+            b_ho = self.params["b_ho"]
+            output_raw = W_ho @ current_hidden + b_ho
+            return tanh(output_raw)  # Final output activation
+
+        else:
+            raise NotImplementedError(
+                f"Forward pass not implemented for type: {self.controller_type}"
+            )
+
+    def step(
+        self, sensor_data_all_voxels, time, com_velocity, target_orientation_vector
+    ):
+        """Performs one control step for all voxels."""
+        if sensor_data_all_voxels.shape != (self.n_voxels, self.n_sensors):
+            raise ValueError("Incorrect sensor data shape.")
+
         actuation_signals = np.zeros((self.n_voxels, 1))
-        self.current_comm_outputs_buffer.fill(0)  # Reset buffer for this step's outputs
+        self.current_comm_outputs_buffer.fill(0)  # Reset buffer
 
-        # --- Calculate Driving Signal (if applicable) ---
-        driving_freq = 1.0  # Hz
+        # Calculate Driving Signal
+        driving_freq = 1.0
         driving_signal_value = math.sin(2.0 * math.pi * driving_freq * time)
-        # -----------------------------
 
-        # --- Calculate Time Signals ---
+        # Calculate Time Signals
         time_signal_sin = math.sin(2.0 * math.pi * self.time_signal_frequency * time)
         time_signal_cos = math.cos(2.0 * math.pi * self.time_signal_frequency * time)
         time_inputs = np.array([time_signal_sin, time_signal_cos])
-        # -----------------------------
 
-        # --- Iterate through each active voxel ---
+        # Iterate through each active voxel
         for i in range(self.n_voxels):
-            # 1. Get Sensor Data
+            # 1. Get Local Sensor Data
             local_sensors = sensor_data_all_voxels[i, :]
 
-            # 2. Get Communication Inputs from Previous Step for all 6 neighbors
-            comm_input_N = self.get_neighbor_comm_input(i, (0, 0, 1))  # Z+
-            comm_input_E = self.get_neighbor_comm_input(i, (1, 0, 0))  # X+
-            comm_input_S = self.get_neighbor_comm_input(i, (0, 0, -1))  # Z-
-            comm_input_W = self.get_neighbor_comm_input(i, (-1, 0, 0))  # X-
-            comm_input_U = self.get_neighbor_comm_input(i, (0, 1, 0))  # Y+ (Up)
-            comm_input_D = self.get_neighbor_comm_input(i, (0, -1, 0))  # Y- (Down)
-
-            # Flatten communication inputs in a consistent order (N, E, S, W, U, D)
+            # 2. Get Communication Inputs from Previous Step
+            comm_input_N = self.get_neighbor_comm_input(i, (0, 0, 1))
+            comm_input_E = self.get_neighbor_comm_input(i, (1, 0, 0))
+            comm_input_S = self.get_neighbor_comm_input(i, (0, 0, -1))
+            comm_input_W = self.get_neighbor_comm_input(i, (-1, 0, 0))
+            comm_input_U = self.get_neighbor_comm_input(i, (0, 1, 0))
+            comm_input_D = self.get_neighbor_comm_input(i, (0, -1, 0))
             comm_inputs_flat = np.concatenate(
                 [
                     comm_input_N,
@@ -281,12 +403,12 @@ class DistributedNeuralController:
             )
 
             # 3. Get Driving Signal Input
-            driving_input = 0.0
-            if i == self.driving_voxel_index:
-                driving_input = driving_signal_value
+            driving_input = (
+                driving_signal_value if i == self.driving_voxel_index else 0.0
+            )
 
-            # 4. Construct Full MLP Input Vector
-            mlp_input = np.concatenate(
+            # 4. Construct Full Input Vector for the internal network
+            net_input = np.concatenate(
                 [
                     local_sensors,
                     comm_inputs_flat,
@@ -296,40 +418,31 @@ class DistributedNeuralController:
                     time_inputs,
                 ]
             )
-            # Runtime check (optional but recommended during debugging)
-            if mlp_input.shape[0] != self.input_size:
-                raise RuntimeError(
-                    f"MLP input size mismatch for voxel {i}. Expected {self.input_size}, "
-                    f"got {mlp_input.shape[0]}. Check sensor/comm/vel/target/driving/time components."
-                )
+            if net_input.shape[0] != self.base_input_size:  # Runtime check
+                raise RuntimeError(f"Network input size mismatch for voxel {i}.")
 
-            # 5. Run MLP Forward Pass
-            output_raw = self.weights @ mlp_input + self.biases
-            mlp_output = tanh(output_raw)  # Apply activation
+            # 5. Run Forward Pass using the appropriate network
+            # Pass voxel index 'i' needed for RNN state management
+            net_output = self._forward_pass(net_input, i)
 
-            # 6. Parse MLP Output
-            # First element is actuation
-            actuation_signals[i, 0] = mlp_output[0]
+            # 6. Parse Network Output (same structure for all types)
+            actuation_signals[i, 0] = net_output[0]
 
-            # Remaining elements are communication outputs (N, E, S, W, U, D)
-            # Extract based on n_comm size and the new output_size
+            # Extract communication outputs
             start_idx = 1
-            comm_out_N = mlp_output[start_idx : start_idx + self.n_comm]
+            comm_out_N = net_output[start_idx : start_idx + self.n_comm]
             start_idx += self.n_comm
-            comm_out_E = mlp_output[start_idx : start_idx + self.n_comm]
+            comm_out_E = net_output[start_idx : start_idx + self.n_comm]
             start_idx += self.n_comm
-            comm_out_S = mlp_output[start_idx : start_idx + self.n_comm]
+            comm_out_S = net_output[start_idx : start_idx + self.n_comm]
             start_idx += self.n_comm
-            comm_out_W = mlp_output[start_idx : start_idx + self.n_comm]
+            comm_out_W = net_output[start_idx : start_idx + self.n_comm]
             start_idx += self.n_comm
-            comm_out_U = mlp_output[start_idx : start_idx + self.n_comm]
+            comm_out_U = net_output[start_idx : start_idx + self.n_comm]
             start_idx += self.n_comm
-            comm_out_D = mlp_output[
-                start_idx : start_idx + self.n_comm
-            ]  # start_idx += self.n_comm # No need to increment last one
+            comm_out_D = net_output[start_idx : start_idx + self.n_comm]  # Last one
 
-            # Store these outputs in the buffer for the *next* step's inputs
-            # Use the defined COMM_IDX constants for clarity and consistency
+            # Store in buffer
             self.current_comm_outputs_buffer[i, self.COMM_IDX_N, :] = comm_out_N
             self.current_comm_outputs_buffer[i, self.COMM_IDX_E, :] = comm_out_E
             self.current_comm_outputs_buffer[i, self.COMM_IDX_S, :] = comm_out_S
@@ -339,50 +452,80 @@ class DistributedNeuralController:
 
         # --- End of Voxel Loop ---
 
-        # Make the buffered outputs the 'previous' outputs for the next control step
+        # Update communication state for the next step
         self.previous_comm_outputs = np.copy(self.current_comm_outputs_buffer)
 
         return actuation_signals
 
-    def load_parameters(self, weights, biases):
-        """
-        Loads evolved/trained weights and biases into the controller.
+    # --- Parameter Management ---
 
-        Args:
-            weights (np.ndarray): The weight matrix (shape: [output_size, input_size]).
-            biases (np.ndarray): The bias vector (shape: [output_size]).
-        """
-        expected_weights_shape = (self.output_size, self.input_size)
-        expected_biases_shape = (self.output_size,)
-        if weights.shape != expected_weights_shape:
-            raise ValueError(
-                f"Weight shape mismatch. Expected {expected_weights_shape}, got {weights.shape}"
-            )
-        if biases.shape != expected_biases_shape:
-            raise ValueError(
-                f"Biases shape mismatch. Expected {expected_biases_shape}, got {biases.shape}"
-            )
-
-        self.weights = np.copy(weights)
-        self.biases = np.copy(biases)
-        # print("Controller parameters loaded.")
-
-    def get_parameters(self):
-        """Returns the current weights and biases."""
-        return self.weights, self.biases
+    def get_total_parameter_count(self):
+        """Returns the total number of parameters for the current network type."""
+        return self.total_params
 
     def get_parameter_vector(self):
-        """Flattens weights and biases into a single vector."""
-        return np.concatenate([self.weights.flatten(), self.biases.flatten()])
+        """Flattens all parameters into a single vector based on defined order."""
+        param_list = []
+        # Flatten in the canonical order defined by self.param_shapes keys
+        for name in self.param_shapes.keys():
+            if name in self.params:
+                param_list.append(self.params[name].flatten())
+            else:
+                # This should not happen if setup is correct
+                raise KeyError(
+                    f"Parameter '{name}' expected but not found in self.params."
+                )
+        return np.concatenate(param_list)
 
     def set_parameter_vector(self, param_vector):
-        """Sets weights and biases from a flattened vector."""
-        expected_len = self.weights.size + self.biases.size
-        if len(param_vector) != expected_len:
+        """Sets parameters from a flattened vector based on defined order and shapes."""
+        if len(param_vector) != self.total_params:
             raise ValueError(
-                f"Parameter vector length mismatch. Expected {expected_len}, got {len(param_vector)}"
+                f"Parameter vector length mismatch for type '{self.controller_type}'. "
+                f"Expected {self.total_params}, got {len(param_vector)}"
             )
 
-        weights_flat_len = self.weights.size
-        self.weights = param_vector[:weights_flat_len].reshape(self.weights.shape)
-        self.biases = param_vector[weights_flat_len:]
+        current_idx = 0
+        # Unflatten in the canonical order defined by self.param_shapes keys
+        for name, shape in self.param_shapes.items():
+            num_elements = np.prod(shape)
+            if current_idx + num_elements > len(param_vector):
+                raise ValueError(
+                    f"Parameter vector too short when unflattening '{name}'."
+                )
+
+            # Extract the slice, reshape, and store in the params dictionary
+            value = param_vector[current_idx : current_idx + num_elements].reshape(
+                shape
+            )
+            self.params[name] = value
+            current_idx += num_elements
+
+        # Check if all elements were used
+        if current_idx != self.total_params:
+            print(
+                f"Warning: Parameter vector length mismatch after unflattening. Used {current_idx}/{self.total_params}"
+            )
+
+    def get_parameters(self):
+        """Returns the dictionary of current parameters (weights/biases)."""
+        # Return a copy to prevent external modification
+        return {k: np.copy(v) for k, v in self.params.items()}
+
+    def load_parameters(self, param_dict):
+        """Loads parameters from a dictionary (use with caution, prefers set_parameter_vector)."""
+        # Basic check: Ensure keys match expected shapes
+        for name, value in param_dict.items():
+            if name in self.param_shapes:
+                if value.shape == self.param_shapes[name]:
+                    self.params[name] = np.copy(value)
+                else:
+                    raise ValueError(
+                        f"Shape mismatch for parameter '{name}'. Expected {self.param_shapes[name]}, got {value.shape}"
+                    )
+            else:
+                raise ValueError(
+                    f"Unexpected parameter name '{name}' for type '{self.controller_type}'."
+                )
+        # Verify all expected params were provided? Optional.
+        # print(f"Controller parameters loaded from dictionary for type '{self.controller_type}'.")

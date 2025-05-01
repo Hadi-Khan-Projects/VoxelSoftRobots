@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-file_path = "vsr_models/quadruped_v3/quadruped_v3_full_history_gen12_pop12.csv"
+file_path = "vsr_models/quadruped_v3_copy/quadruped_v3_copy_full_history_mlp_plus_h24_16_gen8_pop16.csv"
 df_full = pd.read_csv(file_path)
 
 # group by generation and get the best values
