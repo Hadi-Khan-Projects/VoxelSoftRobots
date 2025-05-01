@@ -1,4 +1,6 @@
+import argparse
 import os
+import sys
 import time
 import traceback
 from functools import partial
@@ -9,7 +11,6 @@ import numpy as np
 import pandas as pd
 
 from controller import DistributedNeuralController
-
 from simulate import run_simulation, voxel_motor_mapping
 from vsr import VoxelRobot
 
@@ -628,152 +629,349 @@ def optimise(
     return best_param_vector_so_far, history_df
 
 
-# example on how to use actual in evolve.py
+# cli params:
+
+# python optimise.py \
+#     --model_name <name_of_your_model> \
+#     --controller_type <mlp|mlp_plus|rnn> \
+#     --gear <gear_ratio_float> \
+#     [--num_generations <int>] \
+#     [--population_size <int>] \
+#     [--tournament_size <int>] \
+#     [--crossover_probability <float_0_to_1>] \
+#     [--mutation_sigma <float>] \
+#     [--clip_range_min <float>] [--clip_range_max <float>] \
+#     [--mlp_plus_hidden_sizes <size1_int> <size2_int> ...] \
+#     [--rnn_hidden_size <size_int>] \
+#     [--simulation_duration <seconds_int>] \
+#     [--control_timestep <seconds_float>] \
+#     [--num_workers <int>] \
+#     [--initial_param_vector_path <path_to_seed_params.npy>] \
+#     [--output_dir <path_to_save_results>]
+
+# cli usage example:
+
+# python optimise.py \                                                                                                                                                                                              --model_name quadruped_v3 \
+#     --controller_type rnn \
+#     --gear 100.0 \
+#     --num_generations 2 \
+#     --population_size 8 \
+#     --tournament_size 2 \
+#     --mutation_sigma 0.2 \
+#     --clip_range_min -4.0 --clip_range_max 4.0 \
+#     --rnn_hidden_size 16 \
+#     --simulation_duration 60 \
+#     --control_timestep 0.2 \
+#     --num_workers 8 \
+#     --output_dir results_optimise/my_rnn_run_1
+
+# can use via cli, actual usage in evolve.py
 if __name__ == "__main__":
-    # CONFIG: Evolutionary Algorithm
-    CONTROLLER_TYPE = "rnn"  # 'mlp', 'mlp_plus', 'rnn'
-    NUM_WORKERS = 30
-    NUM_GENERATIONS = 200
-    POPULATION_SIZE = 60  # paper used 250
-    TOURNAMENT_SIZE = 6  # paper used 8
+    # STEP 1: Get arguments/paremeters
+    parser = argparse.ArgumentParser(
+        description="Optimise VSR controller parameters using EA."
+    )
 
-    CROSSOVER_PROBABILITY = 0.8
-    MUTATION_SIGMA = 0.2  # paper used 0.15
-    CLIP_RANGE = (-5.0, 5.0)  # clip parameters to this range
+    # required arguments
+    parser.add_argument(
+        "--model_name",
+        type=str,
+        required=True,
+        help="Name of the VSR model (e.g., 'quadruped_v3'). Assumes model files are in 'vsr_models/<model_name>/'.",
+    )
+    parser.add_argument(
+        "--controller_type",
+        type=str,
+        required=True,
+        choices=["mlp", "mlp_plus", "rnn"],
+        help="Type of distributed controller.",
+    )
+    parser.add_argument(
+        "--gear", type=float, required=True, help="Gear ratio for the VSR motors."
+    )
 
-    # CONFIG: Controller
-    MLP_PLUS_HIDDEN_SIZES = [24, 16]  # Example for mlp_plus
-    RNN_HIDDEN_SIZE = 16  # Example for rnn
+    # EA parameters
+    parser.add_argument(
+        "--num_generations",
+        type=int,
+        default=20,
+        help="Number of generations for the EA.",
+    )
+    parser.add_argument(
+        "--population_size",
+        type=int,
+        default=60,
+        help="Population size for the EA.",
+    )
+    parser.add_argument(
+        "--tournament_size",
+        type=int,
+        default=6,
+        help="Tournament size for parent selection.",
+    )
+    parser.add_argument(
+        "--crossover_probability",
+        type=float,
+        default=0.8,
+        help="Probability of performing crossover.",
+    )
+    parser.add_argument(
+        "--mutation_sigma",
+        type=float,
+        default=0.2,
+        help="Standard deviation for Gaussian mutation.",
+    )
+    parser.add_argument(
+        "--clip_range_min",
+        type=float,
+        default=-5.0,
+        help="Minimum value for parameter clipping.",
+    )
+    parser.add_argument(
+        "--clip_range_max",
+        type=float,
+        default=5.0,
+        help="Maximum value for parameter clipping.",
+    )
 
-    # CONFIG: Simulation
-    SIMULATION_DURATION = 60
-    CONTROL_TIMESTEP = 0.2  # paper used 0.05
-    GEAR = 100
-    VSR_GRID_DIMS = (10, 10, 10)
+    # controller configuration (optional)
+    parser.add_argument(
+        "--mlp_plus_hidden_sizes",
+        type=int,
+        nargs="+",
+        default=[],
+        help="List of hidden layer sizes for mlp_plus controller.",
+    )
+    parser.add_argument(
+        "--rnn_hidden_size",
+        type=int,
+        default=0,
+        help="Hidden state size for rnn controller.",
+    )
 
-    # CONFIG: Model
-    MODEL_NAME = "quadruped_v3_copy"
+    # simulation params
+    parser.add_argument(
+        "--simulation_duration",
+        type=int,
+        default=60,
+        help="Duration of each simulation evaluation in seconds.",
+    )
+    parser.add_argument(
+        "--control_timestep",
+        type=float,
+        default=0.2,
+        help="Time step for control updates in seconds.",
+    )
+    parser.add_argument(
+        "--num_workers",
+        type=int,
+        default=cpu_count(),  # Default to max available
+        help="Number of parallel workers for evaluation.",
+    )
+
+    # optional arguments
+    parser.add_argument(
+        "--initial_param_vector_path",
+        type=str,
+        default=None,
+        help="Path to a .npy file to seed the initial population with one individual.",
+    )
+    parser.add_argument(
+        "--output_dir",
+        type=str,
+        default=None,
+        help="Directory to save results (defaults to 'vsr_models/<model_name>/results_optimise/<timestamp>').",
+    )
+
+    args = parser.parse_args()
+
+    # validate args
+    if args.controller_type == "mlp_plus" and not args.mlp_plus_hidden_sizes:
+        print(
+            "Error: --mlp_plus_hidden_sizes must be provided for controller_type 'mlp_plus'"
+        )
+        sys.exit(1)
+    if args.controller_type == "rnn" and args.rnn_hidden_size <= 0:
+        print(
+            "Error: --rnn_hidden_size must be provided and positive for controller_type 'rnn'"
+        )
+        sys.exit(1)
+    if args.clip_range_min >= args.clip_range_max:
+        print("Error: --clip_range_min must be less than --clip_range_max")
+        sys.exit(1)
+    if args.initial_param_vector_path and not os.path.exists(
+        args.initial_param_vector_path
+    ):
+        print(
+            f"Error: Initial parameter vector file not found: {args.initial_param_vector_path}"
+        )
+        sys.exit(1)
+
+    # STEP 2: Setup simulation, load params
+    MODEL_NAME = args.model_name
     MODEL_BASE_PATH = f"vsr_models/{MODEL_NAME}/{MODEL_NAME}"
     MODEL_CSV_PATH = MODEL_BASE_PATH + ".csv"
+    CLIP_RANGE = (args.clip_range_min, args.clip_range_max)
 
     if not os.path.exists(MODEL_CSV_PATH):
         print(f"Error: Model CSV file not found at {MODEL_CSV_PATH}")
-    else:
-        print(
-            f"Running optimization for model: {MODEL_NAME} using {CONTROLLER_TYPE} controller."
+        sys.exit(1)
+
+    # setup output directory
+    if args.output_dir is None:
+        timestamp = time.strftime("%Y%m%d-%H%M%S")
+        args.output_dir = os.path.join(
+            f"vsr_models/{MODEL_NAME}/results_optimise", timestamp
         )
-        vsr_instance = None
-        xml_string = None
-        active_coords_list = []
+    os.makedirs(args.output_dir, exist_ok=True)
+    print(f"Output directory: {args.output_dir}")
 
-        # --- Prepare VSR and GET XML STRING ---
+    # prepare VSR and GET XML STRING
+    vsr_instance = None
+    xml_string = None
+    active_coords_list = []
+    try:
+        print("Generating/Loading MuJoCo model and VSR info...")
+        # infer grid size
+        temp_vsr_for_dims = VoxelRobot(10, 10, 10, args.gear)
+        temp_vsr_for_dims.load_model_csv(MODEL_CSV_PATH)
+        vsr_dims = temp_vsr_for_dims.voxel_grid.shape
+        del temp_vsr_for_dims
+
+        vsr_instance = VoxelRobot(*vsr_dims, gear=args.gear)
+        vsr_instance.load_model_csv(MODEL_CSV_PATH)
+        xml_string = vsr_instance.generate_model(
+            MODEL_BASE_PATH
+        )  # generate_model returns the string
+
+        temp_model_for_info = mujoco.MjModel.from_xml_string(xml_string)
+        active_coords_list = [
+            tuple(c) for c in np.argwhere(vsr_instance.voxel_grid == 1)
+        ]
+
+        print(
+            f"MuJoCo XML generated. Sim timestep: {temp_model_for_info.opt.timestep}, Control timestep: {args.control_timestep}"
+        )
+        print(
+            f"VSR Gear: {vsr_instance.gear}, Active Voxels: {len(active_coords_list)}"
+        )
+        del temp_model_for_info
+
+    except Exception as e:
+        print(f"Failed to load or generate MuJoCo model: {e}")
+        traceback.print_exc()
+        sys.exit(1)
+
+    # load initial parameters if provided
+    initial_param_vector = None
+    if args.initial_param_vector_path:
         try:
-            print("Generating/Loading MuJoCo model and VSR info...")
-            vsr_instance = VoxelRobot(*VSR_GRID_DIMS, gear=GEAR)
-            vsr_instance.load_model_csv(MODEL_CSV_PATH)
-            xml_string = vsr_instance.generate_model(
-                MODEL_BASE_PATH
-            )  # generate_model returns the string
-
-            # load model once here just to print info
-            temp_model_for_info = mujoco.MjModel.from_xml_string(xml_string)
-
-            active_coords_list = [
-                tuple(c) for c in np.argwhere(vsr_instance.voxel_grid == 1)
-            ]  # Get active coords
-
-            print(
-                f"MuJoCo XML generated. Sim timestep: {temp_model_for_info.opt.timestep}, Control timestep: {CONTROL_TIMESTEP}"
-            )
-            print(
-                f"VSR Gear: {vsr_instance.gear}, Active Voxels: {len(active_coords_list)}"
-            )
-            del temp_model_for_info  # Don't need it anymore
-
+            initial_param_vector = np.load(args.initial_param_vector_path)
+            print(f"Loaded initial parameters from: {args.initial_param_vector_path}")
         except Exception as e:
-            print(f"Failed to load or generate MuJoCo model: {e}")
-            print(traceback.format_exc())
-            exit()
-
-        # ensure xml_string was obtained
-        if xml_string and vsr_instance and active_coords_list:
-            # --- Run Optimisation ---
-            start_opt_time = time.time()
-            best_vector, history_data = optimise(
-                xml_string=xml_string,  # pass XML string instead of direct model
-                vsr_voxel_coords_list=active_coords_list,
-                vsr_gear_ratio=vsr_instance.gear,
-                # EA Params
-                controller_type=CONTROLLER_TYPE,
-                num_generations=NUM_GENERATIONS,
-                population_size=POPULATION_SIZE,
-                # other params
-                tournament_size=TOURNAMENT_SIZE,
-                crossover_probability=CROSSOVER_PROBABILITY,
-                mutation_sigma=MUTATION_SIGMA,
-                clip_range=CLIP_RANGE,
-                mlp_plus_hidden_sizes=MLP_PLUS_HIDDEN_SIZES,
-                rnn_hidden_size=RNN_HIDDEN_SIZE,
-                simulation_duration=SIMULATION_DURATION,
-                control_timestep=CONTROL_TIMESTEP,
-                num_workers=NUM_WORKERS,
-            )
-
-            end_opt_time = time.time()
             print(
-                f"\nTotal optimisation time: {end_opt_time - start_opt_time:.2f} seconds"
+                f"Warning: Failed to load initial parameters: {e}. Proceeding with random initialization."
             )
+            initial_param_vector = None  # Ensure it's None if loading failed
 
-            # --- Results ---
-            if best_vector is not None:
-                print("\n--- Best Found Parameter Vector ---")
-                # saving logic using best_vector
-                config_str = f"{CONTROLLER_TYPE}"
-                if CONTROLLER_TYPE == "mlp_plus":
-                    config_str += f"_h{'_'.join(map(str, MLP_PLUS_HIDDEN_SIZES))}"
-                if CONTROLLER_TYPE == "rnn":
-                    config_str += f"_h{RNN_HIDDEN_SIZE}"
-                save_path_params = f"{MODEL_BASE_PATH}_best_params_{config_str}_gen{NUM_GENERATIONS}_pop{POPULATION_SIZE}.npy"
-                np.save(save_path_params, best_vector)
-                print(f"Best parameter vector saved to {save_path_params}")
+    # STEP 3: Run simulation
+    if xml_string and vsr_instance and active_coords_list:
+        # Run Optimisation
+        start_opt_time = time.time()
+        best_vector, history_data = optimise(
+            xml_string=xml_string,
+            vsr_voxel_coords_list=active_coords_list,
+            vsr_gear_ratio=vsr_instance.gear,
+            # EA params
+            controller_type=args.controller_type,
+            num_generations=args.num_generations,
+            population_size=args.population_size,
+            tournament_size=args.tournament_size,
+            crossover_probability=args.crossover_probability,
+            mutation_sigma=args.mutation_sigma,
+            clip_range=CLIP_RANGE,
+            # controller config
+            mlp_plus_hidden_sizes=args.mlp_plus_hidden_sizes,
+            rnn_hidden_size=args.rnn_hidden_size,
+            # simulation params
+            simulation_duration=args.simulation_duration,
+            control_timestep=args.control_timestep,
+            num_workers=args.num_workers,
+            initial_param_vector=initial_param_vector,  # pass loaded or None
+        )
 
-                save_path_history = f"{MODEL_BASE_PATH}_full_history_{config_str}_gen{NUM_GENERATIONS}_pop{POPULATION_SIZE}.csv"
+        end_opt_time = time.time()
+        print(f"\nTotal optimisation time: {end_opt_time - start_opt_time:.2f} seconds")
+
+        # results
+        if best_vector is not None:
+            print("\n--- Best Found Parameter Vector ---")
+            config_str = f"{args.controller_type}"
+            if args.controller_type == "mlp_plus":
+                config_str += f"_h{'_'.join(map(str, args.mlp_plus_hidden_sizes))}"
+            if args.controller_type == "rnn":
+                config_str += f"_h{args.rnn_hidden_size}"
+            save_path_params = os.path.join(
+                args.output_dir,
+                f"best_params_{config_str}_gen{args.num_generations}_pop{args.population_size}.npy",
+            )
+            np.save(save_path_params, best_vector)
+            print(f"Best parameter vector saved to {save_path_params}")
+
+            save_path_history = os.path.join(
+                args.output_dir,
+                f"full_history_{config_str}_gen{args.num_generations}_pop{args.population_size}.csv",
+            )
+            try:
+                history_data.to_csv(save_path_history, index=False)
+                print(f"Full history saved to {save_path_history}")
+            except Exception as e:
+                print(f"Error saving history CSV: {e}")
+
+            # run final simulation with viewer
+            print(
+                "\nRunning final simulation with best parameters (press Ctrl+C to skip)..."
+            )
+            try:
+                # load the model again for the final run
+                final_run_model = mujoco.MjModel.from_xml_string(xml_string)
+                if final_run_model:
+                    final_results = run_simulation(
+                        model=final_run_model,
+                        duration=args.simulation_duration,
+                        control_timestep=args.control_timestep,
+                        param_vector=best_vector,
+                        controller_type=args.controller_type,
+                        mlp_plus_hidden_sizes=args.mlp_plus_hidden_sizes,
+                        rnn_hidden_size=args.rnn_hidden_size,
+                        headless=False,  # show viewer
+                    )
+                    print(f"Final simulation results: {final_results}")
+                else:
+                    print("Could not load model for final simulation.")
+            except KeyboardInterrupt:
+                print("\nSkipping final simulation.")
+            except Exception as e:
+                print(f"Error running final simulation: {e}")
+                traceback.print_exc()
+        else:
+            print("\nOptimisation did not yield a valid best result.")
+            if not history_data.empty:
+                # save history even if optimisation failed
+                config_str = f"{args.controller_type}"
+                if args.controller_type == "mlp_plus":
+                    config_str += f"_h{'_'.join(map(str, args.mlp_plus_hidden_sizes))}"
+                if args.controller_type == "rnn":
+                    config_str += f"_h{args.rnn_hidden_size}"
+                save_path_history = os.path.join(
+                    args.output_dir,
+                    f"failed_opt_history_{config_str}_gen{args.num_generations}_pop{args.population_size}.csv",
+                )
                 try:
                     history_data.to_csv(save_path_history, index=False)
-                    print(f"Full history saved to {save_path_history}")
+                    print(f"Saved history from failed run to {save_path_history}")
                 except Exception as e:
-                    print(f"Error saving history CSV: {e}")
-
-                # --- Run final simulation with viewer ---
-                print("\nRunning final simulation with best parameters...")
-                try:
-                    # load the model again for the final run
-                    final_run_model = mujoco.MjModel.from_xml_string(xml_string)
-                    if final_run_model:
-                        final_results = run_simulation(
-                            model=final_run_model,  # Use the newly loaded model
-                            duration=SIMULATION_DURATION,
-                            control_timestep=CONTROL_TIMESTEP,
-                            param_vector=best_vector,
-                            controller_type=CONTROLLER_TYPE,
-                            mlp_plus_hidden_sizes=MLP_PLUS_HIDDEN_SIZES,
-                            rnn_hidden_size=RNN_HIDDEN_SIZE,
-                            headless=False,
-                        )
-                        print(f"Final simulation results: {final_results}")
-                    else:
-                        print("Could not load model for final simulation.")
-                except Exception as e:
-                    print(f"Error running final simulation: {e}")
-                    print(traceback.format_exc())
-            else:
-                print("\nOptimisation did not yield a valid best result.")
-                if not history_data.empty:
-                    # save history even if optimisation failed
-                    config_str = f"{CONTROLLER_TYPE}"  # add config details
-                    save_path_history = f"{MODEL_BASE_PATH}_failed_opt_history_{config_str}_gen{NUM_GENERATIONS}_pop{POPULATION_SIZE}.csv"
-                    try:
-                        history_data.to_csv(save_path_history, index=False)
-                        print(f"Saved history from failed run to {save_path_history}")
-                    except Exception as e:
-                        print(f"Error saving failed history CSV: {e}")
+                    print(f"Error saving failed history CSV: {e}")
+    else:
+        print("Optimisation could not start due to setup errors.")
+        sys.exit(1)

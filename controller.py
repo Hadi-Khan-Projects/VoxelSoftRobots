@@ -1,10 +1,9 @@
-# controller.py
 import math
 
 import numpy as np
 
 
-# Activation Functions (using numpy)
+# activation functions
 def tanh(x):
     """Element-wise tanh activation function."""
     return np.tanh(x)
