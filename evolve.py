@@ -688,7 +688,7 @@ if __name__ == "__main__":
 
     # Output Directory
     TIMESTAMP = time.strftime("%Y%m%d-%H%M%S")
-    OUTPUT_DIR = f"evolution_results/{MODEL_NAME}_{TIMESTAMP}"
+    OUTPUT_DIR = f"results_evolution/{MODEL_NAME}_{TIMESTAMP}"
 
     MUTATION_VERBOSE_LOGGING = True  # Set to True to see detailed mutation logs
 
