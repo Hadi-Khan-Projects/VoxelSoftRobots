@@ -1,4 +1,3 @@
-# optimise.py
 import os
 import time
 import traceback
@@ -9,66 +8,33 @@ import mujoco
 import numpy as np
 import pandas as pd
 
-from controller import DistributedNeuralController  # Import updated controller
+from controller import DistributedNeuralController
 
-# Import necessary classes
-from simulate import run_simulation
+from simulate import run_simulation, voxel_motor_mapping
 from vsr import VoxelRobot
 
-# --- HELPER FUNCTIONS ---
 
-
-def _get_vsr_details_and_base_dims(model):
+def _get_vsr_details_and_base_dims(
+    model: mujoco.MjModel,
+) -> tuple[int, list[tuple[int, int, int]], int, int]:
     """
     Analyzes the VSR model to find active voxels and determine
     *base* controller input/output dimensions (independent of network type).
+
+    Args:
+        model: mujoco.MjModel instance of the VSR model.
+
+    Returns:
+        n_active_voxels: Number of active voxels in the model.
+        active_voxel_coords: List of tuples representing the coordinates of active voxels.
+        base_input_size: Size of the base input vector for the controller.
+        base_output_size: Size of the base output vector for the controller.
     """
     try:
-        voxel_motor_map = {}
-        voxel_tendon_map = {}
-
-        # Map motors
-        for i in range(model.nu):
-            motor_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_ACTUATOR, i)
-            if motor_name and motor_name.startswith("voxel_"):
-                parts = motor_name.split("_")
-                voxel_coord = tuple(map(int, parts[1:4]))
-                if voxel_coord not in voxel_motor_map:
-                    voxel_motor_map[voxel_coord] = []
-                voxel_motor_map[voxel_coord].append(i)
-
-        # Map tendons
-        for i in range(model.ntendon):
-            tendon_name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_TENDON, i)
-            if tendon_name and tendon_name.startswith("voxel_"):
-                parts = tendon_name.split("_")
-                voxel_coord = tuple(map(int, parts[1:4]))
-                if voxel_coord not in voxel_tendon_map:
-                    voxel_tendon_map[voxel_coord] = []
-                voxel_tendon_map[voxel_coord].append(i)
-
-        # Filter for valid voxels (must have 4 motors and 4 tendons)
-        potential_active_coords = sorted(
-            list(set(voxel_motor_map.keys()) | set(voxel_tendon_map.keys()))
-        )
-        active_voxel_coords = []
-        for coord in potential_active_coords:
-            # check if coord exists as a key AND has the correct length list
-            has_motors = (
-                coord in voxel_motor_map and len(voxel_motor_map.get(coord, [])) == 4
-            )
-            has_tendons = (
-                coord in voxel_tendon_map and len(voxel_tendon_map.get(coord, [])) == 4
-            )
-            if has_motors and has_tendons:
-                active_voxel_coords.append(coord)
-
+        active_voxel_coords, _, _ = voxel_motor_mapping(model)
         n_active_voxels = len(active_voxel_coords)
-        if n_active_voxels == 0:
-            raise ValueError("No valid active voxels found in the model.")
-        print(f"Found {n_active_voxels} active voxels.")
 
-        # Determine Controller BASE Dimensions (must match controller.py)
+        # determine controller BASE Dimensions (must match controller.py)
         N_SENSORS_PER_VOXEL = 8
         N_COMM_CHANNELS = 2
         N_COMM_DIRECTIONS = 6
@@ -79,7 +45,7 @@ def _get_vsr_details_and_base_dims(model):
         base_input_size = (
             N_SENSORS_PER_VOXEL
             + N_COMM_DIRECTIONS * N_COMM_CHANNELS
-            + 1  # Driving signal
+            + 1  # driving signal
             + N_TIME_INPUTS
             + N_COM_VEL_INPUTS
             + N_TARGET_ORIENT_INPUTS
@@ -105,8 +71,20 @@ def get_param_vector_size(
     mlp_plus_hidden_sizes,
     rnn_hidden_size,
 ):
-    """Calculates the total number of parameters for a given controller configuration."""
-    # Instantiating a temporary controller just to use its setup logic
+    """
+    Calculates the total number of parameters for a given controller configuration.
+
+    Args:
+        controller_type: Type of controller ('mlp', 'mlp_plus', 'rnn').
+        base_input_size: Size of the base input vector.
+        base_output_size: Size of the base output vector.
+        mlp_plus_hidden_sizes: List of hidden layer sizes for MLP+.
+        rnn_hidden_size: Hidden size for RNN.
+
+    Returns:
+        total_param_count: Total number of parameters in the controller.
+    """
+    # instantiating a temporary controller just to use its setup logic
     # feed dummy voxel info, actual values don't matter for size calculation
     temp_controller = DistributedNeuralController(
         controller_type=controller_type,
@@ -114,7 +92,7 @@ def get_param_vector_size(
         voxel_coords=[(0, 0, 0)],
         n_sensors_per_voxel=8,  # value doesn't impact structure size logic directly here
         n_comm_channels=2,  # value doesn't impact structure size logic directly here
-        # Pass the actual configurations
+        # pass the actual configurations
         mlp_plus_hidden_sizes=mlp_plus_hidden_sizes,
         rnn_hidden_size=rnn_hidden_size,
     )
@@ -134,34 +112,60 @@ def get_param_vector_size(
 
 def evaluate_individual(
     param_vector,  # parameter vector for this individual
-    # Arguments passed via partial
-    xml_string,  # pass XML string instead of direct model
+    # arguments passed via partial
+    xml_string,  # pass XML string, not direct model
     duration,
     control_timestep,
-    # Controller Config
+    # controller Config
     controller_type,
     mlp_plus_hidden_sizes,
     rnn_hidden_size,
-    # VSR/Sim metadata for logging
+    # VSR/sim metadata for logging
     voxel_coords_list_str,
     simulation_timestep,
     gear_ratio,
 ):
     """
     Evaluates a single individual. Loads the model from XML within the worker.
+
+    Args:
+        param_vector: Parameter vector for the individual.
+        xml_string: XML string of the model.
+        duration: Duration of the simulation.
+        control_timestep: Control timestep for the simulation.
+        controller_type: Type of controller to use.
+        mlp_plus_hidden_sizes: Hidden sizes for MLP+ controller.
+        rnn_hidden_size: Hidden size for RNN controller.
+        voxel_coords_list_str: String representation of voxel coordinates list.
+        simulation_timestep: Expected simulation timestep.
+        gear_ratio: Gear ratio for the simulation.
+
+    Returns:
+        fitness: Fitness score of the individual.
+        x_dist: X distance travelled.
+        y_dist: Y distance travelled.
+        reached: Boolean indicating if the target was reached.
+        param_vector: Parameter vector for the individual.
+        controller_type: Type of controller used.
+        mlp_plus_hidden_sizes: Hidden sizes for MLP+ controller.
+        rnn_hidden_size: Hidden size for RNN controller.
+        voxel_coords_list_str: String representation of voxel coordinates list.
+        control_timestep: Control timestep used.
+        simulation_timestep: Actual simulation timestep used.
+        gear_ratio: Gear ratio used.
     """
-    model = None  # Initialize model to None
+    model = None  # initialize model to None
     try:
-        # Load Model INSIDE the worker
+        # load Model INSIDE the worker
         model = mujoco.MjModel.from_xml_string(xml_string)
 
-        # --- Run Simulation ---
+        # run simulation
         fitness, x_dist, y_dist, reached = run_simulation(
-            model=model,  # Pass locally loaded model
+            model=model,  # pass locally loaded model
             duration=duration,
             control_timestep=control_timestep,
             param_vector=param_vector,
-            # Controller configuration
+            # controller configuration
             controller_type=controller_type,
             mlp_plus_hidden_sizes=mlp_plus_hidden_sizes,
             rnn_hidden_size=rnn_hidden_size,
@@ -192,7 +196,7 @@ def evaluate_individual(
             voxel_coords_list_str,
             control_timestep,
             model.opt.timestep,
-            gear_ratio,  # Log actual timestep used
+            gear_ratio,  # log actual timestep used
         )
 
     except mujoco.FatalError as e:
@@ -272,7 +276,17 @@ def evaluate_individual(
 
 
 def tournament_selection(population, fitnesses, tournament_size):
-    """Performs tournament selection. Handles potential empty lists."""
+    """
+    Performs tournament selection. Handles potential empty lists.
+
+    Args:
+        population: List of individuals.
+        fitnesses: List of fitness scores corresponding to the individuals.
+        tournament_size: Size of the tournament.
+
+    Returns:
+        Selected individual from the population.
+    """
     num_individuals = len(population)
     if num_individuals == 0:
         raise ValueError("Empty population for tournament.")
@@ -293,7 +307,16 @@ def tournament_selection(population, fitnesses, tournament_size):
 
 
 def geometric_crossover(parent1, parent2):
-    """Performs geometric crossover."""
+    """
+    Performs geometric crossover.
+
+    Args:
+        parent1: First parent individual.
+        parent2: Second parent individual.
+
+    Returns:
+        Offspring individual resulting from the crossover.
+    """
     parent1 = np.asarray(parent1)
     parent2 = np.asarray(parent2)
     if parent1.shape != parent2.shape:
@@ -304,7 +327,17 @@ def geometric_crossover(parent1, parent2):
 
 
 def gaussian_mutation(individual, sigma, clip_range):
-    """Performs Gaussian mutation and clips the result."""
+    """
+    Performs Gaussian mutation and clips the result.
+
+    Args:
+        individual: Individual to mutate.
+        sigma: Standard deviation for the Gaussian noise.
+        clip_range: Tuple specifying the clipping range.
+
+    Returns:
+        Mutated individual.
+    """
     individual = np.asarray(individual)
     noise = np.random.normal(0, sigma, size=individual.shape)
     mutated = individual + noise
@@ -312,12 +345,9 @@ def gaussian_mutation(individual, sigma, clip_range):
     return mutated
 
 
-# --- MAIN OPTIMISATION FUNCTION ---
-
-
 def optimise(
-    xml_string: str,  # pass XML string instead of direct model
-    vsr_voxel_coords_list,  # The actual list of (x,y,z) tuples
+    xml_string: str,  # pass XML string, not direct model
+    vsr_voxel_coords_list,  # the actual list of (x,y,z) tuples
     vsr_gear_ratio,
     # EA Params
     controller_type: str,
@@ -327,20 +357,20 @@ def optimise(
     crossover_probability: float,
     mutation_sigma: float,
     clip_range: tuple,
-    # Simulation Params
+    # controller Config
+    mlp_plus_hidden_sizes: list,
+    rnn_hidden_size: int,
+    # simulation Params
     simulation_duration: int,
     control_timestep: float,
     num_workers: int,
     initial_param_vector: np.ndarray = None,
-    # Controller Config
-    mlp_plus_hidden_sizes: list = [32, 32],
-    rnn_hidden_size: int = 32,
 ):
     """
     Optimises the VSR controller parameters using a generational EA.
     Loads the model from xml_string within each worker process.
     """
-    # --- Load model once in main process ONLY for setup analysis ---
+    # load model once in main process ONLY for setup analysis
     try:
         setup_model = mujoco.MjModel.from_xml_string(xml_string)
         print("Model loaded in main process for setup analysis.")
@@ -360,7 +390,7 @@ def optimise(
     num_workers = min(num_workers, cpu_count())
     print(f"Using {num_workers} workers.")
 
-    # 1. Get VSR details using the setup_model
+    # STEP 1: Get VSR details using the setup_model
     try:
         n_voxels, active_voxel_coords_from_model, base_input_size, base_output_size = (
             _get_vsr_details_and_base_dims(setup_model)  # use the locally loaded model
@@ -374,7 +404,7 @@ def optimise(
         print(f"Fatal Error: Could not initialise VSR details. Aborting. \nError: {e}")
         return None, pd.DataFrame()
 
-    # 2. Calculate Parameter Vector Size
+    # STEP 2: Calculate Parameter Vector Size
     try:
         param_vector_size = get_param_vector_size(
             controller_type,
@@ -390,7 +420,7 @@ def optimise(
         )
         return None, pd.DataFrame()
 
-    # 3. Prepare Simulation Metadata
+    # STEP 3: Prepare simulation Metadata
     simulation_timestep = (
         setup_model.opt.timestep
     )  # get expected timestep from setup model
@@ -398,7 +428,7 @@ def optimise(
     gear_ratio = vsr_gear_ratio
     del setup_model  # free the setup model, workers will load their own
 
-    # 4. Initialise Population
+    # STEP 4: Initialise population
     population = []
     print(f"Initializing population of size {population_size}...")
     if initial_param_vector is not None:
@@ -414,34 +444,34 @@ def optimise(
         population.append(random_params)
     print("Population initialized.")
 
-    # 5. Evolutionary Loop Setup
+    # STEP 5: Evolutionary loop setup
     best_fitness_so_far = -np.inf
     best_param_vector_so_far = None
     all_history_records = []
 
-    # --- Create partial function ---
+    # create partial function
     evaluate_partial = partial(
         evaluate_individual,
-        xml_string=xml_string,  # pass XML string instead of direct model
+        xml_string=xml_string,  # pass XML string, not direct model
         duration=simulation_duration,
         control_timestep=control_timestep,
-        # Controller Config
+        # controller Config
         controller_type=controller_type,
         mlp_plus_hidden_sizes=mlp_plus_hidden_sizes,
         rnn_hidden_size=rnn_hidden_size,
-        # Metadata
+        # metadata
         voxel_coords_list_str=voxel_coords_list_str,
         simulation_timestep=simulation_timestep,
         gear_ratio=gear_ratio,
     )
     print("\n")
 
-    # --- 6. Evolutionary Loop ---
+    # STEP 6: Evolutionary loop
     for generation in range(num_generations):
         gen_start_time = time.time()
         print(f"\n--- Generation {generation + 1}/{num_generations} ---")
 
-        # 7. Evaluate Population (Pool map call)
+        # STEP 7: Evaluate population (Pool map call)
         print(
             f"Evaluating {len(population)} individuals using {num_workers} workers..."
         )
@@ -465,12 +495,12 @@ def optimise(
             return (
                 best_param_vector_so_far,
                 history_df,
-            )  # Return current best and history
+            )  # return current best and history
 
         eval_time = time.time() - eval_start_time
         print(f"Evaluation finished in {eval_time:.2f} seconds.")
 
-        # 8. Process results
+        # STEP 8: process results
         fitnesses = []
         evaluated_population_params = []
         gen_best_fitness = -np.inf
@@ -532,7 +562,7 @@ def optimise(
         print(f"Best fitness in generation: {gen_best_fitness:.4f}")
         print(f"Average fitness (valid):   {avg_gen_fitness:.4f}")
 
-        # Update overall best
+        # update overall best
         if gen_best_fitness > best_fitness_so_far:
             if gen_best_params is not None:
                 best_fitness_so_far = gen_best_fitness
@@ -543,7 +573,7 @@ def optimise(
             else:
                 print("Warning: Gen best fitness improved, but params vector was None.")
 
-        # 9. Selection
+        # STEP 9. selection
         valid_population_params = [
             p
             for p, f in zip(evaluated_population_params, fitnesses)
@@ -564,7 +594,7 @@ def optimise(
             for _ in range(population_size)
         ]
 
-        # 10. Variation
+        # STEP 10. variation
         offspring_population = []
         # crossover/mutation logic
         parent_indices = np.random.permutation(len(parents))
@@ -588,7 +618,7 @@ def optimise(
         gen_time = time.time() - gen_start_time
         print(f"Generation {generation + 1} finished in {gen_time:.2f} seconds.")
 
-    # --- End of Optimisation ---
+    # end of optimisation
     print("\n--- Optimisation Finished ---")
     history_df = pd.DataFrame(all_history_records)
     if best_param_vector_so_far is None:
