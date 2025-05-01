@@ -360,6 +360,7 @@ if __name__ == "__main__":
     vsr = VoxelRobot(*VSR_DIMS, gear=GEAR)
     try:
         vsr.load_model_csv(model_path + ".csv")
+        vsr.visualise_model()
         xml_string = vsr.generate_model(model_path)
         model = mujoco.MjModel.from_xml_string(xml_string)
         print("Model loaded/generated.")
