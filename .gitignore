@@ -3,3 +3,5 @@ __pycache__/
 .vscode/
 *.pyc
 MUJOCO_LOG.TXT
+results_experiments/
+results_plots/
