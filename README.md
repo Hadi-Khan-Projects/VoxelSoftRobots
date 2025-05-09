@@ -1,16 +1,82 @@
-# MorphVSR: Voxel-based Soft Robot Simulation and Co-evolution Framework
+![morph_vsr_banner](https://github.com/user-attachments/assets/6a9d8629-20eb-4a71-a47b-42f3e8b4a583)
+
+# MorphVSR: A Voxel-based Soft Robot Simulation and Co-evolution Framework
 
 This repository contains a Python-based framework for simulating, controlling, and evolving Voxel-based Soft Robots (VSRs) using the MuJoCo physics engine. The project allows for the optimisation of distributed neural network controllers for fixed VSR morphologies and the co-evolution of both morphology and control strategies.
 
-This project was developed as a part of a Final Year Project submission for the MEng Computer Science program at University College London.
+This project was developed as a part of a Final Year Project submission for the MEng Computer Science program at University College London. In this README we provide:
+*   A) Video Repository
+*   B) Data Repository
+*   C) Getting Started
+*   D) Running Experiments
 
-## Video Repository
+## A) Video Repository
 
-An overview of experiment results, emergent behaviours, evolved morphologies available below:
+https://github.com/user-attachments/assets/e95ab22f-9012-4627-a2df-72e49bf69ada
 
-**Video Insert**
+Experiments took ~89 hours to run. Some videos of experiment results, emergent behaviours, evolved morphologies available below:
 
-## Data Repository
+### 1. Optimised Quadruped Locomotion with MLP Controller
+
+**Best Performing Run (Gen 15, Ind 16):**
+
+https://github.com/user-attachments/assets/c882f8b0-8eb2-4d4b-8c23-95437f56949d
+
+https://github.com/user-attachments/assets/9e58390f-ee72-4e08-9d93-5acec5915d22
+
+**2nd Best Performing Run (Gen 28, Ind 40):**
+
+https://github.com/user-attachments/assets/cb773027-491a-4991-bb20-bd0e07153cbf
+
+https://github.com/user-attachments/assets/1e8233ca-d983-4a40-a1e9-ffae786a4c36
+
+### 2. Optimised Quadruped Locomotion with MLP+ Controller
+
+**Best Performing Run (Gen 43, Ind 19):**
+
+https://github.com/user-attachments/assets/8b4da943-00a6-4f1a-8f03-790d64a4b8d2
+
+https://github.com/user-attachments/assets/f2579c0a-726f-47f0-b558-ada53fbf2d6d
+
+**2nd Best Performing Run (Gen 79, Ind 11):**
+
+https://github.com/user-attachments/assets/9761c9cc-57d7-4360-a229-3b6015a7e6ec
+
+https://github.com/user-attachments/assets/91f9ce55-4b66-4138-953f-42d5d25635b9
+
+### 3. Optimised Quadruped Locomotion with RNN Controller
+
+**Best Performing Run (Gen 72, Ind 38):**
+
+https://github.com/user-attachments/assets/53613480-9a1a-451f-b8cc-d533c673bef8
+
+https://github.com/user-attachments/assets/6f83e841-0952-4140-92f8-15f7d8a8721a
+
+**Run Exhibiting Trotting Gait (Gen 34, Ind 14):**
+
+https://github.com/user-attachments/assets/ed01931e-89dd-4fd6-93f9-403c845a1622
+
+https://github.com/user-attachments/assets/800bfd81-3dc9-4dbf-8236-3d53ce32a82a
+
+### 4. Co-evolved Morphology and Locomotion with MLP Controller
+
+**Best Performing Run (Batch 27, Mut 4, Gen 13, Ind 15):**
+
+https://github.com/user-attachments/assets/330feb78-cc19-42c5-8fb2-ac0774264ddf
+
+### 5. Co-evolved Morphology and Locomotion with MLP+ Controller
+
+**Best Performing Run (Batch 9, Mut 5, Gen 14, Ind 18):**
+
+https://github.com/user-attachments/assets/c921828e-c8c3-4be6-9e3a-f8be4552519a
+
+### 6. Co-evolved Morphology and Locomotion with RNN Controller
+
+**Best Performing Run (Batch 11, Mut 12, Gen 15, Ind 5):**
+
+https://github.com/user-attachments/assets/3f40020e-8198-4ef0-ab83-abea926a5da7
+
+## B) Data Repository
 
 Data for all 7 experiment runs, are available below:
 
@@ -70,16 +136,7 @@ results_experiments
     └── quadruped_v3_full_history_rnn_h16_gen80_pop60.csv
 ```
 
-## Key Files
-
-*   **VSR Definition (`vsr.py`):** Define 3D VSRs from voxel grids and generate MuJoCo MJCF models.
-*   **Distributed Neural Controllers (`controller.py`):** Implement various shared-parameter neural controllers (MLP, MLP+, RNN) with local sensing, inter-voxel communication, and global state inputs.
-*   **MuJoCo Simulation (`simulate.py`):** Run VSR simulations in MuJoCo, evaluate fitness for a target-reaching task, and replay simulations from logs.
-*   **Controller Optimisation (`optimise.py`):** Evolve controller parameters for a fixed VSR morphology using a genetic algorithm.
-*   **Morphology & Control Co-evolution (`evolve.py`):** Evolve VSR body plans (morphologies) concurrently with their controllers.
-*   **CLI:** Command-line interfaces for all major components for experimentation and reproducibility.
-
-## Getting Started
+## C) Getting Started
 
 1.  **Clone the repository:**
     
@@ -109,7 +166,7 @@ results_experiments
 
     If you wish to rerun simulations of experiments or plot the results of experiments, download the data and place it within your repository root `<repo_root>/results_experiments/`.
 
-## Running Experiments
+## D) Running Experiments
 
 We provide command-line interfaces (CLIs) for running simulations, optimisations, and evolutions.
 
